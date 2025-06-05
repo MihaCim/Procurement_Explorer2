@@ -1,0 +1,34 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+fastapi = "*"
+uvicorn = "*"
+python-multipart = "*"
+azure-identity = "*"
+azure-storage-blob = "*"
+python-dotenv = "*"
+streamlit = "*"
+chromadb = "*"
+langchain = "*"
+bs4 = "*"
+html2text = "*"
+langchain-text-splitters = "*"
+pandas = "*"
+flake8 = "*"
+pypdf = "*"
+python-docx = "*"
+docx2txt = "*"
+langchain-community = "*"
+numpy = "*"
+alembic = "*"
+pydantic_settings = "*"
+psycopg2-binary = "*"
+
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"

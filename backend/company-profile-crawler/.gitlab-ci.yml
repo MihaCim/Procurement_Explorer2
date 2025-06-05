@@ -1,0 +1,18 @@
+deploy_staging:
+  stage: deploy
+  image: phprunner:latest
+  only:
+    - main
+  tags:
+    - docker
+  before_script:
+    - eval "$(ssh-agent -s)"
+    - echo "$PRIVATE_KEY_STAGING" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan "$HOST_IP" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  environment: staging
+  allow_failure: false
+  script:
+    - make deploy/staging

@@ -1,0 +1,86 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Scraper API
+  description: API that enables adding pages to scrape and monitoring the progress of scraping.
+paths:
+  /sites:
+    get:
+      description: Get status of scraped sites
+      operationId: getSites
+      responses:
+        '200':
+          description: scraper status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      description: Adds sites to scrape
+      operationId: addSites
+      requestBody:
+        description: URLs of sites to scrape
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewSites'
+      responses:
+        '204':
+          description: Sites added successfully
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    NewSites:
+      type: array
+      items:
+        type: string
+
+    Status:
+      type: array
+      items:
+        $ref: '#/components/schemas/Site'
+
+    Site:
+      type: object
+      required:
+        - url
+        - status
+        - progress
+        - created_at
+        - updated_at
+      properties:
+        url:
+          type: string
+        status:
+          type: string
+        progress:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

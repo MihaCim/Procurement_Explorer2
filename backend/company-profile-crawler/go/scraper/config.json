@@ -1,0 +1,17 @@
+{
+    "timeout": 2,
+    "page_load_timeout": 120,
+    "page_limit": 50,
+    "runners": 5,
+    "job_interval": 30,
+    "avoid_extensions": [
+        ".css",
+        ".png",
+        ".js",
+        ".ico",
+        ".jpg",
+        ".svg",
+        ".pdf",
+        ".woff2"
+    ]
+}
