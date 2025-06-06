@@ -39,5 +39,3 @@ Review of solutions and technologies for web scraping
 
    duckduckgo_search can be used to obtain urls relevant to a particular search query (pro: more scalable than google_search, con: not as fresh as google search)
 
-
-test
