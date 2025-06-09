@@ -1,32 +1,62 @@
 name: procurement-sourcing
 
 services:
-  # procurement-explorer:
-  #   container_name: ps-procurement-explorer
-  #   restart: unless-stopped
-  #   build:
-  #     context: ./backend/procurement-explorer
-  #     dockerfile: Dockerfile
-  #   depends_on:
-  #     - db-postgres
-  #   ports:
-  #     - "${EXPLORER_PORT}:8000"
-  #   environment:
-  #     - PYTHONUNBUFFERED=1 # Ensures immediate printing
-  #     - POSTGRES_URL=${POSTGRES_URL}
-  #     - POSTGRES_PORT=${POSTGRES_PORT}
-  #     - POSTGRES_DB=${POSTGRES_DB}
-  #     - POSTGRES_USER=${POSTGRES_USER}
-  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  #     - POSTGREST_INITIAL_LOADING_DATA=${POSTGREST_INITIAL_LOADING_DATA}
-  #     - DD_INITIAL_LOADING_DATA=${DD_INITIAL_LOADING_DATA}
-  #     - OLLAMA_PORT=${OLLAMA_PORT}
-  #     - OLLAMA_URL=${OLLAMA_URL}
-  #     - EMBEDDING_MODEL=${EMBEDDING_MODEL}
-  #     - LLM_MODEL=${LLM_MODEL}
-  #     - LLM_TYPE=${LLM_TYPE}
-  #     - CRAWLER_URL=${CRAWLER_URL}
-  #     - CRAWLER_PORT=${CRAWLER_PORT}
+  procurement-explorer:
+    container_name: ps-procurement-explorer
+    restart: unless-stopped
+    build:
+      context: ./backend/procurement-explorer
+      dockerfile: Dockerfile
+    depends_on:
+      - db-postgres
+    ports:
+      - "${EXPLORER_PORT}:8000"
+    environment:
+      - PYTHONUNBUFFERED=1 # Ensures immediate printing
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGREST_INITIAL_LOADING_DATA=${POSTGREST_INITIAL_LOADING_DATA}
+      - DD_INITIAL_LOADING_DATA=${DD_INITIAL_LOADING_DATA}
+      - OLLAMA_PORT=${OLLAMA_PORT}
+      - OLLAMA_URL=${OLLAMA_URL}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL}
+      - LLM_MODEL=${LLM_MODEL}
+      - LLM_TYPE=${LLM_TYPE}
+      - CRAWLER_URL=${CRAWLER_URL}
+      - CRAWLER_PORT=${CRAWLER_PORT}##
+
+  frontend:
+    container_name: frontend
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - procurement_explorer
+    ports:
+      - "${FRONTEND_PORT}:9999"
+    env_file:
+      - .env
+    volumes:
+      - ./frontend:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ollama:
+    container_name: ollama
+    build:
+      context: ollama
+      dockerfile: Dockerfile
+    depends_on:
+      - db-postgres
+    ports:
+      - "${OLLAMA_PORT}:11434"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   crawler:
     build:
