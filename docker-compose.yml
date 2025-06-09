@@ -2,7 +2,7 @@ name: procurement-sourcing
 
 services:
   procurement-explorer:
-    container_name: ps-procurement-explorer
+    container_name: procurement-explorer
     restart: unless-stopped
     build:
       context: ./backend/procurement-explorer
@@ -34,7 +34,7 @@ services:
       context: frontend
       dockerfile: Dockerfile
     depends_on:
-      - procurement_explorer
+      - procurement-explorer
     ports:
       - "${FRONTEND_PORT}:9999"
     env_file:
@@ -44,19 +44,19 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  ollama:
-    container_name: ollama
-    build:
-      context: ollama
-      dockerfile: Dockerfile
-    depends_on:
-      - db-postgres
-    ports:
-      - "${OLLAMA_PORT}:11434"
-    env_file:
-      - .env
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+  # ollama:
+  #   container_name: ollama
+  #   build:
+  #     context: ollama
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - db-postgres
+  #   ports:
+  #     - "${OLLAMA_PORT}:11434"
+  #   env_file:
+  #     - .env
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
 
   crawler:
     build:
@@ -106,6 +106,7 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres-db-data:/var/lib/postgresql/data
+      - ./backend/database/:/docker-entrypoint-initdb.d/
     #command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
     command: ["postgres"]
 
