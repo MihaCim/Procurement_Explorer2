@@ -26,13 +26,16 @@ services:
       - LLM_MODEL=${LLM_MODEL}
       - LLM_TYPE=${LLM_TYPE}
       - CRAWLER_URL=${CRAWLER_URL}
-      - CRAWLER_PORT=${CRAWLER_PORT}##
+      - CRAWLER_PORT=${CRAWLER_PORT}
 
   frontend:
     container_name: frontend
     build:
       context: frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_API_PORT: ${VITE_API_PORT}
     depends_on:
       - procurement-explorer
     ports:
