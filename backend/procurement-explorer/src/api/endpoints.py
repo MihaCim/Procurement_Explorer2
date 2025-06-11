@@ -1,74 +1,52 @@
-import json, os
-from typing import Annotated, List, Optional, Union, Dict
-from bson import ObjectId
+import os
 from datetime import datetime
-from fastapi import (
-    APIRouter,
-    File,
-    Depends,
-    HTTPException,
-    Query,
-    UploadFile,
-    BackgroundTasks,
-)
-from pprint import pprint
-from pydantic import BaseModel, ValidationError
+from typing import Annotated, List, Optional, Union
+
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from langchain_core.documents import Document
-import asyncio
+from pydantic import BaseModel, ValidationError
 
+from ..models.models import Company, CompanyInput, DueDiligenceProfile
 from ..services.database_initialization import (
-    parse_company_profile,
     get_initialization_data,
-    parse_due_diligence_profile,
     load_dd_profiles,
+    parse_company_profile,
 )
 from ..services.document_service import (
-    get_text,
-    get_text_from_url,
-    get_text_from_crawler,
-    set_company,
-    get_company,
-    get_last_n_profiles,
-    get_count_documents,
     build_company_model_from_company_profile,
     build_initial_company_model,
-    query_companies,
-    get_company_by_website,
+    delete_company,
+    get_companies_similarity_profiles,
+    get_company,
     get_company_by_name,
-    update_company_verdict,
+    get_company_by_website,
+    get_count_documents,
+    get_due_diligence_by_website,
+    get_text,
+    get_text_from_crawler,
+    query_companies,
+    set_company,
+    set_due_diligence_profile,
     update_company,
     update_company_status,
-    get_due_diligence_by_website,
-    set_due_diligence_profile,
-    get_companies_similarity_profiles,
-    delete_company,
+    update_company_verdict,
 )
 from ..services.llm.llm_service import (
-    generate_company_profile,
     generate_document_profile,
     new_generate_company_profile,
 )
-from ..services.vector_store_service import VectorStoreService
 from ..services.sanctions_checker_service import SanctionsChecker
-from ..models.models import (
-    SanctionsCheckRequest,
-    SanctionsResponse,
-    SanctionsUSDetails,
-    Company,
-    CompanyInput,
-    DueDiligenceProfile,
-)
+from ..services.vector_store_service import VectorStoreService
 from .dummy import due_diligence_db
-
 from .wrappers import (
-    map_company_to_wrapper,
-    map_company_to_search_company,
-    map_due_diligence_to_wrapper,
-    map_wrapper_to_due_diligence,
     CompanyWrapper,
     DueDiligenceProfileWrapper,
+    map_company_to_search_company,
+    map_company_to_wrapper,
+    map_due_diligence_to_wrapper,
+    map_wrapper_to_due_diligence,
 )
 
 router = APIRouter()
@@ -77,7 +55,6 @@ vs = VectorStoreService(vector_store_name="company_vector_store")
 
 
 async def insert_company(id: int, url: str):
-
     url_text: Document | None = await get_text_from_crawler(str(url))
     if url_text is None:
         return JSONResponse(
@@ -87,8 +64,13 @@ async def insert_company(id: int, url: str):
 
     # Step 1: Generate company profile
     response = new_generate_company_profile(url_text)
+    if isinstance(response, dict):
+        return response
+
     # Step 2: Build company object out of the company profile
-    company = build_company_model_from_company_profile(url, response, status="Waiting for Review")
+    company = build_company_model_from_company_profile(
+        url, response, status="Waiting for Review"
+    )
     # Step 3: Add source to the company object
     company.Verdict = "NOT CONFIRMED"
     company.id = id
@@ -96,7 +78,7 @@ async def insert_company(id: int, url: str):
     # Step 4: Store the company object in the database
     company = await update_company(id, company)
     # Step 5: Generate the embeddings for the company profile
-    #vs.add_document_to_vector_store(id, company)
+    # vs.add_document_to_vector_store(id, company)
     # return company
     return {"id": id, "status": company.Status}
 
@@ -147,7 +129,7 @@ async def get_company_status(id: int):
     company: Optional[Company] = await get_company(id)
     if company is None:
         raise HTTPException(status_code=404, detail="Company not found")
-    print (company)
+    print(company)
     return {"id": id, "status": company.Due_Diligence_Status}
 
 
@@ -159,6 +141,7 @@ async def update_status(website: str, status: str):
     company = await update_company_status(company.id, status)
     return company.Status
 
+
 @router.get("/companies/count")
 async def get_company_count() -> JSONResponse:
     count = await get_count_documents()
@@ -167,16 +150,14 @@ async def get_company_count() -> JSONResponse:
 
 @router.put("/companies/{id}/verdict")
 async def update_company_verdict_status(id: str, verdict: str):
-    print ("is confirmed: ", verdict)
+    print("is confirmed: ", verdict)
     if verdict == "true":
         company = await update_company_verdict(id)
         vs.add_document_to_vector_store(id, company)
         return {"id": id, "status": company.Verdict}
     else:
         await delete_company(id)
-        #TODO: delete also from vectorstore if exists
         return {"id": id, "status": "COMPANY DELETED"}
-
 
 
 # TODO cleanup after testing
@@ -219,7 +200,9 @@ async def find_similar_companies(text: str, k: int = 10):
         text, collection_name="company_profile_nomic", k=k
     )
     companies = await get_companies_similarity_profiles(response)
-    companies_wrapped = [map_company_to_wrapper(company) for company in companies if company is not None]
+    companies_wrapped = [
+        map_company_to_wrapper(company) for company in companies if company is not None
+    ]
     companies_wrapped = jsonable_encoder(companies_wrapped)
     return companies_wrapped
 
@@ -240,7 +223,9 @@ async def find_companies_by_document(
         doc_profile, collection_name="company_profile_nomic", k=k
     )
     companies = await get_companies_similarity_profiles(response)
-    companies_wrapped = [map_company_to_wrapper(company) for company in companies if company is not None]
+    companies_wrapped = [
+        map_company_to_wrapper(company) for company in companies if company is not None
+    ]
     companies_wrapped = jsonable_encoder(companies_wrapped)
     return {"companies_list": companies_wrapped, "document_profile": doc_profile}
 
@@ -254,21 +239,24 @@ async def get_all_added_companies():
     return companies_wrapped
 
 
-@router.get("/due-diligence/profile/{id}")#, response_model=DueDiligenceProfileWrapper})
+@router.get(
+    "/due-diligence/profile/{id}"
+)  # , response_model=DueDiligenceProfileWrapper})
 async def get_due_diligence_prof(id: int):
-
     company = await get_company(id)
     if company:
         due_diligence_profile = await get_due_diligence_by_website(company.Website)
-        return map_due_diligence_to_wrapper(due_diligence_profile, company) if due_diligence_profile else "File does not exist"
+        return (
+            map_due_diligence_to_wrapper(due_diligence_profile, company)
+            if due_diligence_profile
+            else "File does not exist"
+        )
     else:
         return "company id does not exist"
 
 
 @router.put("/due-diligence/profile/{id}")
-async def update_due_diligence_profile(
-    updated_profile: DueDiligenceProfileWrapper
-):
+async def update_due_diligence_profile(updated_profile: DueDiligenceProfileWrapper):
     print("update request: ", updated_profile)
     dd_profile = map_wrapper_to_due_diligence(updated_profile)
 
@@ -304,14 +292,14 @@ async def initial_db_loading(
     start_time = datetime.now()
     companies = get_initialization_data()
     num_inserts = 0
-    #companies = companies[:100]
+    # companies = companies[:100]
 
     # run the inserts for each company in loading file
     for idx, company in enumerate(companies[:1000]):
         # Step 1: Parse company profile
         company_profile, website = parse_company_profile(company, idx)
 
-        print ("website: ", website)
+        print("website: ", website)
         existing_company = await get_company_by_website(website)
         # Step 3
         # : If company is already in database, skipp
@@ -342,7 +330,7 @@ async def initial_dd_loading_dd_profiles(
         return "Access Denied: Wrong Password"
 
     start_time = datetime.now()
-    #companies = get_initialization_data()
+    # companies = get_initialization_data()
     num_inserts = 0
 
     # run the inserts for each company in loading file
@@ -350,12 +338,12 @@ async def initial_dd_loading_dd_profiles(
     new_profiles = []
 
     for profile_data in profiles:
-        print ("insert: ", num_inserts)
+        print("insert: ", num_inserts)
         try:
             dd_profile = DueDiligenceProfile(**profile_data)
-            #dd_profile = parse_due_diligence_profile(profile_data)
+            # dd_profile = parse_due_diligence_profile(profile_data)
             dd_profile_id = await set_due_diligence_profile(dd_profile)
-            #update company profile dd_status
+            # update company profile dd_status
             company = await get_company_by_website(dd_profile.url)
             if company:
                 company.Due_Diligence_Status = "Available"
@@ -365,12 +353,9 @@ async def initial_dd_loading_dd_profiles(
             new_profiles.append(dd_profile_id)
         except ValidationError as e:
             # Skip the profile if validation fails
-            print (f"Data insert for dueDiligence failed, Error: {e}")
+            print(f"Data insert for dueDiligence failed, Error: {e}")
             continue
 
     if new_profiles:
         return new_profiles
     return {"duration": datetime.now() - start_time, "num_inserts": num_inserts}
-
-
-
