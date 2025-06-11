@@ -1,9 +1,12 @@
 import asyncio
 import io
-import logging
-import os, sys
 import json
-from typing import Optional, Union, List
+import logging
+import os
+import sys
+from datetime import datetime
+from typing import List, Optional, Union
+from urllib.parse import urlparse
 
 import aiohttp
 import docx2txt
@@ -12,20 +15,20 @@ from langchain_community.document_loaders.async_html import AsyncHtmlLoader
 from langchain_community.document_transformers.html2text import Html2TextTransformer
 from langchain_core.documents import Document
 from pypdf import PdfReader
-from datetime import datetime
 from src.connectors.postgres_conector import PostgresConnector
-from urllib.parse import urlparse, urlunparse
-from src.models.models import CompanyProfile, Company, DueDiligenceProfile
+from src.models.models import Company, CompanyProfile, DueDiligenceProfile
 
+from ..services.vector_store_service import VectorStoreService
 
 logging.basicConfig(
     level=logging.INFO,  # Set the logging level to INFO or DEBUG
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),  # Output to stdout
-    ]
+    ],
 )
 
+vs = VectorStoreService(vector_store_name="company_vector_store")
 
 logger = logging.getLogger(__name__)
 
@@ -191,10 +194,15 @@ async def get_text_from_crawler(
 
 
 def build_company_model_from_company_profile(
-    website: str, company_profile: CompanyProfile, status
+    website: str, company_profile: CompanyProfile | dict, status
 ) -> Company:
+    if isinstance(company_profile, CompanyProfile):
+        company_profile_dict = company_profile.model_dump()
+    else:
+        company_profile_dict = company_profile
+
     return Company(
-        **company_profile.dict(),
+        **company_profile_dict,
         website=website,
         status=status,
         review_date=datetime.now(),
@@ -204,6 +212,7 @@ def build_company_model_from_company_profile(
         profile_last_updated=None,
         due_diligence_last_updated=None,
     )
+
 
 def build_initial_company_model(
     website: str,
@@ -232,12 +241,16 @@ async def set_company(
     docs = source.upload_document("companies", dump)
     return docs
 
+
 async def update_company_verdict(
-    company_id: int, verdict: str = "CONFIRMED", source: PostgresConnector = PostgresConnector()
+    company_id: int,
+    verdict: str = "CONFIRMED",
+    source: PostgresConnector = PostgresConnector(),
 ):
-    print ("updating verdict")
+    print("updating verdict")
     source.update_document("companies", company_id, {"verdict": verdict})
     return await get_company(company_id, source)
+
 
 async def update_company_status(
     company_id: int, status: str, source: PostgresConnector = PostgresConnector()
@@ -245,26 +258,32 @@ async def update_company_status(
     source.update_document("companies", company_id, {"status": status})
     return await get_company(company_id, source)
 
+
 async def update_company(
     company_id: int, response: Company, source: PostgresConnector = PostgresConnector()
-):
+) -> Company | None:
     response.Profile_Last_Updated = datetime.now()
     dump = response.model_dump()
     dump["Contact_Information"] = json.dumps(dump["Contact_Information"])
     source.update_document("companies", company_id, dump)
-    return await get_company(company_id, source)
+    company = await get_company(str(company_id))
+    vs.update_document_in_vector_store(str(company_id), company)
+    return company
 
 
 async def delete_company(
     company_id: int, source: PostgresConnector = PostgresConnector()
 ):
-    company = await get_company(company_id)
-    #remove company from companies table
-    source.delete_document("companies", company_id)
-    #remove company from sites table
+    if company is None:
+        logger.error(f"Company with ID {company_id} does not exist.")
+        return False
+    # remove company from companies table
+    source.delete_document("companies", str(company_id))
+    # remove company from sites table
     website = company.Website
     query = "DELETE FROM sites WHERE url = %s;"
     source.execute_query(query, (website,))
+    vs.delete_document_in_vector_store(str(company_id), company)
     return True
 
 
@@ -285,7 +304,7 @@ async def get_company(
 async def get_company_by_website(
     website: str, source: PostgresConnector = PostgresConnector()
 ) -> Company | None:
-    query = f"SELECT * FROM companies WHERE website = %s;"
+    query = "SELECT * FROM companies WHERE website = %s;"
     result = source.execute_query(query, (website,), fetchone=True)
     if not result:
         return None
@@ -329,7 +348,7 @@ async def query_companies(
     # If a general search query is provided, apply it to multiple fields
     if query:
         # Extended query
-        sql_query += f"""
+        sql_query += """
             AND (
                 LOWER(name) ILIKE %s OR
                 LOWER(website) ILIKE %s OR
@@ -360,27 +379,27 @@ async def query_companies(
     # Apply individual filters for status
     if status:
         if isinstance(status, list) and status:
-            placeholders = ', '.join(['%s'] * len(status))
+            placeholders = ", ".join(["%s"] * len(status))
             sql_query += f" AND status IN ({placeholders})"
             params.extend(status)  # Make sure status is lowercased if needed
         else:
-            sql_query += f" AND LOWER(status) = %s"
+            sql_query += " AND LOWER(status) = %s"
             params.append(status.lower())
 
     # Apply filters for industry
     if industry:
         if isinstance(industry, list) and industry:
-            placeholders = ', '.join(['%s'] * len(industry))
+            placeholders = ", ".join(["%s"] * len(industry))
             sql_query += f" AND industry IN ({placeholders})"
             params.extend(industry)  # Make sure industry is lowercased if needed
         else:
-            sql_query += f" AND LOWER(industry) = %s"
+            sql_query += " AND LOWER(industry) = %s"
             params.append(industry.lower())
 
     # Apply filters for country
     if country:
         if isinstance(country, list) and country:
-            placeholders = ', '.join(['%s'] * len(country))
+            placeholders = ", ".join(["%s"] * len(country))
             sql_query += f" AND country IN ({placeholders})"
             params.extend(country)  # Make sure country is lowercased if needed
         else:
@@ -388,11 +407,11 @@ async def query_companies(
             params.append(country.lower())
     if verdict:
         if isinstance(verdict, list) and verdict:
-            placeholders = ', '.join(['%s'] * len(verdict))
+            placeholders = ", ".join(["%s"] * len(verdict))
             sql_query += f" AND verdict IN ({placeholders})"
             params.extend(verdict)
         else:
-            sql_query += f" AND verdict = %s"
+            sql_query += " AND verdict = %s"
             params.append(verdict)
 
     sql_query += " ORDER BY id DESC"
@@ -411,48 +430,54 @@ async def query_companies(
 
     return companies
 
+
 async def get_companies_similarity_profiles(
-        metadata_list: List[dict],
-) -> List[Company] :
+    metadata_list: List[dict],
+) -> List[Company]:
     companies_list = []
     for metadata in metadata_list:
         company = await get_company_by_website(metadata["Website"])
         companies_list.append(company)
     return companies_list
 
+
 async def get_due_diligence_by_website(
     url: str, source: PostgresConnector = PostgresConnector()
 ) -> DueDiligenceProfile | None:
-    query = f"SELECT * FROM due_diligence_profiles WHERE url = %s;"
+    query = "SELECT * FROM due_diligence_profiles WHERE url = %s;"
     result = source.execute_query(query, (url,), fetchone=True)
     if not result:
         return None
     due_diligence_profile = DueDiligenceProfile(**result)
     return due_diligence_profile
 
-async def set_due_diligence_profile (dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
+
+async def set_due_diligence_profile(
+    dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
 ):
     old_profile = await get_due_diligence_by_website(dd_profile.url)
 
     dd_profile.last_revision = datetime.now().isoformat()
     dump = dd_profile.model_dump()
     # Serialize dictionary fields to JSON if they exist
-    json_fields = ['contacts',
-                   'address',
-                   'key_individuals',
-                   'security_risk',
-                   'financial_risk',
-                   'operational_risk',
-                   'key_relationships']
+    json_fields = [
+        "contacts",
+        "address",
+        "key_individuals",
+        "security_risk",
+        "financial_risk",
+        "operational_risk",
+        "key_relationships",
+    ]
     for field in json_fields:
         if dump.get(field) is not None:
             dump[field] = json.dumps(dump[field])  # Convert dict to JSON string
-    #update profile
+    # update profile
     if old_profile:
         dump["id"] = old_profile.id
         source.update_document("due_diligence_profiles", dump["id"], dump)
         return dump["id"]
-    #create new profile
+    # create new profile
     else:
         if dump["id"] is None:
             del dump["id"]
