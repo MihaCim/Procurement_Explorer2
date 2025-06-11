@@ -2,7 +2,7 @@ import json
 import os
 import uuid
 from pathlib import Path
-from typing import List, Literal, Tuple
+from typing import Any, List, Literal, Tuple
 
 import chromadb
 from chromadb import QueryResult
@@ -28,7 +28,6 @@ class VectorStoreService:
         persistent_dir: str = str(PERSISTENT_DIR_PATH),
         vector_store_name: str = "temp_vector_store",
     ) -> None:
-
         # If the persistent directory does not exist, create it
         if not Path(persistent_dir).exists():
             Path(persistent_dir).mkdir(parents=True)
@@ -39,7 +38,7 @@ class VectorStoreService:
             path=f"{persistent_dir}/{vector_store_name}"
         )
 
-    def _read_cache(self):
+    def _read_cache(self) -> dict[str, Any]:
         """
         Read the cache.
         """
@@ -50,7 +49,7 @@ class VectorStoreService:
                 return json.load(f)
         return {}
 
-    def _write_cache(self, cache_data):
+    def _write_cache(self, cache_data: dict[str, Any]):
         """
         Write the cache.
         """
@@ -64,7 +63,7 @@ class VectorStoreService:
         collection: chromadb.Collection,
         embedding_splitter: RecursiveCharacterTextSplitter,
         blob: str,
-        profile: dict,
+        profile: dict[str, str],
         embedding_model: OllamaEmbeddings = DEFAULT_EMBEDDING_MODEL,
     ) -> None:
         """
@@ -87,20 +86,42 @@ class VectorStoreService:
             )
         return metadata
 
+    def _get_company_dict(self, company: Company) -> dict[str, str]:
+        company_dict = dict[str, str]()
+        company_dump = company.model_dump()
+        for key in company_dump:
+            company_dict[key.lower()] = str(company_dump[key])
+        return company_dict
+
+    def update_document_in_vector_store(self, id: str, company: Company) -> None:
+        self.delete_document_in_vector_store(id, company)
+        self.add_document_to_vector_store(id, company)
+
+    def delete_document_in_vector_store(self, id: str, company: Company) -> None:
+        collection = self.get_collection("company_profile_nomic")
+
+        company_dict = self._get_company_dict(company)
+        assert "name" in company_dict
+
+        collection.delete(where={"name": company_dict["name"]})
+
+        cache_data = self._read_cache()
+        if id in cache_data:
+            del cache_data[id]
+            self._write_cache(cache_data)
+
     def add_document_to_vector_store(
         self,
         id: str,
         company: Company,
     ):
+        print(f"add_document_to_vector_store({id=}, {company=})")
         cache_data = self._read_cache()
         collection = self.get_collection("company_profile_nomic")
         embedding_splitter = RecursiveCharacterTextSplitter(
             chunk_size=4000, chunk_overlap=0
         )
-        company_dict = {}
-        company_dump = company.model_dump()
-        for key in company_dump:
-            company_dict[key.lower()] = str(company_dump[key])
+        company_dict = self._get_company_dict(company)
         metadata = self.add_document_to_collection(
             collection,
             embedding_splitter,
@@ -187,7 +208,7 @@ class VectorStoreService:
             "subindustries",
             "country",
             "company_profile",
-            "description"
+            "description",
         ]
         for field in fields_to_embed:
             if field in profile:
@@ -261,7 +282,7 @@ class VectorStoreService:
         Get a collection.
         """
         try:
-            collection= self.persistent_client.get_collection(collection_name)
+            collection = self.persistent_client.get_collection(collection_name)
         except:
             collection = self.create_collection_from_scratch()
         return collection

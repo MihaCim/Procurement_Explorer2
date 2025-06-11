@@ -34,4 +34,3 @@ EXPOSE 3399
 
 # Start NGINX when the container starts
 CMD ["/entrypoint.sh"]
-
