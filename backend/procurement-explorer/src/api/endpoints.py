@@ -41,7 +41,7 @@ from ..services.llm.llm_service import (
 from ..services.sanctions_checker_service import SanctionsChecker
 from ..services.vector_store_service import VectorStoreService
 from .dummy import due_diligence_db
-from .tools import generate_webpage_summary, google_search
+from .tools import google_search, scrape_webpage, summarize_text
 from .wrappers import (
     CompanyWrapper,
     DueDiligenceProfileWrapper,
@@ -286,7 +286,9 @@ async def due_diligence_status(id: int):
 @router.get("/scrape")
 async def scrape(url: str) -> str:
     try:
-        return await generate_webpage_summary(url)
+        crawler_result = await scrape_webpage(url)
+        assert "Data" in crawler_result
+        return summarize_text(crawler_result["Data"])
     except Exception as e:
         print(f"Error while scraping {url}: {e}")
         raise HTTPException(
@@ -295,9 +297,13 @@ async def scrape(url: str) -> str:
 
 
 @router.get("/search")
-async def search(query: str) -> list[str]:
+async def search(query: str, pages: int = 10) -> list[dict[str, str]]:
     try:
-        return google_search(query)
+        links = google_search(query, pages)
+        results = list[dict[str, str]]()
+        for link in links:
+            results.append(await scrape_webpage(link))
+        return results
     except Exception as e:
         print(f"Error while trying to search {query}: {e}")
         raise HTTPException(
