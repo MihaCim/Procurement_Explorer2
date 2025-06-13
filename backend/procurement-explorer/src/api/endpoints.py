@@ -2,9 +2,7 @@ import os
 from datetime import datetime
 from functools import lru_cache
 from typing import Annotated, List, Optional, Union
-from urllib.parse import quote
 
-import aiohttp
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -36,7 +34,6 @@ from ..services.document_service import (
     update_company_status,
     update_company_verdict,
 )
-from ..services.llm.llm_client import LLMClient
 from ..services.llm.llm_service import (
     generate_document_profile,
     new_generate_company_profile,
@@ -44,6 +41,7 @@ from ..services.llm.llm_service import (
 from ..services.sanctions_checker_service import SanctionsChecker
 from ..services.vector_store_service import VectorStoreService
 from .dummy import due_diligence_db
+from .tools import generate_webpage_summary, google_search
 from .wrappers import (
     CompanyWrapper,
     DueDiligenceProfileWrapper,
@@ -56,7 +54,6 @@ from .wrappers import (
 router = APIRouter()
 sanctions_checker = SanctionsChecker()
 vs = VectorStoreService(vector_store_name="company_vector_store")
-llm_client = LLMClient()
 
 
 async def insert_company(id: int, url: str):
@@ -287,28 +284,25 @@ async def due_diligence_status(id: int):
 
 @lru_cache(maxsize=100)
 @router.get("/scrape")
-async def scrape(url: str):
-    host = os.getenv("CRAWLER_URL")
-    port = os.getenv("CRAWLER_PORT")
+async def scrape(url: str) -> str:
+    try:
+        return await generate_webpage_summary(url)
+    except Exception as e:
+        print(f"Error while scraping {url}: {e}")
+        raise HTTPException(
+            status_code=500, detail="Error while trying to generate summary"
+        )
 
-    crawler_url = f"http://{host}:{port}/scrape?url={quote(url, safe='')}"
 
-    crawler_result = None
-    async with aiohttp.ClientSession() as session:
-        async with session.get(crawler_url) as response:
-            print(f"Response status: {response.status}")
-            if response.status != 200:
-                raise HTTPException(
-                    status_code=400, detail="Failed to submit URL for crawling"
-                )
-
-            crawler_result = await response.json()
-
-    assert crawler_result is not None
-    assert "Data" in crawler_result
-    return llm_client.generate(
-        prompt=f"Summarize the given text: {crawler_result['Data']}"
-    )
+@router.get("/search")
+async def search(query: str) -> list[str]:
+    try:
+        return google_search(query)
+    except Exception as e:
+        print(f"Error while trying to search {query}: {e}")
+        raise HTTPException(
+            status_code=500, detail="Error while trying to perform search"
+        )
 
 
 @router.post("/database/load")
