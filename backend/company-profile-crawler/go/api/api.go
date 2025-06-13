@@ -34,6 +34,9 @@ type AddSitesJSONRequestBody = NewSites
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (GET /scrape)
+	Scrape(ctx echo.Context) error
+
 	// (GET /sites)
 	GetSites(ctx echo.Context) error
 
@@ -44,6 +47,15 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// Scrape converts echo context to params.
+func (w *ServerInterfaceWrapper) Scrape(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.Scrape(ctx)
+	return err
 }
 
 // GetSites converts echo context to params.
@@ -94,5 +106,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 
 	router.GET(baseURL+"/sites", wrapper.GetSites)
 	router.POST(baseURL+"/sites", wrapper.AddSites)
+	router.GET(baseURL+"/scrape", wrapper.Scrape)
 
 }
