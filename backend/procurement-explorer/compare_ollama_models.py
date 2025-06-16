@@ -13,7 +13,7 @@ from src.utils.prompt_templates import COMPANY_PROFILE_TEMPLATE
 
 MODELS = [
     "gemma3:1b",
-    # "gemma3:4b",
+    "gemma3:4b",
     # "qwen3:4b",
     # "mistral:latest",
 ]

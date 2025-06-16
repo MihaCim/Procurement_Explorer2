@@ -1,11 +1,13 @@
+import asyncio
 import os
 from datetime import datetime
 from functools import lru_cache
 from typing import Annotated, List, Optional, Union
 
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException
+import httpx
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from langchain_core.documents import Document
 from pydantic import BaseModel, ValidationError
 
@@ -309,6 +311,46 @@ async def search(query: str, pages: int = 10) -> list[dict[str, str]]:
         raise HTTPException(
             status_code=500, detail="Error while trying to perform search"
         )
+
+
+@router.post("/chat")
+async def chat(request: Request, stream: bool = True) -> StreamingResponse:
+    # TODO: Add context from user input eg. what company profiles is he currently looking at
+    client_request_json = await request.json()
+
+    # Force streaming mode
+    client_request_json["stream"] = stream
+
+    llm_type = os.getenv("LLM_TYPE", "ollama")
+    headers = {}
+    if llm_type == "ollama":
+        llm_url = os.getenv("OLLAMA_URL", "localhost")
+        llm_port = os.getenv("OLLAMA_PORT", "11434")
+        llm_url = f"{llm_url}:{llm_port}/api/chat"
+        if not llm_url.startswith("http://"):
+            llm_url = f"http://{llm_url}"
+    elif llm_type == "openai":
+        llm_url = "https://api.openai.com/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}",
+        }
+    else:
+        raise HTTPException(status_code=500, detail="Cannot determine LLM host")
+
+    async def stream_response():
+        async with httpx.AsyncClient(timeout=None) as client:
+            async with client.stream(
+                "POST",
+                llm_url,
+                json=client_request_json,
+                headers=headers,
+            ) as response:
+                async for chunk in response.aiter_lines():
+                    if chunk.strip():  # Only send non-empty lines
+                        yield f"data: {chunk}\n\n"
+                    await asyncio.sleep(0)  # Yield control to event loop
+
+    return StreamingResponse(stream_response(), media_type="text/event-stream")
 
 
 @router.post("/database/load")
