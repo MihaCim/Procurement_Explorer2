@@ -1,5 +1,6 @@
 import os
 import asyncio
+import httpx
 from dotenv import load_dotenv
 from apify_client import ApifyClientAsync
 from loguru import logger
@@ -40,38 +41,44 @@ def get_run_input(url: str) -> dict:
     }
 
 
-async def extract_text_from_url(url: str) -> str:
-    """
-    Extract text content from a given URL using a content crawler and return it in markdown format.
+# async def extract_text_from_url(url: str) -> str:
+#     """
+#     - Extract text content from a given URL using a content crawler and return it in markdown format.
+#     - Call this function only with a valid url input.
 
-    Parameters:
-        url (str): The URL from which to extract text content.
+#     Parameters:
+#         url (str): A valid URL from which to extract text content.
 
-    Returns:
-        str: The extracted text content in markdown format.
+#     Returns:
+#         str: The extracted text content in markdown format.
 
-    """
+#     """
 
-    apify_client_async = ApifyClientAsync(APIFY_API_KEY)
-    actor = apify_client_async.actor("apify/website-content-crawler")
-    run_input = get_run_input(url)
-    call_result = await actor.call(run_input=run_input, wait_secs=480)
+#     apify_client_async = ApifyClientAsync(APIFY_API_KEY)
+#     actor = apify_client_async.actor("apify/website-content-crawler")
+#     run_input = get_run_input(url)
+#     call_result = await actor.call(run_input=run_input, wait_secs=480)
 
-    # Assuming your dictionary is named 'data'
-    if "finishedAt" in call_result and call_result["finishedAt"]:
-        logger.info(f"Reading {url} process has finished.")
-    else:
-        logger.info(f"Reading {url} process is still running.")
-    # print(results)
-    if "defaultDatasetId" not in call_result:
-        return f"Reading {url} process failed or taking too long."
-    dataset_id = call_result["defaultDatasetId"]
-    dataset = apify_client_async.dataset(dataset_id)
-    output = ""
-    async for item in dataset.iterate_items():
-        if "markdown" in item:
-            output += item["markdown"]
-    return output
+#     # Assuming your dictionary is named 'data'
+#     if "finishedAt" in call_result and call_result["finishedAt"]:
+#         logger.info(f"Reading {url} process has finished.")
+#     else:
+#         logger.info(f"Reading {url} process is still running.")
+#     # print(results)
+#     if "defaultDatasetId" not in call_result:
+#         return f"Reading {url} process failed or taking too long."
+#     dataset_id = call_result["defaultDatasetId"]
+#     dataset = apify_client_async.dataset(dataset_id)
+#     output = ""
+#     async for item in dataset.iterate_items():
+#         if "markdown" in item:
+#             output += item["markdown"]
+
+#     logger.info("************************************ ")
+#     logger.info("OUTPUT FROM APIFY CRAWLER: ")
+#     logger.info(output)
+#     logger.info("************************************ ")
+#     return output
 
 
 def get_search_input(query: str) -> dict:
@@ -168,4 +175,42 @@ async def search_google(query: str) -> str:
     if not output or len(output) == 0:
         print(f"No search results found for \"{query}\".")
         return f"No search results found for \"{query}\"."
+
+    logger.info("************************************ ")
+    logger.info("OUTPUT FROM APIFY CRAWLER: ")
+    print(output)
+    #logger.info(output)
+    logger.info("************************************ ")
     return output
+
+
+async def extract_text_from_url(target_url: str) -> str:
+    """
+    - Extract text content from a given URL using a content crawler and return it in text format.
+    - Call this function only with a valid url input.
+
+    Parameters:
+        url (str): A valid URL from which to extract text content.
+    Returns:
+        str: The extracted text content in markdown format.
+    Raises:
+        Returns a string describing the error if the request fails.
+
+    """
+    target_url = "http://www.tahasavunma.com"
+    try:
+        # Encode and call the scrape endpoint
+        async with httpx.AsyncClient() as client:
+            response = await client.get("http://localhost:8000/scrape", params={"url": target_url})
+            response.raise_for_status()
+            logger.info("************************************************************ ")
+            logger.info("OUTPUT FROM CRAWLER API SERVICE: ")
+            logger.info(response.text)
+            logger.info("************************************************************ ")
+            return response.text
+    except httpx.HTTPStatusError as exc:
+        print(f"HTTP error occurred: {exc.response.status_code} - {exc.response.text}")
+        return {"error": exc.response.text}
+    except Exception as exc:
+        print(f"An error occurred: {exc}")
+        return {"error": str(exc)}
