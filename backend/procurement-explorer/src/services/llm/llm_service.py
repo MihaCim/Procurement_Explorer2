@@ -1,16 +1,15 @@
-import logging
 import base64
-import os
+import logging
 from typing import Union
+
 from langchain.prompts import PromptTemplate
-from langchain_community.llms.ollama import Ollama
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from pydantic import ValidationError
 
 from ...models.models import CompanyProfile, DocumentProfile
-from ...utils.output_parsers import parse_company_profile, parse_document_profile
+from ...utils.output_parsers import parse_company_profile
 from ...utils.prompt_templates import (
     COMPANY_PROFILE_SUMMARY_TEMPLATE,
     COMPANY_PROFILE_TEMPLATE,
@@ -38,7 +37,9 @@ def generate_document_profile(
 
     try:
         response = ""
-        prompt_template = PromptTemplate.from_template(template=DOCUMENT_PROFILE_TEMPLATE)
+        prompt_template = PromptTemplate.from_template(
+            template=DOCUMENT_PROFILE_TEMPLATE
+        )
         output_parser = StrOutputParser()
 
         for doc in docs:
@@ -65,7 +66,7 @@ def generate_document_profile(
         logger.error(f"Error generating document profile: {e}")
         return {"error": "Error generating document profile", "details": str(e)}
 
-    return str(response) #parsed_response #document_profile
+    return str(response)  # parsed_response #document_profile
 
 
 def generate_company_profile(
@@ -95,33 +96,32 @@ def generate_company_profile(
 
 
 def new_generate_company_profile(
-        document: Document, chunk_size=1000
+    document: Document, chunk_size=1000
 ) -> Union[CompanyProfile, dict]:
     try:
         prompt = PromptTemplate.from_template(template=COMPANY_PROFILE_TEMPLATE)
-        #chain = prompt | llm_client.generate# | StrOutputParser()
-        
+        # chain = prompt | llm_client.generate# | StrOutputParser()
+
         # Only process the first 7000 characters if the document is too long
-        #breakpoint()
-        data=document.get('data')
-        data= bytes(data)
+        # breakpoint()
+        data = document.get("data")
+        data = bytes(data)
         try:
-            data_decoded = data.decode('utf-8')
+            data_decoded = data.decode("utf-8")
         except Exception as e:
             print(e)
             try:
-                data_decoded =  base64.b64decode(data)
+                data_decoded = base64.b64decode(data)
             except Exception as e:
                 print(e)
-        
+
         # Render the template to get the actual string prompt
-        prompt_value = prompt.format(website_text= data_decoded[:chunk_size])
-        
+        prompt_value = prompt.format(website_text=data_decoded[:chunk_size])
+
         # Ensure you are passing a list of strings (as required by LLM)
         response = llm_client.generate(prompt_value)
 
-        #response = chain.invoke({"website_text": data_decoded})
-        
+        # response = chain.invoke({"website_text": data_decoded})
 
         # Parse the response into the company profile
         parsed_response = parse_company_profile(response)
