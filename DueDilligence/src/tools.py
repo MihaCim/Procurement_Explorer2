@@ -3,14 +3,13 @@ from urllib.parse import quote
 
 import aiohttp
 from googlesearch import search
-
-from ..services.llm.llm_client import LLMClient
+from llm_client import LLMClient
 
 llm_client = LLMClient()
 
 
-def summarize_text(text: str) -> str:
-    return llm_client.generate(
+async def summarize_text(text: str) -> str:
+    return await llm_client.generate_gemini_response(
         prompt=f"Provide a summary of the given text. Skip any greetings and focus only on the summary. Here is the text: {text}"
     )
 

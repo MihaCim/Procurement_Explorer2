@@ -1,16 +1,13 @@
 from dotenv import load_dotenv
-import os
+
 load_dotenv()
 import logging
 
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from src.api.endpoints import router as api_router
 from src.utils.misc import setup_logging
-
-
 
 # Set up logging
 setup_logging()
@@ -32,10 +29,4 @@ app.add_middleware(
 
 if __name__ == "__main__":
     print("Starting webserver...")
-    uvicorn.run(
-        app,
-        host="0.0.0.0",
-        port= 8000,
-        log_level= "info",
-        proxy_headers=True
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info", proxy_headers=True)
