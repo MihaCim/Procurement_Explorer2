@@ -1,9 +1,13 @@
 import os
 
-from apify_client import ApifyClientAsync
 from cache import Cache
-from loguru import logger
 from tools import google_search, scrape_webpage, summarize_text
+import asyncio
+import httpx
+from dotenv import load_dotenv
+from apify_client import ApifyClientAsync
+from loguru import logger
+
 
 # Load environment variables from .env file
 
@@ -118,15 +122,13 @@ def analyze_search_data_markdown(data):
     # Results section
     markdown_output += "**Search Results:**\n"
     for res in results:
-        title = res.get("title", "N/A")
-        url = res.get("url", "N/A")
-        description = res.get("description", "No description provided.")
-        keywords = ", ".join(res.get("emphasizedKeywords", []))
+        title = res.get('title', 'N/A')
+        url = res.get('url', 'N/A')
+        description = res.get('description', 'No description provided.')
+        keywords = ', '.join(res.get('emphasizedKeywords', []))
         markdown_output += f"- **Title**: [{title}]({url})\n"
         markdown_output += f"  - **Description**: {description}\n"
-        markdown_output += (
-            f"  - **Emphasized Keywords**: {keywords if keywords else 'None'}\n"
-        )
+        markdown_output += f"  - **Emphasized Keywords**: {keywords if keywords else 'None'}\n"
 
     # Related queries section
     if related_queries:
@@ -138,13 +140,12 @@ def analyze_search_data_markdown(data):
     if people_also_ask:
         markdown_output += "\n**People Also Ask:**\n"
         for item in people_also_ask:
-            question = item.get("question", "N/A")
-            answer = item.get("answer", "No answer provided.")
+            question = item.get('question', 'N/A')
+            answer = item.get('answer', 'No answer provided.')
             markdown_output += f"- **Question**: {question}\n"
             markdown_output += f"  - **Answer**: {answer}\n"
 
     return markdown_output
-
 
 async def search_google(query: str) -> str:
     """
@@ -171,6 +172,7 @@ async def search_google(query: str) -> str:
     # print(results)
     if "defaultDatasetId" not in call_result:
         return f'Searching "{query}"  process failed or taking too long.'
+
     dataset_id = call_result["defaultDatasetId"]
     dataset = apify_client_async.dataset(dataset_id)
     output = ""
@@ -184,7 +186,6 @@ async def search_google(query: str) -> str:
     logger.info("************************************ ")
     logger.info("OUTPUT FROM APIFY CRAWLER: ")
     print(output)
-    # logger.info(output)
     logger.info("************************************ ")
     return output
 
