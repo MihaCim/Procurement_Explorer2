@@ -17,7 +17,7 @@ APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
 
-cache = Cache()
+cache = Cache()  #TODO: setup cash size and eviction policy.
 
 
 def get_run_input(url: str) -> dict:
@@ -203,10 +203,15 @@ async def extract_text_from_url(target_url: str) -> str:
         Returns a string describing the error if the request fails.
 
     """
+    logger.info(f"************************************\nSTARTING CRAWLER TOOL:{target_url}")
+
+
 
     cache_str = f"{target_url}"
     result = cache.get_cache("extract_text_from_url", cache_str)
     if result:
+        logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
+        logger.info(result)
         return result
 
     try:
@@ -214,6 +219,8 @@ async def extract_text_from_url(target_url: str) -> str:
         assert "Data" in crawler_result
         result = await summarize_text(crawler_result["Data"])
         cache.add_cache("scrape", cache_str, result)
+        logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
+        logger.info(result)
         return result
     except Exception as e:
         return f"{e}"
@@ -231,31 +238,27 @@ async def search_google(query: str) -> str:
 
     """
     pages: int = 10
+
+    logger.info(f"************************************\nSTARTING GOOGLE SEARCH:{query}")
     
     try:
         cache_str = f"{query}_{pages}"
         result = cache.get_cache("search", cache_str)
         if result:
-            logger.info("************************************ ")
-            logger.info("OUTPUT FROM GOOGLE SEARCH: ")
-            print(json.dumps(result))
-            logger.info("************************************ ")
-            return json.dums(result)
+            logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
+            logger.info(result)
+            return result
+        links = await google_search(query, pages)
+        result = links
+        #result = list[dict[str, str]]()
+        #for link in links[:1]:
+        #    result.append(await scrape_webpage(link))
+        #cache.add_cache("search", cache_str, result)
 
-        links = google_search(query, pages)
-        result = list[dict[str, str]]()
-        for link in links[:1]:
-            result.append(await scrape_webpage(link))
-        cache.add_cache("search", cache_str, result)
-
-        logger.info("************************************ ")
-        logger.info("OUTPUT FROM GOOGLE SEARCH: ")
-        print(json.dumps(result))
-        logger.info("************************************ ")
-
-        return json.dumps(result)
+        logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
+        logger.info(result)
+        
+        return result
+    
     except Exception as e:
-        logger.info("************************************ ")
-        logger.info("ERROR FROM GOOGLE SEARCH: ")
-        logger.info("************************************ ")
         return [{"error": f"{e}"}]
