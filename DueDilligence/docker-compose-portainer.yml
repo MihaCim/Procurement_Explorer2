@@ -1,0 +1,25 @@
+services:
+  due-diligence-streamlite:
+    container_name: ps-due-diligence-streamlite
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - APIFY_API_KEY=${APIFY_API_KEY}
+      - LLM_TYPE=${LLM_TYPE}
+      - LLM_MODEL=${LLM_MODEL}
+      - OLLAMA_URL=${OLLAMA_URL}
+      - OLLAMA_PORT=${OLLAMA_PORT}
+      - AZURE_URL=${AZURE_URL}
+      - AZURE_API_KEY=${AZURE_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "${DD_PORT}:8501"
+    volumes:
+      - due_diligence_data:/app
+
+volumes:
+  due_diligence_data:
+    driver: local
