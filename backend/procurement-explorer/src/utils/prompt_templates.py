@@ -143,6 +143,7 @@ You should structure your response as follows without any additional text:
     - Quality Standards: Mention any quality standards or certifications held by the company.
     - Company Size: Estimate the number of employees. If unknown, state 'Unknown'.
     - Company Profile: Provide a detailed description of the company, including industry expertise, certifications, partners, years of operation, operational regions, and offered services and products.
+    - Key people: List the key people of the company. Most important to include would be leaders, founders, C-level employees. If unknown, state 'Unknown'.
 
 Note: If information is missing, use 'Unknown'. Responses should be in English.
 """  # noqa: E501

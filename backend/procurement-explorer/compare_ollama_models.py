@@ -1,117 +1,70 @@
 import json
 import os
 import time
-from shutil import rmtree
+from datetime import datetime
 from typing import Any
+from urllib.parse import quote
 
-import psycopg2
+import requests
 from langchain.prompts import PromptTemplate
-from psycopg2.extensions import connection as PGConnecton
-from psycopg2.extensions import cursor as PGCursor
 from src.services.llm.llm_client import LLMClient
 from src.utils.prompt_templates import COMPANY_PROFILE_TEMPLATE
 
 MODELS = [
-    "gemma3:1b",
-    "gemma3:4b",
-    # "qwen3:4b",
+    # "gemma3:1b",
+    # "gemma3:4b",
     # "mistral:latest",
+    "qwen3:0.6b",
+    "qwen3:1.7b",
+    "qwen3:4b",
+    "qwen3:8b",
 ]
 
-DB_URL = "localhost"
-DB_NAME = "explorer"
-DB_PORT = 5435
-DB_USER = "uporabnik11"
-DB_PASSWORD = "oJy5VNA9Qu"
+
+COMPANY_SEARCHES = [
+    "taha savunma",
+    "solvesall",
+    "Kerry Logistics (Germany) GmbH",
+    "HOVIONE FARMACIÊNCIA, S.A.",
+    "NEXPLUS SK s.r.o.",
+    "Harvia Finland Oy",
+    "PODEMCRANE AD",
+    "JOEM AUTO PARTS LIMITED",
+    "Airbus Defence and Space GmbH",
+    "OU Wartsila BLRT Estonia",
+]
+
+
+EXPLORER_URL = "http://localhost:8000"
 
 CHUNK_SIZE = 1000
 
-
-def get_connection() -> PGConnecton:
-    return psycopg2.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_URL,
-        port=DB_PORT,
-    )
+os.environ["LLM_TYPE"] = "ollama"
+os.environ["OLLAMA_URL"] = "localhost"
+os.environ["OLLAMA_PORT"] = "11435"
 
 
-def fetch_companies(conn: PGConnecton) -> list[tuple[Any, ...]]:
-    cursor: PGCursor | None = None
-    try:
-        cursor = conn.cursor()
-
-        # Execute a simple query
-        cursor.execute("SELECT * FROM companies;")
-
-        # Fetch all results
-        results = cursor.fetchall()
-
-        # Convert to a list of tuples
-        return results
-
-    except Exception as e:
-        print("Error:", e)
-        return []
-
-    finally:
-        if cursor:
-            cursor.close()
-
-
-def fetch_raw_data(conn: PGConnecton) -> list[tuple[Any, ...]]:
-    cursor: PGCursor | None = None
-    try:
-        cursor = conn.cursor()
-
-        # Execute a simple query
-        cursor.execute("SELECT * FROM raw_data;")
-
-        # Fetch all results
-        results = cursor.fetchall()
-
-        # Convert to a list of tuples
-        return results
-
-    except Exception as e:
-        print("Error:", e)
-        return []
-
-    finally:
-        if cursor:
-            cursor.close()
-
-
-def set_model(model: str) -> None:
-    os.environ["LLM_TYPE"] = "ollama"
-    os.environ["LLM_MODEL"] = model
-    os.environ["OLLAMA_URL"] = "localhost"
-    os.environ["OLLAMA_PORT"] = "11435"
-
-
-def get_name(c: list[Any]) -> str:
-    url = c[2]
-    assert isinstance(url, str)
-    return url.split("//")[-1].split("/")[0][4:]
-
-
-def model_inference(model: str, companies: list[list[Any]]) -> None:
+def model_inference(model: str, company_search_results: dict[str, Any]) -> None:
     folder = model
-    if os.path.exists(folder):
-        rmtree(folder)
-    os.makedirs(folder)
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
-    set_model(model)
+    os.environ["LLM_MODEL"] = model
     llm_client = LLMClient()
-    response = llm_client.generate("Hello, how are you?")
 
     prompt = PromptTemplate.from_template(template=COMPANY_PROFILE_TEMPLATE)
 
-    for company in companies:
-        fn = f"{folder}/{get_name(company)}.txt"
-        prompt_value = prompt.format(website_text=company[-1][:CHUNK_SIZE])
-        print(f"started: {fn=}")
+    for company_search in company_search_results:
+        fn = f"{folder}/{company_search}.txt"
+        if os.path.exists(fn):
+            print(f"Skipping {fn=}")
+            continue
+        prompt_value = prompt.format(
+            website_text=str(json.dumps(company_search_results[company_search]))[
+                :CHUNK_SIZE
+            ]
+        )
+        print(f"started: {fn=} at {datetime.now()}")
         start = time.monotonic()
         response = llm_client.generate(prompt_value)
         end = time.monotonic()
@@ -121,21 +74,54 @@ def model_inference(model: str, companies: list[list[Any]]) -> None:
         with open(fn, "w") as f:
             f.write(response)
 
+        json_fn = f"{folder}/{company_search}.json"
+        with open(json_fn, "w") as f:
+            json.dump(company_search_results[company_search], f, indent=4)
+
+
+def execute_company_searches() -> dict[str, Any]:
+    if os.path.exists("companies.json"):
+        with open("companies.json", "r") as f:
+            company_search_results = json.load(f)
+    else:
+        company_search_results = dict[str, dict[str, str]]()
+
+    assert isinstance(company_search_results, dict)
+
+    for company_search in COMPANY_SEARCHES:
+        if company_search in company_search_results:
+            print(f"Skipping {company_search=}")
+            continue
+
+        search_url = f"{EXPLORER_URL}/search?query={quote(company_search, safe='')}"
+        response = requests.get(search_url)
+        if response.status_code == 200:
+            company_search_results[company_search] = response.json()
+            with open("companies.json", "w") as f:
+                f.write(json.dumps(company_search_results))
+            print(f"Success {company_search}")
+
+    del_companies = list[str]()
+    for company_search in company_search_results:
+        if company_search not in COMPANY_SEARCHES:
+            print(f"Removing {company_search}")
+            del_companies.append(company_search)
+
+    for company_search in del_companies:
+        assert company_search in company_search_results
+        del company_search_results[company_search]
+
+    return company_search_results
+
 
 def main() -> None:
-    connection = get_connection()
-    companies = [list(company) for company in fetch_companies(connection)]
-    raw_data = fetch_raw_data(connection)
-
-    for idx, company in enumerate(companies):
-        name = f"{get_name(company)}.json"
-        for rd in raw_data:
-            if rd[1] == name:
-                data = str(json.loads(rd[2].tobytes().decode("utf-8")))
-                companies[idx].append(data)
+    company_search_results = execute_company_searches()
 
     for model in MODELS:
-        model_inference(model, companies)
+        print("")
+        print(f"Started {model=}")
+        model_inference(model, company_search_results)
+        print(f"Done {model=}")
 
 
 if __name__ == "__main__":
