@@ -1,0 +1,17 @@
+
+services:
+  due_diligence:
+    container_name: DueDiligence_OpenAi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app
+    #extra_hosts:
+    #  - "host.docker.internal:host-gateway"
