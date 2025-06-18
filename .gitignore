@@ -7,3 +7,6 @@ data/merged.json
 data/sanctions_data_us.csv
 .DS_Store
 .venv
+**/*.txt
+**/*.json
+**/*.sh
