@@ -1,9 +1,9 @@
 import os
-import asyncio
-import httpx
-from dotenv import load_dotenv
+
 from apify_client import ApifyClientAsync
+from cache import Cache
 from loguru import logger
+from tools import google_search, scrape_webpage, summarize_text
 
 # Load environment variables from .env file
 
@@ -12,6 +12,8 @@ from loguru import logger
 APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
+
+cache = Cache()
 
 
 def get_run_input(url: str) -> dict:
@@ -96,13 +98,13 @@ def get_search_input(query: str) -> dict:
 
 def analyze_search_data_markdown(data):
     # Extract main details
-    request_info = data.get('#debug', {})
-    search_query = data.get('searchQuery', {})
-    results = data.get('organicResults', [])
-    related_queries = data.get('relatedQueries', [])
-    people_also_ask = data.get('peopleAlsoAsk', [])
-    error_status = data.get('#error', False)
-    
+    request_info = data.get("#debug", {})
+    search_query = data.get("searchQuery", {})
+    results = data.get("organicResults", [])
+    related_queries = data.get("relatedQueries", [])
+    people_also_ask = data.get("peopleAlsoAsk", [])
+    error_status = data.get("#error", False)
+
     # Start building the Markdown report
     markdown_output = "### Search Report\n\n"
     markdown_output += "**Request Details:**\n"
@@ -116,30 +118,33 @@ def analyze_search_data_markdown(data):
     # Results section
     markdown_output += "**Search Results:**\n"
     for res in results:
-        title = res.get('title', 'N/A')
-        url = res.get('url', 'N/A')
-        description = res.get('description', 'No description provided.')
-        keywords = ', '.join(res.get('emphasizedKeywords', []))
+        title = res.get("title", "N/A")
+        url = res.get("url", "N/A")
+        description = res.get("description", "No description provided.")
+        keywords = ", ".join(res.get("emphasizedKeywords", []))
         markdown_output += f"- **Title**: [{title}]({url})\n"
         markdown_output += f"  - **Description**: {description}\n"
-        markdown_output += f"  - **Emphasized Keywords**: {keywords if keywords else 'None'}\n"
+        markdown_output += (
+            f"  - **Emphasized Keywords**: {keywords if keywords else 'None'}\n"
+        )
 
     # Related queries section
     if related_queries:
         markdown_output += "\n**Related Queries:**\n"
         for rq in related_queries:
             markdown_output += f"- {rq.get('title', 'N/A')}\n"
-    
+
     # People Also Ask section
     if people_also_ask:
         markdown_output += "\n**People Also Ask:**\n"
         for item in people_also_ask:
-            question = item.get('question', 'N/A')
-            answer = item.get('answer', 'No answer provided.')
+            question = item.get("question", "N/A")
+            answer = item.get("answer", "No answer provided.")
             markdown_output += f"- **Question**: {question}\n"
             markdown_output += f"  - **Answer**: {answer}\n"
 
     return markdown_output
+
 
 async def search_google(query: str) -> str:
     """
@@ -160,12 +165,12 @@ async def search_google(query: str) -> str:
 
     # Assuming your dictionary is named 'data'
     if "finishedAt" in call_result and call_result["finishedAt"]:
-        logger.info(f"Searching \"{query}\" process has finished.")
+        logger.info(f'Searching "{query}" process has finished.')
     else:
-        logger.info(f"Searching \"{query}\"  process is still running.")
+        logger.info(f'Searching "{query}"  process is still running.')
     # print(results)
     if "defaultDatasetId" not in call_result:
-        return f"Searching \"{query}\"  process failed or taking too long."
+        return f'Searching "{query}"  process failed or taking too long.'
     dataset_id = call_result["defaultDatasetId"]
     dataset = apify_client_async.dataset(dataset_id)
     output = ""
@@ -173,13 +178,13 @@ async def search_google(query: str) -> str:
     async for item in dataset.iterate_items():
         output += analyze_search_data_markdown(item)
     if not output or len(output) == 0:
-        print(f"No search results found for \"{query}\".")
-        return f"No search results found for \"{query}\"."
+        print(f'No search results found for "{query}".')
+        return f'No search results found for "{query}".'
 
     logger.info("************************************ ")
     logger.info("OUTPUT FROM APIFY CRAWLER: ")
     print(output)
-    #logger.info(output)
+    # logger.info(output)
     logger.info("************************************ ")
     return output
 
@@ -197,20 +202,35 @@ async def extract_text_from_url(target_url: str) -> str:
         Returns a string describing the error if the request fails.
 
     """
-    target_url = "http://www.tahasavunma.com"
+
+    cache_str = f"{target_url}"
+    result = cache.get_cache("extract_text_from_url", cache_str)
+    if result:
+        return result
+
     try:
-        # Encode and call the scrape endpoint
-        async with httpx.AsyncClient() as client:
-            response = await client.get("http://localhost:8000/scrape", params={"url": target_url})
-            response.raise_for_status()
-            logger.info("************************************************************ ")
-            logger.info("OUTPUT FROM CRAWLER API SERVICE: ")
-            logger.info(response.text)
-            logger.info("************************************************************ ")
-            return response.text
-    except httpx.HTTPStatusError as exc:
-        print(f"HTTP error occurred: {exc.response.status_code} - {exc.response.text}")
-        return {"error": exc.response.text}
-    except Exception as exc:
-        print(f"An error occurred: {exc}")
-        return {"error": str(exc)}
+        crawler_result = await scrape_webpage(url)
+        assert "Data" in crawler_result
+        result = await summarize_text(crawler_result["Data"])
+        cache.add_cache("scrape", cache_str, result)
+        return result
+    except Exception as e:
+        return f"{e}"
+
+
+async def search(query: str, pages: int = 10) -> list[dict[str, str]]:
+    try:
+        cache_str = f"{query}_{pages}"
+        result = cache.get_cache("search", cache_str)
+        if result:
+            return result
+
+        links = google_search(query, pages)
+        result = list[dict[str, str]]()
+        for link in links[:1]:
+            result.append(await scrape_webpage(link))
+
+        cache.add_cache("search", cache_str, result)
+        return result
+    except Exception as e:
+        return [{"error": f"{e}"}]

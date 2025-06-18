@@ -1,8 +1,7 @@
 import asyncio
 import os
-import time
 from datetime import datetime
-from typing import Annotated, Any, List, Optional, Union
+from typing import Annotated, List, Optional, Union
 
 import httpx
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request
@@ -43,7 +42,6 @@ from ..services.llm.llm_service import (
 from ..services.sanctions_checker_service import SanctionsChecker
 from ..services.vector_store_service import VectorStoreService
 from .dummy import due_diligence_db
-from .tools import google_search, scrape_webpage, summarize_text
 from .wrappers import (
     CompanyWrapper,
     DueDiligenceProfileWrapper,
@@ -56,59 +54,6 @@ from .wrappers import (
 router = APIRouter()
 sanctions_checker = SanctionsChecker()
 vs = VectorStoreService(vector_store_name="company_vector_store")
-
-
-class Cache(BaseModel):
-    expiration_s: int = 1800
-    cache: dict[str, dict[str, Any]]
-
-    def eval_cache_value(self, cache_value: dict[str, Any]) -> bool:
-        assert "result" in cache_value
-        assert "time" in cache_value
-
-        if time.time() - cache_value["time"] < self.expiration_s:
-            return True
-        else:
-            return False
-
-    def clean_cache(self) -> None:
-        for endpoint in self.cache:
-            for cache_str in self.cache[endpoint]:
-                cache_value = self.cache[endpoint][cache_str]
-                if not self.eval_cache_value(cache_value):
-                    self.delete_cache(endpoint, cache_str)
-
-    def delete_cache(self, endpoint: str, cache_str: str) -> None:
-        assert endpoint in self.cache
-        assert cache_str in self.cache[endpoint]
-        del self.cache[endpoint][cache_str]
-        self.clean_cache()
-
-    def add_cache(self, endpoint: str, cache_str: str, result: Any) -> None:
-        self.cache.setdefault(endpoint, {})[cache_str] = {
-            "time": time.time(),
-            "result": result,
-        }
-        self.clean_cache()
-
-    def get_cache(self, endpoint: str, cache_str: str) -> Any | None:
-        cache_endpoint = self.cache.setdefault(endpoint, {})
-        if cache_str not in cache_endpoint:
-            self.clean_cache()
-            return None
-
-        cache_value = cache_endpoint[cache_str]
-        if self.eval_cache_value(cache_value):
-            self.clean_cache()
-            return cache_value["result"]
-        else:
-            self.delete_cache(endpoint, cache_str)
-
-        self.clean_cache()
-        return None
-
-
-cache = Cache(cache={})
 
 
 async def insert_company(id: int, url: str):
@@ -335,48 +280,6 @@ async def due_diligence_status(id: int):
         if profile.id == id:
             return {profile.risk_level}
     raise HTTPException(status_code=404, detail="Company not found")
-
-
-@router.get("/scrape")
-async def scrape(url: str) -> str:
-    cache_str = f"{url}"
-    result = cache.get_cache("scrape", cache_str)
-    if result:
-        return result
-
-    try:
-        crawler_result = await scrape_webpage(url)
-        assert "Data" in crawler_result
-        result = summarize_text(crawler_result["Data"])
-        cache.add_cache("scrape", cache_str, result)
-        return result
-    except Exception as e:
-        print(f"Error while scraping {url}: {e}")
-        raise HTTPException(
-            status_code=500, detail="Error while trying to generate summary"
-        )
-
-
-@router.get("/search")
-async def search(query: str, pages: int = 10) -> list[dict[str, str]]:
-    try:
-        cache_str = f"{query}_{pages}"
-        result = cache.get_cache("search", cache_str)
-        if result:
-            return result
-
-        links = google_search(query, pages)
-        result = list[dict[str, str]]()
-        for link in links[:1]:
-            result.append(await scrape_webpage(link))
-
-        cache.add_cache("search", cache_str, result)
-        return result
-    except Exception as e:
-        print(f"Error while trying to search {query}: {e}")
-        raise HTTPException(
-            status_code=500, detail="Error while trying to perform search"
-        )
 
 
 @router.post("/chat")
