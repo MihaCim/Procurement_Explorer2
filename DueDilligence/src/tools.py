@@ -14,7 +14,7 @@ async def summarize_text(text: str) -> str:
     )
 
 
-def google_search(query: str, pages: int) -> list[str]:
+async def google_search(query: str, pages: int) -> list[str]:
     links = search(query, num_results=pages)
     final_links = list[str]()
     for link in links:
