@@ -3,6 +3,7 @@ import json
 import asyncio
 from cache import Cache
 from tools import google_search, scrape_webpage, summarize_text
+from collections import OrderedDict
 import asyncio
 import httpx
 from dotenv import load_dotenv
@@ -19,12 +20,14 @@ maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
 
 #cache = Cache()  #TODO: setup cash size and eviction policy.
+cache = AsyncInFlightCache()
 
 class AsyncInFlightCache:
-    def __init__(self):
-        self.cache = {}
+    def __init__(self, max_size=1000):
+        self.cache = OrderedDict()
         self.in_flight = {}
         self.lock = asyncio.Lock()
+        self.max_size = max_size
 
     async def get_or_wait(self, key, compute_coroutine):
         async with self.lock:
@@ -40,8 +43,13 @@ class AsyncInFlightCache:
         if not fut.done():
             try:
                 result = await compute_coroutine()
+
                 async with self.lock:
                     self.cache[key] = result
+                    self.cache.move_to_end(key)
+                    if len(self.cache) > self.max_size:
+                        self.cache.popitem(last=False) 
+
                     fut.set_result(result)
                     del self.in_flight[key]
             except Exception as e:
@@ -222,7 +230,6 @@ def analyze_search_data_markdown(data):
 #     logger.info("************************************ ")
 #     return output
 
-cache = AsyncInFlightCache()
 
 async def extract_text_from_url(target_url: str) -> str:
     """
