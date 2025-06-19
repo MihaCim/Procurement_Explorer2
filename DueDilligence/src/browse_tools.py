@@ -276,18 +276,6 @@ async def search_google(query: str) -> str:
     logger.info(f"************************************\nSTARTING GOOGLE SEARCH:{query}")
     
     try:
-        # cache_str = f"{query}_{pages}"
-        # result = cache.get_cache("search", cache_str)
-        # if result:
-        #     logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
-        #     logger.info(result)
-        #     return result
-        # links = await google_search(query, pages)
-        # result = links
-        # logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
-        # logger.info(result)
-        # return result
-
         async def compute():
             return await google_search(query, pages)
         
