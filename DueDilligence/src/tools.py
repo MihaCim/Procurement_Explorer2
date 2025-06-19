@@ -14,13 +14,22 @@ async def summarize_text(text: str) -> str:
     )
 
 
-async def google_search(query: str, pages: int) -> list[str]:
-    links = search(query, num_results=pages)
-    final_links = list[str]()
-    for link in links:
-        assert isinstance(link, str), "Search result should be a string"
-        final_links.append(link)
-    return final_links
+async def google_search(query: str, pages: int) -> list[dict[str, str]]:
+    search_results = search(query, advanced=True, num_results=pages)
+    final_results = list[str]()
+    for search_result in search_results:
+        assert hasattr(search_result, "url")
+        assert hasattr(search_result, "title")
+        assert hasattr(search_result, "description")
+        final_results.append(
+            {
+                "url": search_result.url,
+                "title": search_result.title,
+                "description": search_result.description,
+            }
+        )
+
+    return final_results
 
 
 async def scrape_webpage(url: str) -> dict[str, str]:
