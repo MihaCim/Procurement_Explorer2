@@ -59,7 +59,7 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
             if new_data and new_data != prev_data:
                 prev_data = new_data
                 update_event.set()  # Notify that profile has changed
-            await asyncio.sleep(0.5)  # Faster updates
+            await asyncio.sleep(1)  # Faster updates
 
     async def monitor_logs():
         """Monitor AI chat logs and push new messages to the queue."""
@@ -69,7 +69,7 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
             if new_log_data and new_log_data != prev_log_data:
                 prev_log_data = new_log_data
                 await log_queue.put(new_log_data)  # Store log message in queue
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1)
 
     async def send_updates():
         """Send updates when new profile data or chat logs are available."""
