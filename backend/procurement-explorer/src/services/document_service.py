@@ -340,6 +340,7 @@ async def query_companies(
     country: Optional[Union[str, List[str]]] = None,
     verdict: Optional[Union[str, List[str]]] = None,
     limit: Optional[int] = 100,
+    offset: Optional[int] = 0,
 ):
     # Start with a basic SQL query
     sql_query = "SELECT * FROM companies WHERE TRUE"
@@ -419,6 +420,10 @@ async def query_companies(
     if limit:
         sql_query += " LIMIT %s"
         params.append(limit)
+
+    if offset:
+        sql_query += " OFFSET %s"
+        params.append(offset)
 
     # Execute the query
     result = source.execute_query(sql_query, params, fetch=True)
