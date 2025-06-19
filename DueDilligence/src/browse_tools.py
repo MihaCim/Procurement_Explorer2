@@ -19,8 +19,6 @@ APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
 
-#cache = Cache()  #TODO: setup cash size and eviction policy.
-cache = AsyncInFlightCache()
 
 class AsyncInFlightCache:
     def __init__(self, max_size=1000):
@@ -231,6 +229,8 @@ def analyze_search_data_markdown(data):
 #     return output
 
 
+cache = AsyncInFlightCache()
+
 async def extract_text_from_url(target_url: str) -> str:
     """
     - Extract text content from a given URL using a content crawler and return it in text format.
@@ -246,23 +246,6 @@ async def extract_text_from_url(target_url: str) -> str:
     """
     logger.info(f"************************************\nSTARTING CRAWLER TOOL:{target_url}")
 
-
-
-    # cache_str = f"{target_url}"
-    # result = cache.get_cache("extract_text_from_url", cache_str)
-    # if result:
-    #     logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
-    #     logger.info(result)
-    #     return result
-
-    # try:
-    #     crawler_result = await scrape_webpage(url)
-    #     assert "Data" in crawler_result
-    #     result = await summarize_text(crawler_result["Data"])
-    #     cache.add_cache("scrape", cache_str, result)
-    #     logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
-    #     logger.info(result)
-    #     return result
     try:
         async def compute():
             crawler_result = await scrape_webpage(target_url)
