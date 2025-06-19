@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 from cache import Cache
 from tools import google_search, scrape_webpage, summarize_text
 import asyncio
@@ -17,8 +18,40 @@ APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
 
-cache = Cache()  #TODO: setup cash size and eviction policy.
+#cache = Cache()  #TODO: setup cash size and eviction policy.
 
+class AsyncInFlightCache:
+    def __init__(self):
+        self.cache = {}
+        self.in_flight = {}
+        self.lock = asyncio.Lock()
+
+    async def get_or_wait(self, key, compute_coroutine):
+        async with self.lock:
+            if key in self.cache:
+                return self.cache[key]
+
+            if key in self.in_flight:
+                fut = self.in_flight[key]
+            else:
+                fut = asyncio.Future()
+                self.in_flight[key] = fut
+
+        if not fut.done():
+            try:
+                result = await compute_coroutine()
+                async with self.lock:
+                    self.cache[key] = result
+                    fut.set_result(result)
+                    del self.in_flight[key]
+            except Exception as e:
+                async with self.lock:
+                    fut.set_exception(e)
+                    del self.in_flight[key]
+                raise
+
+        return await fut
+    
 
 def get_run_input(url: str) -> dict:
     print("paramd: ", maxCrawlPages, maxCrawlDepth)
@@ -189,6 +222,7 @@ def analyze_search_data_markdown(data):
 #     logger.info("************************************ ")
 #     return output
 
+cache = AsyncInFlightCache()
 
 async def extract_text_from_url(target_url: str) -> str:
     """
@@ -207,21 +241,31 @@ async def extract_text_from_url(target_url: str) -> str:
 
 
 
-    cache_str = f"{target_url}"
-    result = cache.get_cache("extract_text_from_url", cache_str)
-    if result:
-        logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
-        logger.info(result)
-        return result
+    # cache_str = f"{target_url}"
+    # result = cache.get_cache("extract_text_from_url", cache_str)
+    # if result:
+    #     logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
+    #     logger.info(result)
+    #     return result
 
+    # try:
+    #     crawler_result = await scrape_webpage(url)
+    #     assert "Data" in crawler_result
+    #     result = await summarize_text(crawler_result["Data"])
+    #     cache.add_cache("scrape", cache_str, result)
+    #     logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
+    #     logger.info(result)
+    #     return result
     try:
-        crawler_result = await scrape_webpage(url)
-        assert "Data" in crawler_result
-        result = await summarize_text(crawler_result["Data"])
-        cache.add_cache("scrape", cache_str, result)
-        logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
-        logger.info(result)
-        return result
+        async def compute():
+            crawler_result = await scrape_webpage(target_url)
+            assert "Data" in crawler_result
+            return await summarize_text(crawler_result["Data"])
+            
+        result = await cache.get_or_wait(f"url:{target_url}", compute) 
+        logger.info(f"************************************\nRESULT FROM CRAWLER_TOOL: {result}") 
+        return result  
+
     except Exception as e:
         return f"{e}"
 
@@ -242,23 +286,25 @@ async def search_google(query: str) -> str:
     logger.info(f"************************************\nSTARTING GOOGLE SEARCH:{query}")
     
     try:
-        cache_str = f"{query}_{pages}"
-        result = cache.get_cache("search", cache_str)
-        if result:
-            logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
-            logger.info(result)
-            return result
-        links = await google_search(query, pages)
-        result = links
-        #result = list[dict[str, str]]()
-        #for link in links[:1]:
-        #    result.append(await scrape_webpage(link))
-        #cache.add_cache("search", cache_str, result)
+        # cache_str = f"{query}_{pages}"
+        # result = cache.get_cache("search", cache_str)
+        # if result:
+        #     logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
+        #     logger.info(result)
+        #     return result
+        # links = await google_search(query, pages)
+        # result = links
+        # logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
+        # logger.info(result)
+        # return result
 
-        logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
-        logger.info(result)
+        async def compute():
+            return await google_search(query, pages)
         
+        result = await cache.get_or_wait(f"search:{query}", compute)
+        logger.info(f"************************************\nRESULT GOOGLE TOOL: {result}")
         return result
-    
+        
     except Exception as e:
         return [{"error": f"{e}"}]
+    
