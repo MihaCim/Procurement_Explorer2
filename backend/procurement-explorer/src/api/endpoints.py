@@ -1,7 +1,7 @@
 import asyncio
 import os
 from datetime import datetime
-from typing import Annotated, List, Optional, Union
+from typing import Annotated, Any, List, Optional, Union
 
 import httpx
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request
@@ -177,8 +177,9 @@ async def get_companies(
     status: Optional[Union[str, List[str]]] = None,
     industry: Optional[Union[str, List[str]]] = None,
     country: Optional[Union[str, List[str]]] = None,
-    limit: Optional[int] = 20,
-):
+    limit: int = 20,
+    offset: int = 0,
+) -> dict[str, list[Any] | int]:
     companies = await query_companies(
         query=query,
         status=status,
@@ -186,11 +187,19 @@ async def get_companies(
         country=country,
         verdict="CONFIRMED",
         limit=limit,
+        offset=offset,
     )
     # Map each company to the wrapper
     companies_wrapped = [map_company_to_wrapper(company) for company in companies]
     companies_wrapped = jsonable_encoder(companies_wrapped)
-    return companies_wrapped
+
+    total = await get_count_documents()
+    return {
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "companies": companies_wrapped,
+    }
 
 
 @router.get("/companies/similar")
