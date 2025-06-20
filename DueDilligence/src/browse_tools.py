@@ -1,15 +1,9 @@
+import asyncio
 import os
-import json
-import asyncio
-from cache import Cache
-from tools import google_search, scrape_webpage, summarize_text
 from collections import OrderedDict
-import asyncio
-import httpx
-from dotenv import load_dotenv
-from apify_client import ApifyClientAsync
-from loguru import logger
 
+from loguru import logger
+from tools import google_search, scrape_webpage, summarize_text
 
 # Load environment variables from .env file
 
@@ -19,8 +13,8 @@ APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
 
-#cache = Cache()  #TODO: setup cash size and eviction policy.
-cache = AsyncInFlightCache()
+# cache = Cache()  #TODO: setup cash size and eviction policy.
+
 
 class AsyncInFlightCache:
     def __init__(self, max_size=1000):
@@ -48,7 +42,7 @@ class AsyncInFlightCache:
                     self.cache[key] = result
                     self.cache.move_to_end(key)
                     if len(self.cache) > self.max_size:
-                        self.cache.popitem(last=False) 
+                        self.cache.popitem(last=False)
 
                     fut.set_result(result)
                     del self.in_flight[key]
@@ -59,7 +53,10 @@ class AsyncInFlightCache:
                 raise
 
         return await fut
-    
+
+
+cache = AsyncInFlightCache()
+
 
 def get_run_input(url: str) -> dict:
     print("paramd: ", maxCrawlPages, maxCrawlDepth)
@@ -163,13 +160,15 @@ def analyze_search_data_markdown(data):
     # Results section
     markdown_output += "**Search Results:**\n"
     for res in results:
-        title = res.get('title', 'N/A')
-        url = res.get('url', 'N/A')
-        description = res.get('description', 'No description provided.')
-        keywords = ', '.join(res.get('emphasizedKeywords', []))
+        title = res.get("title", "N/A")
+        url = res.get("url", "N/A")
+        description = res.get("description", "No description provided.")
+        keywords = ", ".join(res.get("emphasizedKeywords", []))
         markdown_output += f"- **Title**: [{title}]({url})\n"
         markdown_output += f"  - **Description**: {description}\n"
-        markdown_output += f"  - **Emphasized Keywords**: {keywords if keywords else 'None'}\n"
+        markdown_output += (
+            f"  - **Emphasized Keywords**: {keywords if keywords else 'None'}\n"
+        )
 
     # Related queries section
     if related_queries:
@@ -181,12 +180,13 @@ def analyze_search_data_markdown(data):
     if people_also_ask:
         markdown_output += "\n**People Also Ask:**\n"
         for item in people_also_ask:
-            question = item.get('question', 'N/A')
-            answer = item.get('answer', 'No answer provided.')
+            question = item.get("question", "N/A")
+            answer = item.get("answer", "No answer provided.")
             markdown_output += f"- **Question**: {question}\n"
             markdown_output += f"  - **Answer**: {answer}\n"
 
     return markdown_output
+
 
 # async def search_google(query: str) -> str:
 #     """
@@ -244,9 +244,9 @@ async def extract_text_from_url(target_url: str) -> str:
         Returns a string describing the error if the request fails.
 
     """
-    logger.info(f"************************************\nSTARTING CRAWLER TOOL:{target_url}")
-
-
+    logger.info(
+        f"************************************\nSTARTING CRAWLER TOOL:{target_url}"
+    )
 
     # cache_str = f"{target_url}"
     # result = cache.get_cache("extract_text_from_url", cache_str)
@@ -264,20 +264,23 @@ async def extract_text_from_url(target_url: str) -> str:
     #     logger.info(result)
     #     return result
     try:
+
         async def compute():
             crawler_result = await scrape_webpage(target_url)
             assert "Data" in crawler_result
             return await summarize_text(crawler_result["Data"])
-            
-        result = await cache.get_or_wait(f"url:{target_url}", compute) 
-        logger.info(f"************************************\nRESULT FROM CRAWLER_TOOL: {result}") 
-        return result  
+
+        result = await cache.get_or_wait(f"url:{target_url}", compute)
+        logger.info(
+            f"************************************\nRESULT FROM CRAWLER_TOOL: {result}"
+        )
+        return result
 
     except Exception as e:
         return f"{e}"
 
 
-async def search_google(query: str) -> str:
+async def search_google(query: str) -> list[dict[str, str]]:
     """
     Extract search results with given query using Google Search and return it in markdown format.
 
@@ -285,13 +288,13 @@ async def search_google(query: str) -> str:
         query (str): Search Query for Google.
 
     Returns:
-        str: The extracted search results in markdown format.
+        list[dict[str, str]]: List of dicts, where each dict contains 'url', 'title' and 'description'. Each dict is a result of the Google query.
 
     """
     pages: int = 10
 
     logger.info(f"************************************\nSTARTING GOOGLE SEARCH:{query}")
-    
+
     try:
         # cache_str = f"{query}_{pages}"
         # result = cache.get_cache("search", cache_str)
@@ -305,13 +308,14 @@ async def search_google(query: str) -> str:
         # logger.info(result)
         # return result
 
-        async def compute():
+        async def compute() -> list[dict[str, str]]:
             return await google_search(query, pages)
-        
+
         result = await cache.get_or_wait(f"search:{query}", compute)
-        logger.info(f"************************************\nRESULT GOOGLE TOOL: {result}")
+        logger.info(
+            f"************************************\nRESULT GOOGLE TOOL: {result}"
+        )
         return result
-        
+
     except Exception as e:
         return [{"error": f"{e}"}]
-    
