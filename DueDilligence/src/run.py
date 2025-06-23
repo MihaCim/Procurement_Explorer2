@@ -1,11 +1,13 @@
-import sys
+import asyncio
 import os
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+import sys
+
 import uvicorn
+from company_data import CompanyData
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from logger import BasicLogger
 from prompts.prompts2 import Prompts
 from thread import TaskThread
-import asyncio
-from company_data import CompanyData
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
@@ -15,26 +17,8 @@ prompts = Prompts()
 company_data = CompanyData()
 
 
-class Logger_main:
-    def __init__(self):
-        pass
+logger = BasicLogger()
 
-    def info(self, message: str or None):
-        if message:
-            print("message data:", message)
-
-    def error(self, message: str):
-        print("Error:", message)
-
-class Logger_logs:
-    def __init__(self):
-        self.logs = []
-
-    def info(self, message):
-        self.logs.append(message + "<br><br>")
-
-logger_main = Logger_main()
-logger_logs = Logger_logs()
 
 @app.websocket("/ws/profile/{company_name}")
 async def websocket_profile(websocket: WebSocket, company_name: str):
@@ -44,8 +28,7 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
     system_prompt = prompts.get_system_prompt(company_name)
     taskThread = TaskThread(
         task=system_prompt,
-        logger_main=logger_main,
-        logger_logs=logger_logs,
+        logger=logger,
     )
 
     update_event = asyncio.Event()  # Event to track profile updates
@@ -55,7 +38,9 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
         """Monitor profile and trigger update event when data changes."""
         prev_data = None
         while not taskThread.is_finished:
-            new_data = taskThread.data.to_json() if taskThread.data else None
+            new_data = (
+                taskThread.company_data.to_json() if taskThread.company_data else None
+            )
             if new_data and new_data != prev_data:
                 prev_data = new_data
                 update_event.set()  # Notify that profile has changed
@@ -85,8 +70,10 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
 
             if profile_update_task in done:
                 update_event.clear()  # Reset event after handling
-                if taskThread.data:
-                    await websocket.send_json({"type": "profile", "data": taskThread.data.to_json()})
+                if taskThread.company_data:
+                    await websocket.send_json(
+                        {"type": "profile", "data": taskThread.company_data.to_json()}
+                    )
 
             if log_message_task in done:
                 message = log_message_task.result()  # Get the log message
@@ -109,9 +96,9 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
         await websocket.send_json({"type": "final_report", "data": taskThread.result})
 
     except WebSocketDisconnect:
-        logger_main.info(f"Client disconnected from {company_name}")
+        logger.info(f"Client disconnected from {company_name}")
     except Exception as e:
-        logger_main.error(f"Error: {e}")
+        logger.error(f"Error: {e}")
         await websocket.send_json({"type": "error", "data": str(e)})
 
 
