@@ -1,8 +1,7 @@
 # Importing the json module to handle JSON data
 import json
-
-# Importing ElementTree from the xml.etree package to handle XML data creation
 import xml.etree.ElementTree as ET
+# Importing ElementTree from the xml.etree package to handle XML data creation
 
 
 class CompanyData:
@@ -76,7 +75,9 @@ class CompanyData:
         self.description = description
         return f"Description updated to: {description}"
 
-    async def update_key_individual(self, person_name: str, details: dict) -> str:
+    async def update_key_individual(
+        self, person_name: str, details: dict[str, str | int]
+    ) -> str:
         """
         Updates information about a key individual in the company that present potential risk.
         Make sure not to lose information from existing description.Include also all the number, names, links and other details available.
@@ -177,7 +178,10 @@ class CompanyData:
         self.risk_level_int = level
         return f"Risk level numerical value added: {level}."
 
-    async def add_key_relationships(self, relationship_name: str, details: dict) -> str:
+    async def add_key_relationships(
+        self, relationship_name: str, details: dict[str, str | int]
+    ) -> str:
+
         """
         Adds or updates a political or external relationships of the company to the country, organization, people that could present security risk.
         This includes all essential cooperation and partnerships even if no direct security thread is exposed.
