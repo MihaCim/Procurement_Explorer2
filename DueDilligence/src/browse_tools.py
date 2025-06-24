@@ -270,7 +270,7 @@ async def search_google(query: str) -> list[dict[str, str]]:
         list[dict[str, str]]: List of dicts, where each dict contains 'url', 'title' and 'description'. Each dict is a result of the Google query.
 
     """
-    pages: int = 10
+    pages = 10
     try:
         logger.info(f"Using search_google: {query=}")
 

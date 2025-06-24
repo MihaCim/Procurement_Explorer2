@@ -115,13 +115,13 @@ class FunctionalAgent:
             for func in functions:
                 self.register(func)
 
-    def set_system_prompt(self, prompt: str):
+    def set_system_prompt(self, prompt: str) -> None:
         self.system_prompt = prompt
 
-    def get_system_prompt(self):
+    def get_system_prompt(self) -> str:
         return self.system_prompt
 
-    def clear_buffer(self):
+    def clear_buffer(self) -> None:
         """Clears the agent's buffer."""
         self.buffer = list[str]()
 
@@ -247,24 +247,21 @@ class FunctionalAgent:
                 )
 
                 try:
-                    function_output = json.loads(ai_output)
+                    ai_output = json.loads(ai_output)
                 except Exception as e:
-                    print("void json.loads")
-                    print(ai_output)
+                    logger.error("void json.loads")
+                    logger.error(ai_output)
                     self.buffer.append(f"Error occurred: {e}.")
                     continue
 
-                if "reasoning" in function_output:
-                    pass
-
-                if "name" in function_output:
-                    func_name = function_output.get("name", None)
-                    output = function_output.get("output", "")
+                if "name" in ai_output and ai_output["name"] is not None:
+                    func_name = ai_output["name"]
+                    output = ai_output.get("output", "")
                     if func_name == "response":
                         return output
 
                     self.buffer.append(output)
-                    kwargs = function_output.get("parameters", {})
+                    kwargs = ai_output.get("parameters", {})
                     try:
                         function_response = await self.call_function(
                             func_name, **kwargs
@@ -282,13 +279,11 @@ class FunctionalAgent:
                     )
                 else:
                     self.buffer.append("Strictly follow the output format.")
-            except Exception as e:
-                print(f"Error: {e}")
+            except Exception:
                 traceback.print_exc()
 
-        if len(output) == 0:
-            print("No output generated.")
         try:
+            buffer_str = await self.reduce_buffer()
             prompt = f"""\
                 {self.get_system_prompt()}
                 ----------------
@@ -310,23 +305,21 @@ class FunctionalAgent:
             prompt = dedent(prompt).strip()
             output = await self.call_llm(prompt)
         except Exception as e:
-            # print(f"Error: {e}")
-            # traceback.print_exc()
+            logger.error(f"{e}")
             self.buffer.append(f"Error occurred: {e}.")
         return output
 
-    async def call_llm(self, input_string: str) -> str:
+    async def call_llm(self, prompt: str) -> str:
         try:
-            response = await call_llm(input_string)
+            response = await call_llm(prompt)
             return response
         except Exception as e:
-            print(f"Error while calling LLM. {e}")
-            print("input string: ", input_string)
-            return "{}"
+            logger.error(f"Error while calling LLM. {e}")
+            logger.error("input string: ", prompt)
+            return ""
 
     async def response(self, message: str) -> str:
         """Response function to end the process and speak. message will be shown to the user. The message parameter should be detailed response to the given input or task."""
-
         return message
 
 
@@ -364,7 +357,7 @@ class TaskThread:
         self.channel = channel
         self.buffer = []
         self.agents = dict[str, FunctionalAgent]()
-        self.result = "No result"
+        self.result = dict[str, Any]({"Report": "No Result"})
         self.task_manager_name = ""
         self.company_data = company_data
         self.logger = logger
@@ -482,7 +475,7 @@ class TaskThread:
         self.is_finished = is_finished
         return f"Task finished with result: {self.result}"
 
-    async def update_report(self, report: str = ""):
+    async def update_report(self, report: str = "") -> str:
         """
         Set or update the report associated with a specific task.
 
@@ -493,9 +486,10 @@ class TaskThread:
         Make sure to include all the intormation, aggregated from various steps, and include also links, dates, numbers, and names that are relevant.
         Make the report as verbose as posible, where relevant inlcuded also explanation and reasoning behing the statements.
         Ensure the report is updated frequently to accurately reflect the most recent status of the task.
+        Ensure that the string passed to the function can be JSON serialized without any preprocessing.
 
         Parameters:
-        report (dict): The content of the report must follow a structured json format. Here is an example oth the schema:
+        report (str): The content of the report must follow a structured json format. Here is an example of the schema:
         {
         "company_name": "",
         "founded": "",
@@ -539,7 +533,7 @@ class TaskThread:
         Returns:
         str: A confirmation message indicating that the report has been successfully set or updated.
         """
-        self.result = report
+        self.result = maybe_remove_json_code_block_markers(report)
         return f"{report}"
 
     async def get_report(self):
@@ -601,23 +595,6 @@ class TaskThread:
 
         buffer_str = await self.get_buffer_str()
         self.logger.info(self.result)
-        conversation_part = (
-            f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n" if buffer_str else ""
-        )
-        # Now construct the agent_input as a multiline string
-        agent_input = dedent(f"""\
-        You are working on the following task:
-        <Task>{self.task}</Task>
-        You are in a conversation with the following colleagues:
-        {self.get_agent_names()}
-        If you are unsure about your response, ask for feedback from your colleagues.
-        Write a detailed report for the task.
-        {conversation_part}
-        """)
-        await self.agents.get(self.task_manager_name).run(input_string=agent_input)
-        self.logger.info(self.result)
-        # self.is_finished = True
-        print("Final report: ", self.result)
 
         return self.result
 

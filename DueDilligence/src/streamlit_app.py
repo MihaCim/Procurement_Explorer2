@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+from typing import Any
 
 from prompts.prompts2 import Prompts
 
@@ -100,7 +101,8 @@ class StLogger:
 stlogger = StLogger()
 
 
-def display_profile(profile_data: dict | str | None) -> None:
+def display_profile(profile_data: dict[str, Any]) -> None:
+    logger.info(f"display_profile({profile_data=})")
     # Ensure profile_data is a dictionary
     if profile_data is None:
         profile_data = {}
