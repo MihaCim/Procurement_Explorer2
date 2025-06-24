@@ -44,7 +44,7 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
             if new_data and new_data != prev_data:
                 prev_data = new_data
                 update_event.set()  # Notify that profile has changed
-            await asyncio.sleep(0.5)  # Faster updates
+            await asyncio.sleep(1)  # Faster updates
 
     async def monitor_logs():
         """Monitor AI chat logs and push new messages to the queue."""
@@ -54,7 +54,7 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
             if new_log_data and new_log_data != prev_log_data:
                 prev_log_data = new_log_data
                 await log_queue.put(new_log_data)  # Store log message in queue
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1)
 
     async def send_updates():
         """Send updates when new profile data or chat logs are available."""
@@ -100,6 +100,32 @@ async def websocket_profile(websocket: WebSocket, company_name: str):
     except Exception as e:
         logger.error(f"Error: {e}")
         await websocket.send_json({"type": "error", "data": str(e)})
+
+
+@app.get("/profile/{company_name}")
+async def generate_profile(company_name: str):
+    """
+    Generate a company profile for the given company_name via HTTP GET.
+    This endpoint runs the same logic as the WebSocket but returns the final result directly.
+    """
+    try:
+        system_prompt = prompts.get_system_prompt(company_name)
+        taskThread = TaskThread(
+            task=system_prompt,
+            logger_main=logger_main,
+            logger_logs=logger_logs,
+        )
+
+        await taskThread.run()
+
+        if taskThread.result:
+            return JSONResponse(content={"status": "success", "profile": taskThread.result})
+        else:
+            return JSONResponse(status_code=500, content={"status": "error", "message": "Profile generation failed"})
+
+    except Exception as e:
+        logger_main.error(f"Error generating profile for {company_name}: {e}")
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 
 if __name__ == "__main__":

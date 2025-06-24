@@ -13,8 +13,6 @@ APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
 
-# cache = Cache()  #TODO: setup cash size and eviction policy.
-
 
 class AsyncInFlightCache:
     def __init__(self, max_size=1000):
@@ -231,7 +229,10 @@ def analyze_search_data_markdown(data):
 #     return output
 
 
+cache = AsyncInFlightCache()
+
 async def extract_text_from_url(url: str) -> str:
+
     """
     - Extract text content from a given URL using a content crawler and return it in text format.
     - Call this function only with a valid url input.
@@ -244,6 +245,7 @@ async def extract_text_from_url(url: str) -> str:
         Returns a string describing the error if the request fails.
 
     """
+
     try:
 
         async def compute():
@@ -269,6 +271,7 @@ async def search_google(query: str) -> list[dict[str, str]]:
         list[dict[str, str]]: List of dicts, where each dict contains 'url', 'title' and 'description'. Each dict is a result of the Google query.
 
     """
+
     pages = 10
     try:
 
@@ -280,3 +283,4 @@ async def search_google(query: str) -> list[dict[str, str]]:
     except Exception as e:
         logger.error(f"Error using search_google: {e}")
         return [{"url": f"{e}", "title": f"{e}", "description": f"{e}"}]
+
