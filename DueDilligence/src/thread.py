@@ -228,6 +228,7 @@ class FunctionalAgent:
                 At each step evaluate if you have all the information that you need and consider finishing the task. 
                 You have so far made {len(calls_made)} out of {self.maximum_calls} available.
                 Call response function when you are satisfied with the output and share the satified output to response function as message.
+                If you deduce that there is nothing to do on you end, call the reponse function and explain why you believe so.
                 ----------------
                 <FunctionCallHistory>
                 {buffer_str}
@@ -257,7 +258,26 @@ class FunctionalAgent:
                 except Exception as e:
                     logger.error("void json.loads")
                     logger.error(ai_output)
-                    self.buffer.append(f"Error occurred: {e}.")
+                    self.buffer.append(
+                        f"""<Function>
+                            <FunctionGoal>
+                                Unknown
+                            </FunctionGoal>
+                            <FunctionName>
+                                Unknown
+                            </FunctionName>
+                            <FunctionInput>
+                                {ai_output}
+                            </FunctionInput>
+                            <FunctionOutput>
+                                Unknown
+                            </FunctionOutput>                            
+                            <FunctionError>
+                                The output wasnt a proper JSON format. 
+                                Details: {e}
+                            </FunctionError>                            
+                        </Function>"""
+                    )
                     continue
 
                 if "name" in ai_output and ai_output["name"] is not None:
@@ -382,7 +402,7 @@ class TaskThread:
         self.company_data = company_data
         self.logger = logger
 
-        taskManager = FunctionalAgent(
+        task_manager = FunctionalAgent(
             name="Ethan Pierce (Product Manager)",
             logger=logger,
             system_prompt=prompts.Ethan,
@@ -426,9 +446,9 @@ class TaskThread:
             system_prompt=prompts.Julian,
             model=CHAT_MODEL,
             functions=[
-                store_inner_thought,
                 search_google,
                 extract_text_from_url,
+                store_inner_thought,
                 self.company_data.read_company_data,
                 self.company_data.update_security_risk,
                 self.company_data.add_financial_risk,
@@ -445,9 +465,9 @@ class TaskThread:
             system_prompt=prompts.Evelin,
             model=CHAT_MODEL,
             functions=[
-                store_inner_thought,
                 search_google,
                 extract_text_from_url,
+                store_inner_thought,
                 self.company_data.read_company_data,
                 self.company_data.update_key_individual,
                 self.company_data.update_security_risk,
@@ -467,13 +487,13 @@ class TaskThread:
 
         self.agents.update(
             {
-                taskManager.name: taskManager,
+                task_manager.name: task_manager,
                 researcher.name: researcher,
                 critic.name: critic,
                 document_manager.name: document_manager,
             }
         )
-        self.task_manager_name = taskManager.name
+        self.task_manager_name = task_manager.name
 
     def get_agent_names(self):
         return ", ".join(list(self.agents.keys()))
@@ -581,13 +601,14 @@ class TaskThread:
         self.buffer = list[str]()
         self.is_finished = False
 
-        for _ in range(0, MAXIMUM_CALLS_AGENT):
+        for i in range(0, MAXIMUM_CALLS_AGENT):
             if self.is_finished:
                 break
 
             for agent_name, agent in self.agents.items():
                 if self.is_finished:
                     break
+
                 buffer_str = await self.get_buffer_str()
                 # Calculate the conversation part first
                 conversation_part = (
@@ -617,8 +638,48 @@ class TaskThread:
                     self.logger.add_log(f"{agent_name}: {agent_response}")
                     self.logger.info(self.result)
 
+            buffer_str = await self.get_buffer_str()
+
+            conversation_part = (
+                f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n"
+                if buffer_str
+                else "\n"
+            )
+
+            agent_input = dedent(f"""\
+            You are working on the following task:
+            <Task>{self.task}</Task>
+            You are in a conversation with the following colleagues:
+            {self.get_agent_names()}                
+            Consider if it is time to finish the task. 
+            Do not finish to early.
+            If you see your colleagues are finalizing their report, this might be an indication to finish the task.
+            {conversation_part}
+            """)
+            await self.agents.get(self.task_manager_name).run(input_string=agent_input)
+
+            logger.info(
+                f"Made {i + 1} cycles so far (out of max {MAXIMUM_CALLS_AGENT})"
+            )
+
         buffer_str = await self.get_buffer_str()
         self.logger.info(self.result)
+
+        conversation_part = (
+            f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n" if buffer_str else ""
+        )
+
+        agent_input = dedent(f"""\
+        You are working on the following task:
+        <Task>{self.task}</Task>
+        You were in a conversation with the following colleagues:
+        {self.get_agent_names()}                
+        Write a detailed report for the task.
+        You are finishing the task, so remember to update the final report.
+        {conversation_part}
+        """)
+        await self.agents.get(self.task_manager_name).run(input_string=agent_input)
+        print("Final report: ", self.result)
 
         return self.result
 
