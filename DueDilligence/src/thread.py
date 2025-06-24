@@ -210,6 +210,7 @@ class FunctionalAgent:
         output = ""
         buffer_str = ""
         functions_definitions = self.generate_functions_for_prompt()
+        calls_made = list[str]()
         for _ in range(self.maximum_calls):
             try:
                 buffer_str = await self.reduce_buffer()
@@ -222,11 +223,15 @@ class FunctionalAgent:
                 </Functions>
                 ----------------
                 Take a deep break and think step by step.
+                Make sure to not call the same function with the same parameters more than once.
+                When trying to call a function, check what information is already available in the <FunctionCallHistory/>
+                At each step evaluate if you have all the information that you need and consider finishing the task. 
+                You have so far made {len(calls_made)} out of {self.maximum_calls} available.
                 Call response function when you are satisfied with the output and share the satified output to response function as message.
                 ----------------
-                <Knowledge>
+                <FunctionCallHistory>
                 {buffer_str}
-                </Knowledge>
+                </FunctionCallHistory>
                 ----------------
                 <CurrentInputAndHistory> 
                 {input_string}
@@ -234,12 +239,13 @@ class FunctionalAgent:
                 ----------------
                 Using the function definitions, provide the function name and parameters in a valid JSON format.
                 {self.output_format()}
+                Remember, the output must be a valid JSON format.
                 ----------------
                 OUTPUT:
                 """
                 prompt = re.sub(r"^\s+", "", prompt, flags=re.MULTILINE).strip()
                 prompt = dedent(prompt).strip()
-
+                # print(f"\n\n\n\n\n{prompt}\n\n\n\n\n")
                 ai_output_raw = await self.call_llm(prompt)
 
                 ai_output = maybe_remove_json_code_block_markers(
@@ -258,9 +264,11 @@ class FunctionalAgent:
                     func_name = ai_output["name"]
                     output = ai_output.get("output", "")
                     if func_name == "response":
+                        logger.info(
+                            f"{self.name} made {len(calls_made)} calls ({calls_made=})"
+                        )
                         return output
 
-                    self.buffer.append(output)
                     kwargs = ai_output.get("parameters", {})
                     try:
                         function_response = await self.call_function(
@@ -269,18 +277,30 @@ class FunctionalAgent:
                     except Exception as e:
                         function_response = f"{e}"
 
-                    logger.info(
-                        f"""TOOL_USAGE: {self.name} used tool {func_name} 
-                        with parameters {str(kwargs)[:30]}... 
-                        and got {str(function_response)[:30]}..."""
-                    )
                     self.buffer.append(
-                        f"<FUNCTION_RESULT>{func_name}: {str(function_response)}</FUNCTION_RESULT>"
+                        f"""<Function>
+                            <FunctionGoal>
+                                {output}
+                            </FunctionGoal>
+                            <FunctionName>
+                                {func_name}
+                            </FunctionName>
+                            <FunctionInput>
+                                {kwargs}
+                            </FunctionInput>
+                            <FunctionOutput>
+                                {str(function_response)}
+                            </FunctionOutput>                            
+                        </Function>"""
                     )
+                    calls_made.append(func_name)
                 else:
                     self.buffer.append("Strictly follow the output format.")
+
             except Exception:
                 traceback.print_exc()
+
+        logger.info(f"{self.name} made {len(calls_made)} calls ({calls_made=})")
 
         try:
             buffer_str = await self.reduce_buffer()
@@ -289,9 +309,9 @@ class FunctionalAgent:
                 ----------------
                 Take a deep break and think step by step.
                 ----------------
-                <Knowledge>
+                <FunctionCallHistory>
                 {buffer_str}
-                </Knowledge>
+                </FunctionCallHistory>
                 ----------------
                 <CurrentInputAndHistory> 
                 {input_string}
@@ -582,13 +602,17 @@ class TaskThread:
                 <Task>{self.task}</Task>
                 You are in a conversation with the following colleagues:
                 {self.get_agent_names()}
-                If you are not sure about your response, ask for feedback.
-                {conversation_part}
+                If you are not sure about your response, ask for feedback.                
+                {conversation_part}                
                 """)
                 agent_response = await agent.run(input_string=agent_input)
                 if agent_response and len(agent_response) > 0:
                     self.buffer.append(
-                        f"<MESSAGE>{agent_name}: {agent_response}</MESSAGE>"
+                        f"""
+                            <AgentMessage>
+                                <AgentName>{agent_name}</AgentName>
+                                <AgentMessageContent>{agent_response}</AgentMessageContent>
+                            </AgentMessage>"""
                     )
                     self.logger.add_log(f"{agent_name}: {agent_response}")
                     self.logger.info(self.result)

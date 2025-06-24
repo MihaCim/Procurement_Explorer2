@@ -245,7 +245,6 @@ async def extract_text_from_url(url: str) -> str:
 
     """
     try:
-        logger.info(f"Using extract_text_from_url: {url=}")
 
         async def compute():
             crawler_result = await scrape_webpage(url)
@@ -272,7 +271,6 @@ async def search_google(query: str) -> list[dict[str, str]]:
     """
     pages = 10
     try:
-        logger.info(f"Using search_google: {query=}")
 
         async def compute() -> list[dict[str, str]]:
             return await google_search(query, pages)

@@ -55,13 +55,11 @@ class StLogger:
             json_placeholder.json(data)
 
     def add_log(self, log: str) -> None:
-        self.logs.append({"log": f"{log} <br><br>", "rendered": False})
+        self.logs.append({"log": f"{log}", "rendered": False})
         self.render_logs()
 
     def render_logs(self) -> None:
-        code_block_pattern = re.compile(
-            r"(```\w+\s+<.*?>\s+```)|(```\w+\s+<.*?>)", re.DOTALL
-        )
+        code_block_pattern = re.compile(r"```.*(```)*", re.DOTALL)
         for i, _ in enumerate(self.logs):
             assert "log" in self.logs[i]
             assert "rendered" in self.logs[i]
@@ -77,13 +75,12 @@ class StLogger:
                 if match.start() > last_end:
                     non_code_text = text[last_end : match.start()].strip()
                     if non_code_text:
-                        st.sidebar.empty().markdown(
-                            non_code_text, unsafe_allow_html=True
-                        )
+                        st.sidebar.empty().markdown(non_code_text)
 
                 code = text[match.start() : match.end()]
                 if code.endswith("```"):
                     code = code.removesuffix("```")
+
                 st.sidebar.empty().markdown(code)
 
                 last_end = match.end()
@@ -92,6 +89,9 @@ class StLogger:
                 remaining_text = text[last_end:].strip()
                 if remaining_text:
                     st.sidebar.empty().markdown(remaining_text, unsafe_allow_html=True)
+
+            st.sidebar.empty().markdown("<br>", unsafe_allow_html=True)
+
             self.logs[i]["rendered"] = True
 
     def error(self, message: str) -> None:
@@ -197,6 +197,6 @@ if user_input:
 
     st.write("DueDiligence Profile Created")
     print("final report data\n", report)
-
+    # report = json.dumps(company_data.to_json())
     display_profile(report)
     st.success("Process completed.")
