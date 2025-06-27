@@ -17,8 +17,8 @@ from company_data import CompanyData
 from logger import logger
 from thread import TaskThread
 
-data = CompanyData().to_json()
 company_data = CompanyData()
+data = company_data.to_json()
 
 
 st.sidebar.title("AI Agents Communication Stream")
@@ -30,7 +30,7 @@ st.sidebar.text("Evelin Fields (Documentarist)")
 
 st.title("Due Diligence Profile")
 st.write(
-    "Risk Levels: 1 - no risk, 2 - moderate risk, 3 - medium/not defined, 4 - high risk, 5 - extreeme risk"
+    "Risk Levels: 1 - no risk, 2 - moderate risk, 3 - medium/not defined, 4 - high risk, 5 - extreme risk"
 )
 user_input = st.text_input("Enter company:")
 
