@@ -4,6 +4,7 @@ import sys
 from typing import Any
 
 from prompts.prompts2 import Prompts
+from prompts.prompts3 import Prompts as Prompts3
 
 # Get the parent directory of the current file
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,11 +15,17 @@ import json
 
 import streamlit as st
 from company_data import CompanyData
+from person_data import PersonData
 from logger import logger
 from thread import TaskThread
+from thread_person import TaskThread_person
+
 
 data = CompanyData().to_json()
 company_data = CompanyData()
+#data = PersonData().to_json()
+#company_data = PersonData()
+
 
 
 st.sidebar.title("AI Agents Communication Stream")
@@ -178,6 +185,7 @@ def display_profile(profile_data: dict[str, Any]) -> None:
 
 
 prompts = Prompts()
+prompts3 = Prompts3()
 
 
 async def run_task_thread(user_input):
@@ -191,9 +199,21 @@ async def run_task_thread(user_input):
     return await taskThread.run()
 
 
+async def run_task_thread_person(user_input):
+    system_prompt = prompts3.get_system_prompt(user_input)
+    taskThread = TaskThread_person(
+        task=system_prompt,
+        company_data=company_data,
+        logger=stlogger,
+    )
+    logger.info("Task person thread started...")
+    return await taskThread.run()
+
+
 if user_input:
     logger.info(f"Received input: {user_input}")
     report = asyncio.run(run_task_thread(user_input))
+    #report = asyncio.run(run_task_thread_person(user_input))
 
     st.write("DueDiligence Profile Created")
     print("final report data\n", report)
