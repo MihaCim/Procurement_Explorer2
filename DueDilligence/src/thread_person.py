@@ -8,7 +8,6 @@ from typing import Any, Callable
 
 import tiktoken
 from browse_tools import extract_text_from_url, search_google
-#from company_data import CompanyData
 from person_data import PersonData
 from dotenv import load_dotenv
 from fastapi import FastAPI
