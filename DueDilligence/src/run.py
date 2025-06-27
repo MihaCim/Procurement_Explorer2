@@ -56,11 +56,9 @@ class DDLogger:
         redis_client.set(self.key, json.dumps(dd_result.model_dump_json()))
 
     def info(self, message: str) -> None:
-        print("DDLogger.info")
         try:
             json_data = json.loads(message)
-        except Exception as e:
-            print(f"error: {e=}")
+        except Exception:
             return
 
         dd_result = self._get_cache()
@@ -69,7 +67,6 @@ class DDLogger:
         self._set_cache(dd_result)
 
     def add_log(self, log: str) -> None:
-        print("DDLogger.add_log")
         dd_result = self._get_cache()
         log_data = dict[str, str | datetime]({"log": log, "timestamp": datetime.now()})
         dd_result.logs.append(log_data)
@@ -77,7 +74,6 @@ class DDLogger:
         self._set_cache(dd_result)
 
     def error(self, message: str) -> None:
-        print("DDLogger.error")
         dd_result = self._get_cache()
         dd_result.errors.append(message)
         dd_result.status = "running"
@@ -116,6 +112,14 @@ async def run_dd_process(company_name: str) -> None:
 async def flush_redis() -> dict[str, str]:
     redis_client.flushdb()
     return {"status": "ok"}
+
+
+@app.delete("/profile")
+async def delete_profile(
+    company_name: str | None,
+) -> None:
+    ...
+    # TODO: Add delete company logic
 
 
 @app.get("/profile")
