@@ -2,7 +2,7 @@ import asyncio
 import os
 from collections import OrderedDict
 
-from loguru import logger
+from logger import logger
 from tools import google_search, scrape_webpage, summarize_text
 
 # Load environment variables from .env file
@@ -12,8 +12,6 @@ from tools import google_search, scrape_webpage, summarize_text
 APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
-
-# cache = Cache()  #TODO: setup cash size and eviction policy.
 
 
 class AsyncInFlightCache:
@@ -231,7 +229,10 @@ def analyze_search_data_markdown(data):
 #     return output
 
 
-async def extract_text_from_url(target_url: str) -> str:
+cache = AsyncInFlightCache()
+
+async def extract_text_from_url(url: str) -> str:
+
     """
     - Extract text content from a given URL using a content crawler and return it in text format.
     - Call this function only with a valid url input.
@@ -244,39 +245,18 @@ async def extract_text_from_url(target_url: str) -> str:
         Returns a string describing the error if the request fails.
 
     """
-    logger.info(
-        f"************************************\nSTARTING CRAWLER TOOL:{target_url}"
-    )
 
-    # cache_str = f"{target_url}"
-    # result = cache.get_cache("extract_text_from_url", cache_str)
-    # if result:
-    #     logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
-    #     logger.info(result)
-    #     return result
-
-    # try:
-    #     crawler_result = await scrape_webpage(url)
-    #     assert "Data" in crawler_result
-    #     result = await summarize_text(crawler_result["Data"])
-    #     cache.add_cache("scrape", cache_str, result)
-    #     logger.info(f"************************************\nCRAWLER TOOL RESULTS: ")
-    #     logger.info(result)
-    #     return result
     try:
 
         async def compute():
-            crawler_result = await scrape_webpage(target_url)
+            crawler_result = await scrape_webpage(url)
             assert "Data" in crawler_result
             return await summarize_text(crawler_result["Data"])
 
-        result = await cache.get_or_wait(f"url:{target_url}", compute)
-        logger.info(
-            f"************************************\nRESULT FROM CRAWLER_TOOL: {result}"
-        )
-        return result
+        return await cache.get_or_wait(f"url:{url}", compute)
 
     except Exception as e:
+        logger.error(f"Error using extract_text_from_url: {e}")
         return f"{e}"
 
 
@@ -291,31 +271,16 @@ async def search_google(query: str) -> list[dict[str, str]]:
         list[dict[str, str]]: List of dicts, where each dict contains 'url', 'title' and 'description'. Each dict is a result of the Google query.
 
     """
-    pages: int = 10
 
-    logger.info(f"************************************\nSTARTING GOOGLE SEARCH:{query}")
-
+    pages = 10
     try:
-        # cache_str = f"{query}_{pages}"
-        # result = cache.get_cache("search", cache_str)
-        # if result:
-        #     logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
-        #     logger.info(result)
-        #     return result
-        # links = await google_search(query, pages)
-        # result = links
-        # logger.info(f"************************************\nOUTPUT FROM GOOGLE SEARCH: ")
-        # logger.info(result)
-        # return result
 
         async def compute() -> list[dict[str, str]]:
             return await google_search(query, pages)
 
-        result = await cache.get_or_wait(f"search:{query}", compute)
-        logger.info(
-            f"************************************\nRESULT GOOGLE TOOL: {result}"
-        )
-        return result
+        return await cache.get_or_wait(f"search:{query}", compute)
 
     except Exception as e:
-        return [{"error": f"{e}"}]
+        logger.error(f"Error using search_google: {e}")
+        return [{"url": f"{e}", "title": f"{e}", "description": f"{e}"}]
+
