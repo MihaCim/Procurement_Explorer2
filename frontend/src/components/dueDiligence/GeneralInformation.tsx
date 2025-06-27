@@ -72,7 +72,7 @@ const GeneralInformation: React.FC = () => {
     </GeneralInfoLayout>
   ) : (
     <GeneralInfoLayout>
-      <H2>General informations</H2>
+      <H2>Company information</H2>
       <TwoColDiv>
         <OneColDiv>
           <Label textTitle="Industry" textContent={company?.industry ?? '-'} />

@@ -6,15 +6,10 @@ import styled from 'styled-components';
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 
-import AddIcon from '../assets/icons/add.svg?react';
 import BtnLink from '../components/BtnLink';
-import IconButton from '../components/commons/IconButton';
 import PageContainer from '../components/PageContainer';
-import SearchBar, { SearchType } from '../components/SearchBar';
 import Table from '../components/tables/Table';
 import TableCardContainer from '../components/tables/TableCardContainer';
-import Toaster from '../components/Toaster';
-import { H1, P } from '../components/Typography';
 import { useCompanyContext } from '../context/CompanyProvider';
 import { Company } from '../models/Company';
 import useCompanyService from '../services/companyService';
@@ -38,36 +33,18 @@ const ClearBtnLink = styled.button`
   cursor: 'pointer';
 `;
 
-const HeaderContainer = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  align-self: stretch;
-`;
-
-const TitleContainer = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  flex: 1 0 0;
-`;
-const HomePage: React.FC = () => {
+const CompanyHistory: React.FC = () => {
   const navigate = useNavigate();
   const { getCompanies } = useCompanyService();
 
   const {
     state: { companies, loading: searchLoading },
     setCompanies,
-    searchCompany,
-    searchCompanyByDescription,
-    searchCompanyByFile,
   } = useCompanyContext();
 
   const {
     data,
     isLoading: loading,
-    isError,
-    refetch,
     isRefetching,
   } = useQuery({
     queryKey: ['companies'],
@@ -76,28 +53,8 @@ const HomePage: React.FC = () => {
   });
 
   useEffect(() => {
-    setCompanies(data ?? []);
+    setCompanies(data?.companies ?? []);
   }, [data, setCompanies, isRefetching]);
-
-  const handleSearch = (
-    searchType: SearchType,
-    file: File | null,
-    text: string,
-    description: string,
-  ) => {
-    if (searchType === SearchType.Document && file) {
-      console.log('Document search', file);
-      searchCompanyByFile(file);
-    } else if (searchType === SearchType.Description && description) {
-      console.log('Description search', description);
-      searchCompanyByDescription(description);
-    } else if (searchType === SearchType.Text && text) {
-      console.log('Text search', text);
-      searchCompany(text);
-    } else {
-      refetch();
-    }
-  };
 
   const columns = useMemo(() => {
     const colHelper = createColumnHelper<Company>();
@@ -165,7 +122,7 @@ const HomePage: React.FC = () => {
               <div className="flex items-center justify-center gap-6 self-stretch">
                 <BtnLink
                   onClick={() => {
-                    navigate(`due-diligence/${row.original.id}`);
+                    navigate(`/due-diligence/${row.original.id}`);
                     console.log('Start due diligence', row);
                   }}
                 >
@@ -182,22 +139,7 @@ const HomePage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Toaster
-        message="Something went wrong!"
-        show={isError}
-        isError={isError}
-      />
-      <HeaderContainer>
-        <TitleContainer>
-          <H1>Company</H1>
-        </TitleContainer>
-        <IconButton onClick={() => navigate('add')} variant="contained">
-          <AddIcon /> New scraping
-        </IconButton>
-      </HeaderContainer>
       <TableCardContainer>
-        <P>Define your request</P>
-        <SearchBar onSearch={handleSearch} />
         <Table
           columns={columns}
           height={600}
@@ -209,4 +151,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default CompanyHistory;

@@ -1,8 +1,11 @@
 import styled from 'styled-components';
 
+import Skeleton from '../Skeleton';
+
 interface ILabelProps {
   textTitle: string;
   textContent: string;
+  loading?: boolean;
 }
 
 const StyledTitle = styled.div`
@@ -19,11 +22,11 @@ const StyledContent = styled.div`
   word-break: break-word;
 `;
 
-const Label = ({ textTitle, textContent }: ILabelProps) => {
+const Label = ({ textTitle, textContent, loading }: ILabelProps) => {
   return (
     <div className="flex-col">
       <StyledTitle> {textTitle}</StyledTitle>
-      <StyledContent> {textContent}</StyledContent>
+      {loading ? <Skeleton /> : <StyledContent> {textContent}</StyledContent>}
     </div>
   );
 };

@@ -1,21 +1,24 @@
 import React, { PropsWithChildren } from 'react';
 import styled from 'styled-components';
 
-export interface IBtnLinkProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
-
 const StyledBtnLink = styled.button`
-  color: var(--Color-color-primary, #014289);
-  font-family: Raleway;
-  font-size: 14px;
+  color: var(--color-primary, #014289);
+  font-family: Poppins;
+  font-size: 16px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 400;
   line-height: normal;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+  cursor: pointer;
 `;
-const BtnLink: React.FC<PropsWithChildren<IBtnLinkProps>> = ({
-  children,
-  ...props
-}) => {
+const BtnLink: React.FC<
+  PropsWithChildren<React.ButtonHTMLAttributes<HTMLButtonElement>>
+> = ({ children, ...props }) => {
   return <StyledBtnLink {...props}>{children}</StyledBtnLink>;
 };
 

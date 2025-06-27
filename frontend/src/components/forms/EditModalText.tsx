@@ -1,10 +1,11 @@
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Modal, { ModalActions } from '../modals/Modal';
+
+import Modal, { ModalActions } from '../modals/BaseModal';
+import PrimaryButton from '../PrimaryButton';
+import { H2 } from '../Typography';
 import Label from './Label';
 import StyledInputBase from './StyledInputBase';
-import { useEffect, useState } from 'react';
-import { H2 } from '../Typography';
-import PrimaryButton from '../PrimaryButton';
 
 interface IEditModalProps {
   handleClose: (value: any) => void;

@@ -17,24 +17,18 @@ const LinkTypo = styled.p`
 `;
 
 const DragAndDropContainer = styled.div`
-  display: flex;
-  width: 354px;
-  height: 40px;
-  padding: 8px 77px;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-  border: 1px dashed #a4aab4;
-  background: #f9f9f9;
-`;
+  border-radius: var(--radius, 4px);
+  border: 1px dashed var(--grey-2, #6d7276);
+  background: var(--bg-card, #fff);
 
-const LabelTypo = styled.p`
-  color: var(--color-text-primary, #212128);
-  font-family: Poppins;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 24px;
+  /* Shadow / xs */
+  box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
+  max-width: 357px;
+  padding: 16px 12px;
 `;
 
 const FileListElement = styled.li`
@@ -46,27 +40,16 @@ const FileListElement = styled.li`
   width: fit-content;
 `;
 
-const FileName = styled(AttachmentTypo)`
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px; /* Adjust the max-width as needed */
-`;
-
 interface DragAndDropUploadProps {
   onfilesChange?: (files: File[]) => void;
-  singleFile?: boolean;
   accept?: string[];
   sizeLimit?: number;
-  label?: string;
 }
 
 const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
   onfilesChange,
-  singleFile = false,
   accept,
   sizeLimit = 200,
-  label,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
 
@@ -74,7 +57,9 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
     (file: File | null) => {
       return (
         file &&
-        (!accept || accept.includes(file.type)) &&
+        (!accept ||
+          accept.includes(file.type) ||
+          accept.includes(`.${file.name.split('.').pop()}`)) &&
         file.size <= sizeLimit * 1024 * 1024
       );
     },
@@ -85,7 +70,8 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
     if (onfilesChange) {
       onfilesChange(files);
     }
-  }, [files, onfilesChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files]);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -109,26 +95,22 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
       }
     }
 
-    if (singleFile) {
-      setFiles(newFiles.slice(0, 1));
-    } else {
-      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-    }
+    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
   };
 
-  const handleRemoveFile = () => {
-    setFiles([]);
+  const handleRemoveFile = (index: number) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   const handleOpenFileExplorer = () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = accept?.join(',') ?? '*';
-    fileInput.multiple = !singleFile;
+    fileInput.multiple = true;
     fileInput.addEventListener('change', (event) => {
       const newFiles: File[] = [];
       const target = event.target as HTMLInputElement;
@@ -141,54 +123,33 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
           }
         }
       }
-      if (singleFile) {
-        setFiles(newFiles.slice(0, 1));
-      } else {
-        setFiles((prevFiles) => [...prevFiles, ...newFiles]);
-      }
+      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     });
     fileInput.click();
   };
 
   return (
-    <div>
-      {label && <LabelTypo>{label}</LabelTypo>}
-
+    <div className="w-full flex flex-col items-center">
       <DragAndDropContainer onDrop={handleDrop} onDragOver={handleDragOver}>
-        <div className="flex flex-col items-center justify-center gap-2">
+        <div className="flex flex-col items-center justify-center gap-2 pl-5 pr-5">
           <div className="flex gap-1">
-            {singleFile && files.length > 0 ? (
-              <>
-                <div className="flex gap-1">
-                  <AttachmentIcon />
-                  <FileName>{files[0].name}</FileName>
-                </div>
-
-                <IconButton onClick={handleRemoveFile}>
-                  <CrossIcon />
-                </IconButton>
-              </>
-            ) : (
-              <>
-                <p>Drag and drop or</p>
-                <button onClick={handleOpenFileExplorer} type="button">
-                  <LinkTypo>Choose file</LinkTypo>
-                </button>
-              </>
-            )}
+            <p>Drag and drop or</p>
+            <button onClick={handleOpenFileExplorer} type="button">
+              <LinkTypo>Choose file</LinkTypo>
+            </button>
           </div>
         </div>
       </DragAndDropContainer>
-      {files.length > 0 && !singleFile && (
+      {files.length > 0 && (
         <ul className="mt-4">
           {files.map((file, index) => (
             <FileListElement key={index}>
               <div className="flex gap-1">
                 <AttachmentIcon />
-                <FileName>{file.name}</FileName>
+                <AttachmentTypo>{file.name}</AttachmentTypo>
               </div>
 
-              <IconButton onClick={handleRemoveFile}>
+              <IconButton onClick={() => handleRemoveFile(index)}>
                 <CrossIcon />
               </IconButton>
             </FileListElement>

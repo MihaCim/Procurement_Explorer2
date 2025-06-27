@@ -1,11 +1,15 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
-export const CircularProgress = styled.div`
-  width: 50px;
-  height: 50px;
+export const CircularProgress = styled.div<{
+  size?: number;
+  borderWidth?: number;
+}>`
+  width: ${(props) => props.size ?? 50}px;
+  height: ${(props) => props.size ?? 50}px;
   border-radius: 50%;
-  border: 4px solid var(--bg-white, #ffff);
-  border-top: 4px solid var(--color-primary, #014289);
+  border: ${(props) => props.borderWidth ?? 4}px solid var(--bg-white, #ffff);
+  border-top: ${(props) => props.borderWidth ?? 4}px solid
+    var(--color-primary, #014289);
   animation: spin 1s linear infinite;
 
   @keyframes spin {

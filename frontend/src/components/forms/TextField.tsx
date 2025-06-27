@@ -1,4 +1,4 @@
-import StyledInputBase, { StyledTextAreaBase } from "./StyledInputBase";
+import StyledInputBase, { StyledTextAreaBase } from './StyledInputBase';
 
 export interface TextFieldProps {
   label?: string;
@@ -13,9 +13,11 @@ export interface TextFieldProps {
   title?: string;
   disabled?: boolean;
   fullWidth?: boolean;
+  width?: number;
   rows?: number;
   type?: 'text' | 'number' | 'date' | 'email' | 'password';
   readonly?: boolean;
+  onEnter?: () => void;
 }
 
 const TextField = ({
@@ -32,6 +34,8 @@ const TextField = ({
   disabled = false,
   fullWidth = false,
   readonly = false,
+  onEnter,
+  width,
 }: TextFieldProps) => {
   return (
     <div
@@ -52,9 +56,15 @@ const TextField = ({
           rows={rows}
           disabled={disabled}
           onChange={onChange}
+          $width={width}
           $fullWidth={fullWidth}
           $error={!!error}
           readOnly={readonly}
+          onKeyDown={(ev) => {
+            if (ev.key === 'Enter' && onEnter) {
+              onEnter();
+            }
+          }}
         />
       ) : (
         <StyledInputBase
@@ -67,9 +77,15 @@ const TextField = ({
           value={value}
           disabled={disabled}
           $fullWidth={fullWidth}
+          $width={width}
           $error={!!error}
           onChange={onChange}
           readOnly={readonly}
+          onKeyDown={(ev) => {
+            if (ev.key === 'Enter' && onEnter) {
+              onEnter();
+            }
+          }}
         />
       )}
       {error && <p className="text-red-500">{error}</p>}

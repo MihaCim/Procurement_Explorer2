@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, ReactNode, Ref, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import generatePDF from 'react-to-pdf';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
@@ -7,10 +9,11 @@ import { DetailedCompany } from '../models/Company';
 import { DueDiligenceProfile } from '../models/DueDiligenceProfile';
 import useCompanyService from '../services/companyService';
 import useDueDiligenceService from '../services/dueDiligenceService';
-import generatePDF from 'react-to-pdf';
 
-interface DueDiligenceContextProps {
+interface DueDiligenceContext {
   state: IDueDiligenceState;
+  setRiskLevel: (value: number) => void;
+  updateProfile: (data: any) => void;
   export: {
     exportToPDF: () => void;
     targetRef: Ref<any>;
@@ -22,10 +25,8 @@ export interface IDueDiligenceState {
   profile: DueDiligenceProfile | null;
   company: DetailedCompany | null;
   risk_level: number;
-  setRiskLevel: (value: number) => void;
-  updateProfile: (data: any) => void;
 }
-const DueDiligenceContext = createContext({} as DueDiligenceContextProps);
+const DueDiligenceContext = createContext({} as DueDiligenceContext);
 
 export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -37,15 +38,22 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
 
   const [risk_level, setRiskLevel] = React.useState<number>(0);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data: company, isLoading: loadingCompany } = useQuery({
+    queryKey: ['company', id],
+    queryFn: () => getCompanyById(Number(id)),
+    enabled: !!getCompanyById && id !== undefined && !isNaN(Number(id)),
+  });
+
+  const {
+    data: profileData,
+    isLoading: loadingProfile,
+    refetch,
+  } = useQuery({
     queryKey: ['profile', id],
-    queryFn: () =>
-      Promise.all([
-        getDueDiligenceProfile(Number(id)),
-        getCompanyById(Number(id)),
-      ]),
+    queryFn: () => getDueDiligenceProfile(Number(id)),
     enabled:
-      !!getCompanyById &&
+      !!company &&
+      company.status === 'Available' &&
       !!getDueDiligenceProfile &&
       id !== undefined &&
       !isNaN(Number(id)),
@@ -64,11 +72,11 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     updateQuery.mutate(data);
   };
 
-  const [profile, company] = data ?? [null, null];
+  const profile = profileData ?? null;
 
   useEffect(() => {
     if (profile) {
-      setRiskLevel(profile.risk_level);
+      setRiskLevel(profile.risk_level ?? 0);
     }
     console.log(profile);
   }, [profile]);
@@ -98,7 +106,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
         sidePanel!.style.position = 'static';
 
         generatePDF(targetRef, {
-          filename: `${profile?.name.replace(/\ +/g, '_') ?? 'UNKNOW'}_DueDiligence.pdf`,
+          filename: `${profile?.name.replace(/ +/g, '_') ?? 'UNKNOW'}_DueDiligence.pdf`,
           page: { margin: 5 },
           overrides: {
             canvas: { windowWidth: 1400 },
@@ -121,13 +129,13 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
         export: { exportToPDF, targetRef },
         state: {
           profile,
-          company,
-          loading: isLoading ?? false,
+          company: company ?? null,
+          loading: (loadingCompany || loadingProfile) ?? false,
           updating: false,
           risk_level,
-          setRiskLevel,
-          updateProfile,
         },
+        setRiskLevel,
+        updateProfile,
       }}
     >
       {children}

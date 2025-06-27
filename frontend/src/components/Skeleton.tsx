@@ -1,12 +1,12 @@
-import React from "react";
-import styled, { keyframes } from "styled-components";
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
 
 const SkeletonAnimation = keyframes`
 0% {
-  background-color: hsl(200, 5%, 80%);
+  background-color: hsla(200, 5%, 80%, 35%);
 }
 100% {
-  background-color: hsl(200, 20%, 95%);
+  background-color: hsla(200, 10%, 90%, 25%);
 }
   `;
 

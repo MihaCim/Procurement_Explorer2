@@ -1,9 +1,10 @@
-import styled from 'styled-components';
-import Modal, { ModalActions } from '../modals/Modal';
-import Label from './Label';
 import { useEffect, useState } from 'react';
-import { H2 } from '../Typography';
+import styled from 'styled-components';
+
+import Modal, { ModalActions } from '../modals/BaseModal';
 import PrimaryButton from '../PrimaryButton';
+import { H2 } from '../Typography';
+import Label from './Label';
 import Select from './Select';
 
 interface IEditModalProps {

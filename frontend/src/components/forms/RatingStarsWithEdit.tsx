@@ -1,9 +1,11 @@
 import { FC, useEffect, useState } from 'react';
-import RatingStars, { RatingStarsStandalone } from '../RatingStars';
 import styled from 'styled-components';
-import Modal, { ModalActions } from '../modals/Modal';
-import { H2 } from '../Typography';
+
+import Modal, { ModalActions } from '../modals/BaseModal';
 import PrimaryButton from '../PrimaryButton';
+import RatingStars, { RatingStarsStandalone } from '../RatingStars';
+import { H2 } from '../Typography';
+
 interface IRatingStarsWEditProps {
   currentValue: number;
   max: number;

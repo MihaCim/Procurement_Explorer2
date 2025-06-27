@@ -1,22 +1,21 @@
 export interface DueDiligenceProfile {
-  id: number;
+  id?: number;
   name: string;
-  url: string;
-  email: string;
-  founded: number;
-  founder: string;
-  address: Address;
-  country: string;
-  Last_revision: string;
-  risk_level: number;
-  status: string;
-  description: string;
-  key_individuals: KeyIndividuals;
-  security_risk: SecurityRisk;
-  financial_risk: FinancialRisk;
-  operational_risk: OperationalRisk;
-  key_relationships: KeyRelationships;
-  due_diligence_timestamp: string;
+  website?: string;
+  contacts?: Record<string, string>;
+  founded?: number;
+  founder?: string;
+  address?: Record<string, string>;
+  country?: string;
+  last_revision?: string; // ISO 8601 datetime string
+  risk_level?: number;
+  description?: string;
+  key_individuals?: Record<string, string>;
+  security_risk?: Record<string, string>;
+  financial_risk?: Record<string, string>;
+  operational_risk?: Record<string, string>;
+  key_relationships?: Record<string, string>;
+  due_diligence_timestamp?: string; // ISO 8601 datetime string
 }
 
 export interface Address {

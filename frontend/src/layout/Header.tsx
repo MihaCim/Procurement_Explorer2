@@ -1,4 +1,8 @@
+import { NavLink, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+
+import ProjectIcon from '../assets/icons/project.svg?react';
+import HeaderButton from '../components/HeaderButton';
 
 const StyledHeader = styled.header`
   display: flex;
@@ -25,36 +29,62 @@ const HeaderLeft = styled.div`
   left: 16px;
 `;
 
-const Text = styled.p`
+const HeaderRight = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  position: absolute;
+  right: 16px;
+`;
+
+const HeaderTypography = styled.p`
   color: var(--color-text-primary, #292c3d);
   font-family: Poppins;
-  font-size: 14px;
+  font-size: 17px;
   font-style: normal;
-  font-weight: 400;
-  line-height: 19px; /* 135.714% */
-  letter-spacing: -0.14px;
+  font-weight: 600;
+  line-height: 19px; /* 111.765% */
+  letter-spacing: -0.17px;
 `;
 
 const Header = () => {
+  const location = useLocation();
+  const isSearchActive =
+    location.pathname === '/' ||
+    (/^\/[^/]+$/.test(location.pathname) && location.pathname !== '/scraping');
+
   return (
     <StyledHeader>
       <HeaderLeft>
+        <ProjectIcon />
         <a href="/">
-          <img src={`/logo.png`} alt="logo" />
+          <HeaderTypography>Procurement Sourcing</HeaderTypography>
         </a>
-        <Text>Due Diligence</Text>
       </HeaderLeft>
-      {/* <HeaderButton>
-        <NavLink to="/" className="h-full w-full px-5 py-3">
-          Home
+      <HeaderButton>
+        <NavLink
+          to="/"
+          className={`h-full w-full px-5 py-3 ${isSearchActive ? 'active' : ''}`}
+        >
+          Search for a company
         </NavLink>
       </HeaderButton>
 
       <HeaderButton>
-        <NavLink to="/admin" className="h-full w-full px-5 py-3">
-          Administration
+        <NavLink
+          to="/scraping"
+          onClick={(e) => {
+            e.preventDefault();
+          }}
+          className="h-full w-full px-5 py-3 text-gray-500 cursor-not-allowed"
+        >
+          Scraping
         </NavLink>
-      </HeaderButton> */}
+      </HeaderButton>
+
+      <HeaderRight>
+        <img src={`/logo.png`} alt="logo" />
+      </HeaderRight>
     </StyledHeader>
   );
 };
