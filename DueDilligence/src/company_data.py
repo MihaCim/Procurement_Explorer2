@@ -1,6 +1,8 @@
 # Importing the json module to handle JSON data
-import json
+import json, re
 import xml.etree.ElementTree as ET
+
+from collections.abc import Mapping, Sequence
 
 # Importing ElementTree from the xml.etree package to handle XML data creation
 
@@ -267,82 +269,123 @@ class CompanyData:
         # Returning the dictionary as a formatted JSON string
         return json.dumps(data, indent=4)
 
-    def to_xml(self) -> str:
-        """
-        Converts the current company data to XML format.
+    # def to_xml(self) -> str:
+    #     """
+    #     Converts the current company data to XML format.
 
-        Returns:
-        str: An XML string representation of the company data.
-        """
-        root = ET.Element("company_data")
+    #     Returns:
+    #     str: An XML string representation of the company data.
+    #     """
+    #     root = ET.Element("company_data")
 
-        # Adding child elements for basic company details
-        ET.SubElement(root, "company_name").text = self.company_name
-        ET.SubElement(root, "founded").text = self.founded
-        ET.SubElement(root, "founder").text = self.founder
-        ET.SubElement(root, "Due Diligence Analysis").text = self.description
+    #     # Adding child elements for basic company details
+    #     ET.SubElement(root, "company_name").text = self.company_name
+    #     ET.SubElement(root, "founded").text = self.founded
+    #     ET.SubElement(root, "founder").text = self.founder
+    #     ET.SubElement(root, "Due Diligence Analysis").text = self.description
 
-        # Adding address
-        if self.address:
-            address_element = ET.SubElement(root, "address")
-            ET.SubElement(address_element, "street").text = self.address.get(
-                "street", ""
-            )
-            ET.SubElement(address_element, "city").text = self.address.get("city", "")
-            ET.SubElement(address_element, "country").text = self.address.get(
-                "country", ""
-            )
+    #     # Adding address
+    #     if self.address:
+    #         address_element = ET.SubElement(root, "address")
+    #         ET.SubElement(address_element, "street").text = self.address.get(
+    #             "street", ""
+    #         )
+    #         ET.SubElement(address_element, "city").text = self.address.get("city", "")
+    #         ET.SubElement(address_element, "country").text = self.address.get(
+    #             "country", ""
+    #         )
 
-        # Adding key individuals
-        key_individuals_element = ET.SubElement(root, "key_individuals")
-        for person_name, details in self.key_individuals.items():
-            person_element = ET.SubElement(
-                key_individuals_element, "person", name=person_name
-            )
-            for key, value in details.items():
-                ET.SubElement(person_element, key).text = str(value)
+    #     # Adding key individuals
+    #     key_individuals_element = ET.SubElement(root, "key_individuals")
+    #     for person_name, details in self.key_individuals.items():
+    #         person_element = ET.SubElement(
+    #             key_individuals_element, "person", name=person_name
+    #         )
+    #         for key, value in details.items():
+    #             ET.SubElement(person_element, key).text = str(value)
 
-        # Adding security risks
-        security_risks_element = ET.SubElement(root, "security_risks")
-        for risk, ref in self.security_risks.items():
-            risk_element = ET.SubElement(security_risks_element, "risk", ref=ref)
-            risk_element.text = risk
+    #     # Adding security risks
+    #     security_risks_element = ET.SubElement(root, "security_risks")
+    #     for risk, ref in self.security_risks.items():
+    #         risk_element = ET.SubElement(security_risks_element, "risk", ref=ref)
+    #         risk_element.text = risk
 
-        # Adding financial risks
-        financial_risks_element = ET.SubElement(root, "financial_risks")
-        for risk, ref in self.financial_risks.items():
-            risk_element = ET.SubElement(financial_risks_element, "risk", ref=ref)
-            risk_element.text = risk
+    #     # Adding financial risks
+    #     financial_risks_element = ET.SubElement(root, "financial_risks")
+    #     for risk, ref in self.financial_risks.items():
+    #         risk_element = ET.SubElement(financial_risks_element, "risk", ref=ref)
+    #         risk_element.text = risk
 
-        # Adding operational_risks
-        operational_risk_element = ET.SubElement(root, "operational_risks")
-        for risk, ref in self.operational_risks.items():
-            risk_element = ET.SubElement(operational_risk_element, "risk", ref=ref)
-            risk_element.text = risk
+    #     # Adding operational_risks
+    #     operational_risk_element = ET.SubElement(root, "operational_risks")
+    #     for risk, ref in self.operational_risks.items():
+    #         risk_element = ET.SubElement(operational_risk_element, "risk", ref=ref)
+    #         risk_element.text = risk
 
-        # Adding key relationships
-        key_relationships_element = ET.SubElement(root, "key_relationships")
-        for relationship, details in self.key_relationships.items():
-            rel_element = ET.SubElement(
-                key_relationships_element, "key_relationship", name=relationship
-            )
-            for key, value in details.items():
-                ET.SubElement(rel_element, key).text = str(value)
+    #     # Adding key relationships
+    #     key_relationships_element = ET.SubElement(root, "key_relationships")
+    #     for relationship, details in self.key_relationships.items():
+    #         rel_element = ET.SubElement(
+    #             key_relationships_element, "key_relationship", name=relationship
+    #         )
+    #         for key, value in details.items():
+    #             ET.SubElement(rel_element, key).text = str(value)
 
-        # TODO: handle exception where items:str - enforce a dict response
-        # Adding Risk Level
-        risk_levels_element = ET.SubElement(root, "risk_level")
-        for risk_level, details in self.risk_level.items():
-            if isinstance(details, dict):
-                level_element = ET.SubElement(
-                    risk_levels_element, "risk_level", name=risk_level
-                )
-                for key, value in details.items():
-                    ET.SubElement(level_element, key).text = str(value)
-            else:
-                ET.SubElement(
-                    risk_levels_element, "risk_level"
-                ).text = f"{risk_level}: {details}"
+    #     # TODO: handle exception where items:str - enforce a dict response
+    #     # Adding Risk Level
+    #     risk_levels_element = ET.SubElement(root, "risk_level")
+    #     for risk_level, details in self.risk_level.items():
+    #         if isinstance(details, dict):
+    #             level_element = ET.SubElement(
+    #                 risk_levels_element, "risk_level", name=risk_level
+    #             )
+    #             for key, value in details.items():
+    #                 ET.SubElement(level_element, key).text = str(value)
+    #         else:
+    #             ET.SubElement(
+    #                 risk_levels_element, "risk_level"
+    #             ).text = f"{risk_level}: {details}"
 
-        # Returning the XML as a string
-        return ET.tostring(root, encoding="unicode", method="xml")
+    #     # Returning the XML as a string
+    #     return ET.tostring(root, encoding="unicode", method="xml")
+
+    def to_xml(self, pretty: bool = False) -> str:
+        root = ET.Element(self.__class__.__name__.lower())
+        for attr, val in vars(self).items():
+            self._build_xml(root, attr, val)
+
+        xml_str = ET.tostring(root, encoding="unicode")
+        if pretty:
+            from xml.dom import minidom
+            xml_str = minidom.parseString(xml_str).toprettyxml(indent="  ")
+        return xml_str
+    
+
+    def _build_xml(self, parent: ET.Element, tag: str, value):
+        def _make_tag(s: str) -> str:
+            s = re.sub(r'\s+', '_', s)
+            s = re.sub(r'[^A-Za-z0-9_.-]', '', s)
+            if re.match(r'^[0-9\-]', s):
+                s = f'_{s}'
+            return s or "item"
+
+        tag = _make_tag(tag)
+
+        if isinstance(value, Mapping):
+            elem = ET.SubElement(parent, tag)
+            if value:
+                for k, v in value.items():
+                    self._build_xml(elem, _make_tag(str(k)), v)
+
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+            elem = ET.SubElement(parent, tag)
+            if value:
+                for item in value:
+                    self._build_xml(elem, "item", item)
+
+        else:
+            elem = ET.SubElement(parent, tag)
+            if value is not None:
+                elem.text = str(value)
+        
+    
