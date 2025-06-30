@@ -457,38 +457,64 @@ async def get_due_diligence_by_website(
     return due_diligence_profile
 
 
-async def set_due_diligence_profile(
+async def create_due_diligence_profile(
     dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
-):
-    old_profile = await get_due_diligence_by_website(dd_profile.url)
+) -> dict[str, str]:
+    if dd_profile.status == "running":
+        return {
+            "status": "failed",
+            "msg": "cannot create due diligence profile with 'running' status",
+        }
+
+    assert dd_profile.url is not None
+    if await get_due_diligence_by_website(dd_profile.url):
+        return {
+            "status": "failed",
+            "msg": f"due diligence profile with {dd_profile.url} already exists",
+        }
 
     dd_profile.last_revision = datetime.now().isoformat()
     dump = dd_profile.model_dump()
-    # Serialize dictionary fields to JSON if they exist
-    json_fields = [
-        "contacts",
-        "address",
-        "key_individuals",
-        "security_risk",
-        "financial_risk",
-        "operational_risk",
-        "key_relationships",
-    ]
-    for field in json_fields:
-        if dump.get(field) is not None:
-            dump[field] = json.dumps(dump[field])  # Convert dict to JSON string
-    # update profile
-    if old_profile:
-        dump["id"] = old_profile.id
-        source.update_document("due_diligence_profiles", dump["id"], dump)
-        return dump["id"]
-    # create new profile
-    else:
-        if dump["id"] is None:
-            del dump["id"]
-        profile_id = source.upload_document("due_diligence_profiles", dump)
-        dd_profile.id = profile_id
-        return dd_profile.id
+    for field in dump:
+        if isinstance(dump[field], dict):
+            dump[field] = json.dumps(dump[field])
+
+    if "id" in dump:
+        del dump["id"]
+
+    profile_id = source.upload_document("due_diligence_profiles", dump)
+    dd_profile.id = profile_id
+    return {"status": "ok", "msg": profile_id}
+
+
+async def update_due_diligence_profile(
+    dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
+) -> dict[str, str]:
+    if dd_profile.status == "running":
+        return {
+            "status": "failed",
+            "msg": "cannot update due diligence profile with 'running' status",
+        }
+
+    assert dd_profile.url is not None
+    old_profile = await get_due_diligence_by_website(dd_profile.url)
+    assert old_profile is not None
+    dd_profile.last_revision = datetime.now().isoformat()
+
+    dump = dd_profile.model_dump()
+    for field in dump:
+        if isinstance(dump[field], dict):
+            dump[field] = json.dumps(dump[field])
+
+    dump["id"] = old_profile.id
+    source.update_document("due_diligence_profiles", dump["id"], dump)
+    return {"status": "ok", "msg": dump["id"]}
+
+
+async def delete_due_diligence_profile(
+    dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
+):
+    source.delete_document("due_diligence_profiles", dd_profile.id)
 
 
 async def get_last_n_profiles(

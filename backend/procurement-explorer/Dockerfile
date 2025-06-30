@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y stress-ng
 COPY requirements.txt /app/requirements.txt
 # TODO Check if it possible to create a docker without Pipfile
 
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+RUN pip install -r /app/requirements.txt
 
 # copy project
 COPY . .

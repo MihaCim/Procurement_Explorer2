@@ -531,43 +531,42 @@ class TaskThread:
         Parameters:
         report (str): The content of the report must follow a structured json format. Here is an example of the schema:
         {
-        "company_name": "",
-        "founded": "",
-        "founder": "",
-        "description": "",
-        "website":"",
-        "country": "",
-        "key_individuals": {
-            {
-            "name": "",
-            "background": ""
+            "company_name": "",
+            "founded": "",
+            "founder": "",
+            "description": "",
+            "url":"",
+            "country": "",
+            "key_individuals": {
+                "<role>: {
+                    "name": "",
+                    "background": ""
+                },
             },
-        },
-        "security_risks": {
-            risk: ,
-            ref:
+            "security_risks": {
+                risk: ,
+                ref:
             },
-        "financial_risks": {
-            risk: ,
-            ref:
+            "financial_risks": {
+                risk: ,
+                ref:
             },
-        "key relationships": {
-            name: ,
-            details:
+            "key_relationships": {
+                name: ,
+                details:
             },
-
-        "operational_risks": {
-            risk: ,
-            ref:
+            "operational_risks": {
+                risk: ,
+                ref:
             },
-        "address": {
-            "street": "",
-            "city": "",
-            "state":,
-        },
-        "risk_level": {},
-        "risk_level_int": ,
-        "summary": ""
+            "address": {
+                "street": "",
+                "city": "",
+                "state":,
+            },
+            "risk_level": {},
+            "risk_level_int": ,
+            "summary": ""
         }
         This is a sample schema, populate it with company data. Make sure to add Risk level assement and Risk_level-int value
         Returns:

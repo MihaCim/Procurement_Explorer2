@@ -27,6 +27,8 @@ services:
       - LLM_TYPE=${LLM_TYPE}
       - CRAWLER_URL=${CRAWLER_URL}
       - CRAWLER_PORT=${CRAWLER_PORT}
+      - DD_URL=${DD_URL}
+      - DD_PORT=${DD_PORT}
 
   frontend:
     container_name: frontend

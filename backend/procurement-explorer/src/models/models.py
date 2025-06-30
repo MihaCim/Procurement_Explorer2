@@ -1,8 +1,7 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Literal, Dict, List
-from typing import Optional
+from typing import Dict, List, Literal, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CompanyProfile(BaseModel):
@@ -67,14 +66,22 @@ class Company(CompanyProfile):
     Website: str = Field(alias="website")
     Status: Optional[str] = Field(default="Pending", alias="status")
     Review_Date: Optional[datetime] = Field(default=None, alias="review_date")
-    Due_Diligence_Status: Optional[str] = Field(default="Not Available", alias="due_diligence_status")
+    Due_Diligence_Status: Optional[str] = Field(
+        default="Not Available", alias="due_diligence_status"
+    )
     Added_Timestamp: Optional[datetime] = Field(default=None, alias="added_timestamp")
     Risk_Level: Optional[int] = Field(default=None, alias="risk_level")
-    Profile_Last_Updated: Optional[datetime] = Field(default=None, alias="profile_last_updated")
-    Due_Diligence_Last_Updated: Optional[datetime] = Field(default=None, alias="due_diligence_last_updated")
+    Profile_Last_Updated: Optional[datetime] = Field(
+        default=None, alias="profile_last_updated"
+    )
+    Due_Diligence_Last_Updated: Optional[datetime] = Field(
+        default=None, alias="due_diligence_last_updated"
+    )
     Description: Optional[str] = Field(default=None, alias="description")
     Verdict: Optional[str] = Field(default=None, alias="verdict")
-    model_config = ConfigDict(populate_by_name=True,)
+    model_config = ConfigDict(
+        populate_by_name=True,
+    )
 
 
 class DueDiligenceProfile(BaseModel):
@@ -86,7 +93,9 @@ class DueDiligenceProfile(BaseModel):
     founder: Optional[str] = Field(default=None, alias="founder")
     address: Optional[dict] = Field(default=None, alias="address")
     country: Optional[str] = Field(default=None, alias="country")
-    last_revision: Optional[datetime] = Field(default=datetime.now().isoformat(), alias="last_revision")
+    last_revision: Optional[datetime] = Field(
+        default=datetime.now().isoformat(), alias="last_revision"
+    )
     risk_level: Optional[int] = Field(default=None, alias="risk_level")
     description: Optional[str] = Field(default=None, alias="description")
     key_individuals: Optional[dict] = Field(default=None, alias="key_individuals")
@@ -94,7 +103,11 @@ class DueDiligenceProfile(BaseModel):
     financial_risk: Optional[dict] = Field(default=None, alias="financial_risk")
     operational_risk: Optional[dict] = Field(default=None, alias="operational_risk")
     key_relationships: Optional[dict] = Field(default=None, alias="key_relationships")
-    due_diligence_timestamp: Optional[datetime] = Field(default=datetime.now().isoformat(), alias="due_diligence_timestamp")
+    due_diligence_timestamp: Optional[datetime] = Field(
+        default=datetime.now().isoformat(), alias="due_diligence_timestamp"
+    )
+    status: Optional[str] = Field(default=None, alias="status")
+    metadata: Optional[dict] = Field(default=None, alias="metadata")
     model_config = ConfigDict(
         populate_by_name=True,
     )
