@@ -185,7 +185,7 @@ async def get_companies(
         status=status,
         industry=industry,
         country=country,
-        verdict="CONFIRMED",
+        #verdict="CONFIRMED",
         limit=limit,
         offset=offset,
     )
