@@ -1,9 +1,16 @@
-from typing import Dict, List, Optional
-from pydantic import BaseModel, Field
-from datetime import datetime
-from ..models.models import Company, CompanyProfile, DocumentProfile, DueDiligenceProfile
-from fastapi import UploadFile
 import logging
+from datetime import datetime
+from typing import Dict, List, Optional
+
+from fastapi import UploadFile
+from pydantic import BaseModel
+
+from ..models.models import (
+    Company,
+    CompanyProfile,
+    DocumentProfile,
+    DueDiligenceProfile,
+)
 
 logger = logging.getLogger()
 
@@ -35,10 +42,9 @@ class CompanyWrapper(BaseModel):
     # end added by Marcio  #
 
 
-
 class DueDiligenceProfileWrapper(BaseModel):
     # Side card
-    id: int
+    id: Optional[int] = None
     name: Optional[str] = None
     url: Optional[str] = None  # Add URL field
     email: Optional[str] = None  # Add email field
@@ -60,12 +66,12 @@ class DueDiligenceProfileWrapper(BaseModel):
     security_risk: Optional[Dict] = None  # Dictionary for security risk
     financial_risk: Optional[Dict] = None  # Dictionary for financial risk
     operational_risk: Optional[Dict] = None  # Dictionary for operational risk
-    key_relationships: Optional[Dict] = (
-        None  # Dictionary for key relationships
-    )
+    key_relationships: Optional[Dict] = None  # Dictionary for key relationships
 
     # Timestamps and other fields
     due_diligence_timestamp: Optional[datetime] = None
+    metadata: Optional[dict] = None
+    status: Optional[str] = None
 
 
 class FileWrapper(BaseModel):
@@ -107,9 +113,7 @@ class searchCompaniesWrapper(BaseModel):
 
 
 def map_company_to_wrapper(company: Company) -> CompanyWrapper:
-
     try:
-
         return CompanyWrapper(
             id=company.id,
             name=company.Name,
@@ -184,12 +188,16 @@ def map_company_to_search_company(company: Company) -> searchCompaniesWrapper:
     )
 
 
-def map_due_diligence_to_wrapper(profile: DueDiligenceProfile,company: Company = None) -> DueDiligenceProfileWrapper:
+def map_due_diligence_to_wrapper(
+    profile: DueDiligenceProfile, company: Company = None
+) -> DueDiligenceProfileWrapper:
     return DueDiligenceProfileWrapper(
         id=profile.id,
         name=company.Name if company else profile.name,
         url=profile.url,
-        email=str(profile.contacts), #company.Contact_Information if company else str(profile.contacts),
+        email=str(
+            profile.contacts
+        ),  # company.Contact_Information if company else str(profile.contacts),
         founded=profile.founded,
         founder=profile.founder,
         address=profile.address,
@@ -204,10 +212,13 @@ def map_due_diligence_to_wrapper(profile: DueDiligenceProfile,company: Company =
         operational_risk=profile.operational_risk,
         key_relationships=profile.key_relationships,
         due_diligence_timestamp=profile.due_diligence_timestamp,
+        metadata=profile.metadata,
     )
 
 
-def map_wrapper_to_due_diligence(wrapper: DueDiligenceProfileWrapper) -> DueDiligenceProfile:
+def map_wrapper_to_due_diligence(
+    wrapper: DueDiligenceProfileWrapper,
+) -> DueDiligenceProfile:
     # Parse the `Last_revision` field from string to `datetime`, if it exists
 
     # Map fields from DueDiligenceProfileWrapper to DueDiligenceProfile
@@ -215,7 +226,9 @@ def map_wrapper_to_due_diligence(wrapper: DueDiligenceProfileWrapper) -> DueDili
         id=wrapper.id,
         name=wrapper.name or "",
         url=wrapper.url,
-        contacts={"email": wrapper.email} if wrapper.email else None,  # Mapping email to contacts
+        contacts={"email": wrapper.email}
+        if wrapper.email
+        else None,  # Mapping email to contacts
         founded=wrapper.founded,
         founder=wrapper.founder,
         address=wrapper.address,
@@ -229,4 +242,5 @@ def map_wrapper_to_due_diligence(wrapper: DueDiligenceProfileWrapper) -> DueDili
         operational_risk=wrapper.operational_risk,
         key_relationships=wrapper.key_relationships,
         due_diligence_timestamp=wrapper.due_diligence_timestamp,
+        metadata=wrapper.metadata,
     )

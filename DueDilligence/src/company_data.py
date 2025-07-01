@@ -1,7 +1,9 @@
 # Importing the json module to handle JSON data
 import json, re
 import xml.etree.ElementTree as ET
+
 from collections.abc import Mapping, Sequence
+
 # Importing ElementTree from the xml.etree package to handle XML data creation
 
 
@@ -182,7 +184,6 @@ class CompanyData:
     async def add_key_relationships(
         self, relationship_name: str, details: dict[str, str | int]
     ) -> str:
-
         """
         Adds or updates a political or external relationships of the company to the country, organization, people that could present security risk.
         This includes all essential cooperation and partnerships even if no direct security thread is exposed.

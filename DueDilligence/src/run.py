@@ -31,16 +31,16 @@ def get_json_data_from_key(key: str) -> Any | None:
 
 
 class DueDiligenceResult(BaseModel):
-    status: str | None = None
     logs: list[dict[str, str | datetime]] = list()
-    result: dict[str, Any] = dict()
+    profile: dict[str, Any] = dict()
     errors: list[str] = list()
     started: datetime = datetime.now()
     last_updated: datetime = datetime.now()
 
 
 class DDLogger:
-    def __init__(self, company_name: str) -> None:
+    def __init__(self, company_name: str, max_log_len: int) -> None:
+        self.max_log_len = max_log_len
         self.company_name = company_name
         self.key = f"generate_profile:{company_name}"
 
@@ -62,21 +62,23 @@ class DDLogger:
             return
 
         dd_result = self._get_cache()
-        dd_result.result = json_data
-        dd_result.status = "running"
+        dd_result.profile = {**dd_result.profile, **json_data}
+        dd_result.profile["status"] = "running"
         self._set_cache(dd_result)
 
     def add_log(self, log: str) -> None:
         dd_result = self._get_cache()
         log_data = dict[str, str | datetime]({"log": log, "timestamp": datetime.now()})
         dd_result.logs.append(log_data)
-        dd_result.status = "running"
+        if len(dd_result.logs) > self.max_log_len:
+            dd_result.logs.pop(0)
+        dd_result.profile["status"] = "running"
         self._set_cache(dd_result)
 
     def error(self, message: str) -> None:
         dd_result = self._get_cache()
         dd_result.errors.append(message)
-        dd_result.status = "running"
+        dd_result.profile["status"] = "running"
         self._set_cache(dd_result)
 
 
@@ -84,13 +86,13 @@ cache = AsyncInFlightCache()
 
 
 async def run_dd_process(company_name: str) -> None:
+    system_prompt = prompts.get_system_prompt(company_name)
     key = f"generate_profile:{company_name}"
-    dd_result = DueDiligenceResult()
+    dd_result = DueDiligenceResult(profile={"metadata": {"task": system_prompt}})
     redis_client.set(key, json.dumps(dd_result.model_dump_json()))
 
-    system_prompt = prompts.get_system_prompt(company_name)
     company_data = CompanyData()
-    logger = DDLogger(company_name)
+    logger = DDLogger(company_name=company_name, max_log_len=10)
 
     logger.add_log("Started DueDiligence")
 
@@ -103,7 +105,7 @@ async def run_dd_process(company_name: str) -> None:
 
     json_data = get_json_data_from_key(key)
     dd_result = DueDiligenceResult.model_validate(json_data)
-    dd_result.status = "finished"
+    dd_result.profile["status"] = "finished"
     dd_result.last_updated = datetime.now()
     redis_client.set(key, json.dumps(dd_result.model_dump_json()))
 
@@ -118,8 +120,10 @@ async def flush_redis() -> dict[str, str]:
 async def delete_profile(
     company_name: str | None,
 ) -> None:
-    ...
-    # TODO: Add delete company logic
+    key = f"generate_profile:{company_name}"
+    if not redis_client.exists(key):
+        raise HTTPException(status_code=404, detail=f"{key} not found in cache")
+    redis_client.delete(key)
 
 
 @app.get("/profile")
