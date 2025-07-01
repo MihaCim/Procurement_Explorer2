@@ -1,7 +1,6 @@
-import asyncio
 import os
-from collections import OrderedDict
 
+from cache import AsyncInFlightCache
 from logger import logger
 from tools import google_search, scrape_webpage, summarize_text
 
@@ -12,45 +11,6 @@ from tools import google_search, scrape_webpage, summarize_text
 APIFY_API_KEY = os.getenv("APIFY_API_KEY")
 maxCrawlPages = os.getenv("MAXCRAWLPAGES")
 maxCrawlDepth = os.getenv("MAXCRAWLDEPTH")
-
-
-class AsyncInFlightCache:
-    def __init__(self, max_size=1000):
-        self.cache = OrderedDict()
-        self.in_flight = {}
-        self.lock = asyncio.Lock()
-        self.max_size = max_size
-
-    async def get_or_wait(self, key, compute_coroutine):
-        async with self.lock:
-            if key in self.cache:
-                return self.cache[key]
-
-            if key in self.in_flight:
-                fut = self.in_flight[key]
-            else:
-                fut = asyncio.Future()
-                self.in_flight[key] = fut
-
-        if not fut.done():
-            try:
-                result = await compute_coroutine()
-
-                async with self.lock:
-                    self.cache[key] = result
-                    self.cache.move_to_end(key)
-                    if len(self.cache) > self.max_size:
-                        self.cache.popitem(last=False)
-
-                    fut.set_result(result)
-                    del self.in_flight[key]
-            except Exception as e:
-                async with self.lock:
-                    fut.set_exception(e)
-                    del self.in_flight[key]
-                raise
-
-        return await fut
 
 
 cache = AsyncInFlightCache()
@@ -231,8 +191,8 @@ def analyze_search_data_markdown(data):
 
 cache = AsyncInFlightCache()
 
-async def extract_text_from_url(url: str) -> str:
 
+async def extract_text_from_url(url: str) -> str:
     """
     - Extract text content from a given URL using a content crawler and return it in text format.
     - Call this function only with a valid url input.
@@ -283,4 +243,3 @@ async def search_google(query: str) -> list[dict[str, str]]:
     except Exception as e:
         logger.error(f"Error using search_google: {e}")
         return [{"url": f"{e}", "title": f"{e}", "description": f"{e}"}]
-

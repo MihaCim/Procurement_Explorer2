@@ -8,12 +8,12 @@ from typing import Any, Callable
 
 import tiktoken
 from browse_tools import extract_text_from_url, search_google
-from company_data import CompanyData
+from person_data import PersonData
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from llm_client import LLMClient
 from logger import Logger, logger
-from prompts.prompts2 import Prompts
+from prompts.prompts3 import Prompts
 
 # import uvicorn
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -384,13 +384,13 @@ async def store_inner_thought(thought: str) -> str:
     return f"Inner thought: {thought}"
 
 
-class TaskThread:
+class TaskThread_person:
     def __init__(
         self,
         logger: Logger,
         task: str = "",
         channel: str = "",
-        company_data: CompanyData = CompanyData(),
+        company_data: PersonData = PersonData(),
     ):
         self.task = task
         self.is_finished = False
@@ -412,7 +412,7 @@ class TaskThread:
                 self.update_report,
                 self.get_report,
                 store_inner_thought,
-                self.company_data.read_company_data,
+                self.company_data.read_data,
             ],
         )
 
@@ -425,19 +425,17 @@ class TaskThread:
                 search_google,
                 extract_text_from_url,
                 store_inner_thought,
-                self.company_data.update_company_name,
-                self.company_data.update_founded,
-                self.company_data.update_founder,
-                self.company_data.add_address,
-                self.company_data.update_key_individual,
-                self.company_data.update_description,
-                self.company_data.read_company_data,
+                self.company_data.update_name,
+                self.company_data.update_nationality,
+                self.company_data.update_education,
+                self.company_data.update_key_relationships,
+                self.company_data.update_key_work,
+                self.company_data.read_data,
                 self.company_data.update_security_risk,
                 self.company_data.add_financial_risk,
-                self.company_data.update_operational_risk,
-                self.company_data.add_key_relationships,
+                self.company_data.update_behavioural_type,
+                self.company_data.update_political_views,
                 self.company_data.update_risk_level,
-                self.company_data.update_risk_level_int,
             ],
         )
         critic = FunctionalAgent(
@@ -449,13 +447,15 @@ class TaskThread:
                 search_google,
                 extract_text_from_url,
                 store_inner_thought,
-                self.company_data.read_company_data,
+                self.company_data.read_data,
                 self.company_data.update_security_risk,
+                self.company_data.add_legal_risk, 
                 self.company_data.add_financial_risk,
-                self.company_data.update_operational_risk,
-                self.company_data.add_key_relationships,
+                self.company_data.update_behavioural_type,
+                self.company_data.update_key_relationships,
                 self.company_data.update_risk_level,
-                self.company_data.update_risk_level_int,
+                self.company_data.update_political_views,
+                self.company_data.update_summary
             ],
         )
 
@@ -468,20 +468,20 @@ class TaskThread:
                 search_google,
                 extract_text_from_url,
                 store_inner_thought,
-                self.company_data.read_company_data,
-                self.company_data.update_key_individual,
+                self.company_data.update_name,
+                self.company_data.update_nationality,
+                self.company_data.update_education,
+                self.company_data.update_key_relationships,
+                self.company_data.update_key_work,
+                self.company_data.read_data,
                 self.company_data.update_security_risk,
+                self.company_data.add_legal_risk, 
                 self.company_data.add_financial_risk,
-                self.company_data.update_operational_risk,
-                self.company_data.add_key_relationships,
+                self.company_data.update_behavioural_type,
                 self.company_data.update_risk_level,
-                self.company_data.update_company_name,
-                self.company_data.update_founded,
-                self.company_data.update_founder,
-                self.company_data.add_address,
-                self.company_data.update_description,
-                self.company_data.update_summary,
-                self.company_data.update_risk_level_int,
+                self.company_data.update_political_views,
+                self.company_data.update_summary
+
             ],
         )
 
@@ -529,46 +529,8 @@ class TaskThread:
         Ensure that the string passed to the function can be JSON serialized without any preprocessing.
 
         Parameters:
-        report (str): The content of the report must follow a structured json format. Here is an example of the schema:
-        {
-            "company_name": "",
-            "founded": "",
-            "founder": "",
-            "description": "",
-            "url":"",
-            "country": "",
-            "key_individuals": {
-                "<role>: {
-                    "name": "",
-                    "background": ""
-                },
-            },
-            "security_risks": {
-                risk: ,
-                ref:
-            },
-            "financial_risks": {
-                risk: ,
-                ref:
-            },
-            "key_relationships": {
-                name: ,
-                details:
-            },
-            "operational_risks": {
-                risk: ,
-                ref:
-            },
-            "address": {
-                "street": "",
-                "city": "",
-                "state":,
-            },
-            "risk_level": {},
-            "risk_level_int": ,
-            "summary": ""
-        }
-        This is a sample schema, populate it with company data. Make sure to add Risk level assement and Risk_level-int value
+        report (str): The content of the report must follow a structured json format. #
+        
         Returns:
         str: A confirmation message indicating that the report has been successfully set or updated.
         """

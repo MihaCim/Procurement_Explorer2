@@ -1,5 +1,59 @@
+import asyncio
 import time
-from typing import Any
+from collections import OrderedDict
+from typing import Any, Awaitable, Callable
+
+
+class AsyncInFlightCache:
+    def __init__(self, max_size: int = 1000):
+        self.cache = OrderedDict[str, Any]()
+        self.in_flight = dict[str, asyncio.Future[Any]]()
+        self.lock = asyncio.Lock()
+        self.max_size = max_size
+
+    def check_if_exists(self, key: str) -> bool:
+        return key in self.cache or key in self.in_flight
+
+    def update_cache(self, key: str, data: Any) -> None:
+        self.cache[key] = data
+
+    def get_from_cache(self, key: str) -> Any:
+        return self.cache[key]
+
+    async def get_or_wait(
+        self,
+        key: str,
+        compute_coroutine: Callable[[], Awaitable[Any]],
+    ) -> Any:
+        async with self.lock:
+            if key in self.cache:
+                return self.cache[key]
+
+            if key in self.in_flight:
+                fut = self.in_flight[key]
+            else:
+                fut = asyncio.Future()
+                self.in_flight[key] = fut
+
+        if not fut.done():
+            try:
+                result = await compute_coroutine()
+
+                async with self.lock:
+                    self.cache[key] = result
+                    self.cache.move_to_end(key)
+                    if len(self.cache) > self.max_size:
+                        self.cache.popitem(last=False)
+
+                    fut.set_result(result)
+                    del self.in_flight[key]
+            except Exception as e:
+                async with self.lock:
+                    fut.set_exception(e)
+                    del self.in_flight[key]
+                raise
+
+        return await fut
 
 
 class Cache:

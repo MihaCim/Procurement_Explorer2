@@ -31,5 +31,5 @@ class BasicLogger:
     def error(self, message: str) -> None:
         logger.error(message)
 
-    def add_log(self, message: str) -> None:
+    def add_log(self, log: str) -> None:
         pass

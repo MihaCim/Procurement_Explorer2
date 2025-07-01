@@ -74,8 +74,9 @@ CREATE TABLE due_diligence_profiles (
     financial_risk JSONB,                   -- Optional: Financial risk as a JSON object
     operational_risk JSONB,                 -- Optional: Operational risk as a JSON object
     key_relationships JSONB,                -- Optional: Key relationships as a JSON object
-    
-    due_diligence_timestamp TIMESTAMP       -- Optional: Timestamp for due diligence
+    metadata JSONB,                          -- Optional: Metadata for due diligence
+    status VARCHAR,                         -- Optional: Status for due diligence    
+    due_diligence_timestamp TIMESTAMP       -- Optional: Timestamp for due diligence    
 );
 
 
