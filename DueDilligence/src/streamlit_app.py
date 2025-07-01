@@ -4,6 +4,7 @@ import sys
 from typing import Any
 
 from prompts.prompts2 import Prompts
+from prompts.prompts3 import Prompts as Prompts3
 
 # Get the parent directory of the current file
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,12 +15,17 @@ import json
 
 import streamlit as st
 from company_data import CompanyData
+from person_data import PersonData
 from logger import logger
 from thread import TaskThread
+from thread_person import TaskThread_person
 
-data = CompanyData().to_json()
+
 company_data = CompanyData()
+data = company_data.to_json()
 
+#data = PersonData().to_json()
+#company_data = PersonData()
 
 st.sidebar.title("AI Agents Communication Stream")
 st.sidebar.title("Agents:")
@@ -30,7 +36,7 @@ st.sidebar.text("Evelin Fields (Documentarist)")
 
 st.title("Due Diligence Profile")
 st.write(
-    "Risk Levels: 1 - no risk, 2 - moderate risk, 3 - medium/not defined, 4 - high risk, 5 - extreeme risk"
+    "Risk Levels: 1 - no risk, 2 - moderate risk, 3 - medium/not defined, 4 - high risk, 5 - extreme risk"
 )
 user_input = st.text_input("Enter company:")
 
@@ -156,18 +162,18 @@ def display_profile(profile_data: dict[str, Any]) -> None:
     add_bullet_point("Operational risks", "security_risks", "None noted")
     add_bullet_point("Financial risks", "security_risks", "None noted")
 
-    profile_data["Ties"] = "No known ties with sanctioned entities"
+    bullet_points["Ties"] = "No known ties with sanctioned entities"
     ties = profile_data.get("ties", {})
     if ties is not None and isinstance(ties, dict) and "details" in ties:
-        profile_data["Ties"] = ties["details"]
+        bullet_points["Ties"] = ties["details"]
 
-    profile_data["Risk level"] = "Low"
+    bullet_points["Risk level"] = "Low"
     if "risk_level" in profile_data and profile_data["risk_level"] is not None:
-        profile_data["Risk level"] = profile_data["risk_level"]
+        bullet_points["Risk level"] = profile_data["risk_level"]
 
-    profile_data["Risk level Int"] = 1
+    bullet_points["Risk level Int"] = 1
     if "risk_level_int" in profile_data and profile_data["risk_level_int"] is not None:
-        profile_data["Risk level Int"] = profile_data["risk_level_int"]
+        bullet_points["Risk level Int"] = profile_data["risk_level_int"]
 
     for key, value in bullet_points.items():
         st.markdown(f"- **{key}:** {value}")
@@ -178,6 +184,7 @@ def display_profile(profile_data: dict[str, Any]) -> None:
 
 
 prompts = Prompts()
+prompts3 = Prompts3()
 
 
 async def run_task_thread(user_input):
@@ -191,9 +198,21 @@ async def run_task_thread(user_input):
     return await taskThread.run()
 
 
+async def run_task_thread_person(user_input):
+    system_prompt = prompts3.get_system_prompt(user_input)
+    taskThread = TaskThread_person(
+        task=system_prompt,
+        company_data=company_data,
+        logger=stlogger,
+    )
+    logger.info("Task person thread started...")
+    return await taskThread.run()
+
+
 if user_input:
     logger.info(f"Received input: {user_input}")
     report = asyncio.run(run_task_thread(user_input))
+    #report = asyncio.run(run_task_thread_person(user_input))
 
     st.write("DueDiligence Profile Created")
     print("final report data\n", report)

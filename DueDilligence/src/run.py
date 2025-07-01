@@ -1,12 +1,16 @@
-import asyncio
+import json
 import os
 import sys
+from datetime import datetime
+from typing import Any
 
 import uvicorn
+from cache import AsyncInFlightCache
 from company_data import CompanyData
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from logger import BasicLogger
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from prompts.prompts2 import Prompts
+from pydantic import BaseModel
+from redis_connector import get_redis_client
 from thread import TaskThread
 
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,119 +18,162 @@ sys.path.append(parent_dir)
 
 app = FastAPI()
 prompts = Prompts()
-company_data = CompanyData()
+redis_client = get_redis_client()
 
 
-logger = BasicLogger()
+def get_json_data_from_key(key: str) -> Any | None:
+    if redis_client.exists(key):
+        data = redis_client.get(key)
+        data = json.loads(data)
+        if isinstance(data, str):
+            data = json.loads(data)
+        return data
 
 
-@app.websocket("/ws/profile/{company_name}")
-async def websocket_profile(websocket: WebSocket, company_name: str):
-    await websocket.accept()
-    print(f"WebSocket received request: {company_name}")
+class DueDiligenceResult(BaseModel):
+    logs: list[dict[str, str | datetime]] = list()
+    profile: dict[str, Any] = dict()
+    errors: list[str] = list()
+    started: datetime = datetime.now()
+    last_updated: datetime = datetime.now()
 
+
+class DDLogger:
+    def __init__(self, company_name: str, max_log_len: int) -> None:
+        self.max_log_len = max_log_len
+        self.company_name = company_name
+        self.key = f"generate_profile:{company_name}"
+
+    def _get_cache(self) -> DueDiligenceResult:
+        if redis_client.exists(self.key):
+            json_data = get_json_data_from_key(self.key)
+            return DueDiligenceResult.model_validate(json_data)
+
+        return DueDiligenceResult()
+
+    def _set_cache(self, dd_result: DueDiligenceResult) -> None:
+        dd_result.last_updated = datetime.now()
+        redis_client.set(self.key, json.dumps(dd_result.model_dump_json()))
+
+    def info(self, message: str) -> None:
+        try:
+            json_data = json.loads(message)
+        except Exception:
+            return
+
+        dd_result = self._get_cache()
+        dd_result.profile = {**dd_result.profile, **json_data}
+        dd_result.profile["status"] = "running"
+        self._set_cache(dd_result)
+
+    def add_log(self, log: str) -> None:
+        dd_result = self._get_cache()
+        log_data = dict[str, str | datetime]({"log": log, "timestamp": datetime.now()})
+        dd_result.logs.append(log_data)
+        if len(dd_result.logs) > self.max_log_len:
+            dd_result.logs.pop(0)
+        dd_result.profile["status"] = "running"
+        self._set_cache(dd_result)
+
+    def error(self, message: str) -> None:
+        dd_result = self._get_cache()
+        dd_result.errors.append(message)
+        dd_result.profile["status"] = "running"
+        self._set_cache(dd_result)
+
+
+cache = AsyncInFlightCache()
+
+
+async def run_dd_process(company_name: str) -> None:
     system_prompt = prompts.get_system_prompt(company_name)
+    key = f"generate_profile:{company_name}"
+    dd_result = DueDiligenceResult(profile={"metadata": {"task": system_prompt}})
+    redis_client.set(key, json.dumps(dd_result.model_dump_json()))
+
+    company_data = CompanyData()
+    logger = DDLogger(company_name=company_name, max_log_len=10)
+
+    logger.add_log("Started DueDiligence")
+
     taskThread = TaskThread(
         task=system_prompt,
+        company_data=company_data,
         logger=logger,
     )
+    await taskThread.run()
 
-    update_event = asyncio.Event()  # Event to track profile updates
-    log_queue = asyncio.Queue()  # Queue to store AI chat messages
+    json_data = get_json_data_from_key(key)
+    dd_result = DueDiligenceResult.model_validate(json_data)
+    dd_result.profile["status"] = "finished"
+    dd_result.last_updated = datetime.now()
+    redis_client.set(key, json.dumps(dd_result.model_dump_json()))
 
-    async def monitor_profile():
-        """Monitor profile and trigger update event when data changes."""
-        prev_data = None
-        while not taskThread.is_finished:
-            new_data = (
-                taskThread.company_data.to_json() if taskThread.company_data else None
-            )
-            if new_data and new_data != prev_data:
-                prev_data = new_data
-                update_event.set()  # Notify that profile has changed
-            await asyncio.sleep(1)  # Faster updates
 
-    async def monitor_logs():
-        """Monitor AI chat logs and push new messages to the queue."""
-        prev_log_data = None
-        while not taskThread.is_finished:
-            new_log_data = taskThread.chat
-            if new_log_data and new_log_data != prev_log_data:
-                prev_log_data = new_log_data
-                await log_queue.put(new_log_data)  # Store log message in queue
-            await asyncio.sleep(1)
+@app.delete("/flush_redis")
+async def flush_redis() -> dict[str, str]:
+    redis_client.flushdb()
+    return {"status": "ok"}
 
-    async def send_updates():
-        """Send updates when new profile data or chat logs are available."""
-        while not taskThread.is_finished:
-            # Wait for either an event or a new log message
-            profile_update_task = asyncio.create_task(update_event.wait())
-            log_message_task = asyncio.create_task(log_queue.get())
 
-            done, pending = await asyncio.wait(
-                {profile_update_task, log_message_task},
-                return_when=asyncio.FIRST_COMPLETED,
-            )
+@app.delete("/profile")
+async def delete_profile(
+    company_name: str | None,
+) -> None:
+    key = f"generate_profile:{company_name}"
+    if not redis_client.exists(key):
+        raise HTTPException(status_code=404, detail=f"{key} not found in cache")
+    redis_client.delete(key)
 
-            if profile_update_task in done:
-                update_event.clear()  # Reset event after handling
-                if taskThread.company_data:
-                    await websocket.send_json(
-                        {"type": "profile", "data": taskThread.company_data.to_json()}
-                    )
 
-            if log_message_task in done:
-                message = log_message_task.result()  # Get the log message
-                await websocket.send_json({"type": "chat", "data": message})
-
-            # Cancel any unfinished tasks
-            for task in pending:
-                task.cancel()
-
-    try:
-        # Start the task thread
-        taskThread_task = asyncio.create_task(taskThread.run())
-
-        # Run the monitoring and sending loops concurrently
-        await asyncio.gather(
-            taskThread_task, monitor_profile(), monitor_logs(), send_updates()
+@app.get("/profile")
+async def get_profile(
+    company_name: str | None,
+) -> DueDiligenceResult:
+    if company_name is None or company_name == "":
+        raise HTTPException(
+            status_code=400, detail="company_name should be a non-empty string"
         )
 
-        # Send final report when task completes
-        await websocket.send_json({"type": "final_report", "data": taskThread.result})
+    key = f"generate_profile:{company_name}"
+    if redis_client.exists(key):
+        data = redis_client.get(key)
+        if not data:
+            raise HTTPException(status_code=500, detail="empty result for cache")
 
-    except WebSocketDisconnect:
-        logger.info(f"Client disconnected from {company_name}")
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        await websocket.send_json({"type": "error", "data": str(e)})
+        json_data = get_json_data_from_key(key)
+
+        dd_result = DueDiligenceResult.model_validate(json_data)
+        return dd_result
+
+    raise HTTPException(
+        status_code=404, detail=f"cache for {company_name} does not exists"
+    )
 
 
-@app.get("/profile/{company_name}")
-async def generate_profile(company_name: str):
-    """
-    Generate a company profile for the given company_name via HTTP GET.
-    This endpoint runs the same logic as the WebSocket but returns the final result directly.
-    """
-    try:
-        system_prompt = prompts.get_system_prompt(company_name)
-        taskThread = TaskThread(
-            task=system_prompt,
-            logger_main=logger_main,
-            logger_logs=logger_logs,
+@app.post("/profile")
+async def generate_profile(
+    company_name: str | None,
+    background_tasks: BackgroundTasks,
+) -> dict[str, str]:
+    if company_name is None or company_name == "":
+        raise HTTPException(
+            status_code=400, detail="company_name should be a non-empty string"
         )
 
-        await taskThread.run()
-
-        if taskThread.result:
-            return JSONResponse(content={"status": "success", "profile": taskThread.result})
-        else:
-            return JSONResponse(status_code=500, content={"status": "error", "message": "Profile generation failed"})
-
-    except Exception as e:
-        logger_main.error(f"Error generating profile for {company_name}: {e}")
-        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+    key = f"generate_profile:{company_name}"
+    if not redis_client.exists(key):
+        background_tasks.add_task(run_dd_process, company_name)
+        return {
+            "status": "ok",
+            "msg": f"started DueDiligence process for {company_name}",
+        }
+    else:
+        return {
+            "status": "ok",
+            "msg": f"DueDiligence process for {company_name} has already been started",
+        }
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8055)
+    uvicorn.run(app, host="0.0.0.0", port=8501, workers=4)

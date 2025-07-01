@@ -1,290 +1,342 @@
 [
-{
-  "url": "www.tahasavunma.com",
-  "contacts": {"email":"contact@tahasavunma.com"},
-  "founded": 2018,
-  "founder": "Hayri Tahirbeyoğlu",
-  "address": {
-    "street": "Not Available",
-    "city": "Not Available",
-    "state": "Not Available",
-    "zip": ""
-  },
-  "country": "Turkey",
-  "risk_level": 5,
-  "description": "Taha Savunma Sanayi ve Ticaret A.Ş. is a company within the defense sector, engaging in projects across military technologies. The company is noted for its work in high-security sectors and has ties with entities currently under international sanctions. However, its direct involvement and designation under the U.S. sanctions regime heighten its risk profile significantly. Careful evaluation and legal consultation are recommended for any procurement or association decisions.",
-  "key_individuals": {
-    "Chairman of the Board": "Hayri Tahirbeyoğlu"
-  },
-  "security_risk": {
-    "level": "Extreme",
-    "details": "Taha Savunma is listed as a sanctioned entity under Executive Order 14024, posing significant risks. The company is featured on the U.S. Department of Treasury sanctions lists due to its association with defense materiel. Relevant links include: [Treasury Sanctions](https://home.treasury.gov/news/press-releases/jy2546), [OpenSanctions Info](https://www.opensanctions.org/entities/NK-SUCvxueFJDE8NvnjWWJx4W/), [OFAC Sanctions List](https://sanctionssearch.ofac.treas.gov/Details.aspx?id=50193)."
-  },
-  "financial_risk": {
-    "level": "High",
-    "details": "Financial transactions may be restricted due to sanctions, limiting revenue sources and access to global markets. There is heightened regulatory scrutiny impacting financial flows related to sanctioned defense projects."
-  },
-  "operational_risk": {
-    "level": "High",
-    "details": "As a defense contractor involved with military technology, Taha Savunma is engaged in projects potentially restricted under international sanctions. Recent projects may connect to sanctioned entities or individuals, including operational areas under scrutiny."
-  },
-  "key_relationships": {
-    "partners": [
-      "Direct ties with Russia-related entities, contributing to the company's placement on multi-national sanction lists.",
-      "Potential connections to Turkish defense sectors under international review; however, no detailed public reports."
-    ]
-  }
-},
   {
-  "url": "www.ammotec.com",
-  "contacts": {"email":"contact@ammotec.com"},
-  "founded": 1976,
-  "founder": "Peter Doerfler and Daniel Powers Jr.",
-  "address": {
-    "street": "5402 E Diana St",
-    "city": "Tampa",
-    "state": "FL",
-    "zip": ""
+    "url": "www.tahasavunma.com",
+    "contacts": {
+      "email": "contact@tahasavunma.com"
+    },
+    "founded": 2018,
+    "founder": "Hayri Tahirbeyoğlu",
+    "status": "approved",
+    "address": {
+      "street": "Not Available",
+      "city": "Not Available",
+      "state": "Not Available",
+      "zip": ""
+    },
+    "country": "Turkey",
+    "risk_level": 5,
+    "description": "Taha Savunma Sanayi ve Ticaret A.Ş. is a company within the defense sector, engaging in projects across military technologies. The company is noted for its work in high-security sectors and has ties with entities currently under international sanctions. However, its direct involvement and designation under the U.S. sanctions regime heighten its risk profile significantly. Careful evaluation and legal consultation are recommended for any procurement or association decisions.",
+    "key_individuals": {
+      "Chairman of the Board": "Hayri Tahirbeyoğlu"
+    },
+    "security_risk": {
+      "level": "Extreme",
+      "details": "Taha Savunma is listed as a sanctioned entity under Executive Order 14024, posing significant risks. The company is featured on the U.S. Department of Treasury sanctions lists due to its association with defense materiel. Relevant links include: [Treasury Sanctions](https://home.treasury.gov/news/press-releases/jy2546), [OpenSanctions Info](https://www.opensanctions.org/entities/NK-SUCvxueFJDE8NvnjWWJx4W/), [OFAC Sanctions List](https://sanctionssearch.ofac.treas.gov/Details.aspx?id=50193)."
+    },
+    "financial_risk": {
+      "level": "High",
+      "details": "Financial transactions may be restricted due to sanctions, limiting revenue sources and access to global markets. There is heightened regulatory scrutiny impacting financial flows related to sanctioned defense projects."
+    },
+    "operational_risk": {
+      "level": "High",
+      "details": "As a defense contractor involved with military technology, Taha Savunma is engaged in projects potentially restricted under international sanctions. Recent projects may connect to sanctioned entities or individuals, including operational areas under scrutiny."
+    },
+    "key_relationships": {
+      "partners": [
+        "Direct ties with Russia-related entities, contributing to the company's placement on multi-national sanction lists.",
+        "Potential connections to Turkish defense sectors under international review; however, no detailed public reports."
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.tahasavunma.com/. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "country": "USA",
-  "risk_level": 3,
-  "description": "A prominent supplier in small-caliber ammunition with a focus on eco-friendly options for law enforcement training. RUAG Ammotec maintains a medium risk level given their sector involvement and potential geopolitical tensions. Strategic vigilance and considered procurement advised.",
-  "key_individuals": {
-    "Managing Directors": "Peter Doerfler, Daniel Powers Jr."
-  },
-  "security_risk": {
-    "level": "Medium",
-    "details": "No direct connections with sanctioned parties detected. Relevant vigilance is recommended for potential links to blacklisted entities under EU/US standards."
-  },
-  "financial_risk": {
-    "level": "None",
-    "details": "None currently emphasized but under regular review."
-  },
-  "operational_risk": {
-    "level": "Medium",
-    "details": "Potential risks from projects possibly tied to sanctioned entities. Multiple risk factors due to the recent Beretta Holding acquisition examined."
-  },
-  "key_relationships": {
-    "partners": [
-      "No direct ties to sanctioned individuals or countries, yet vigilance concerning third-party relations indicated. Relevant links to XYZ Country involved in risks."
-    ]
-  }
-},
   {
-  "url": "www.olin.com",
-  "contacts": {"email":"contact@olin.com"},
-  "founded": 1892,
-  "founder": "Franklin W. Olin, Mathieson Alkali Works",
-  "address": {
-    "street": "190 Carondelet Plaza, Suite 1530",
-    "city": "Clayton",
-    "state": "",
-    "zip": ""
+    "url": "www.ammotec.com",
+    "contacts": {
+      "email": "contact@ammotec.com"
+    },
+    "founded": 1976,
+    "founder": "Peter Doerfler and Daniel Powers Jr.",
+    "status": "approved",
+    "address": {
+      "street": "5402 E Diana St",
+      "city": "Tampa",
+      "state": "FL",
+      "zip": ""
+    },
+    "country": "USA",
+    "risk_level": 3,
+    "description": "A prominent supplier in small-caliber ammunition with a focus on eco-friendly options for law enforcement training. RUAG Ammotec maintains a medium risk level given their sector involvement and potential geopolitical tensions. Strategic vigilance and considered procurement advised.",
+    "key_individuals": {
+      "Managing Directors": "Peter Doerfler, Daniel Powers Jr."
+    },
+    "security_risk": {
+      "level": "Medium",
+      "details": "No direct connections with sanctioned parties detected. Relevant vigilance is recommended for potential links to blacklisted entities under EU/US standards."
+    },
+    "financial_risk": {
+      "level": "None",
+      "details": "None currently emphasized but under regular review."
+    },
+    "operational_risk": {
+      "level": "Medium",
+      "details": "Potential risks from projects possibly tied to sanctioned entities. Multiple risk factors due to the recent Beretta Holding acquisition examined."
+    },
+    "key_relationships": {
+      "partners": [
+        "No direct ties to sanctioned individuals or countries, yet vigilance concerning third-party relations indicated. Relevant links to XYZ Country involved in risks."
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.ammotec.com/. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "country": "USA",
-  "risk_level": 1,
-  "description": "Olin Corporation is a leading global manufacturer of chemical products and a major U.S. producer of ammunition, involved in defense procurement activities. The company has a diverse portfolio in various chemicals across international markets, including chlor-alkali products and derivatives. Olin Corporation is recognized as a reputable and significant manufacturer within the chemicals and munitions industry, with no detected associations or engagements that would impose a risk under current EU and US sanction regulations. The company is assessed to be a reliable entity for defense procurement with a low-risk profile.",
-  "key_individuals": {
-    "Key Individual": "Hayri Tahirbeyoğlu - Yet to be defined; currently added for monitoring as a key individual." },
-  "security_risk": {
-    "level": "None",
-    "details": "There are currently no recorded security risks specific to Hayri Tahirbeyoğlu or other key individuals associated with Olin."
-  },
-  "financial_risk": {
-    "level": "None",
-    "details": "No specific financial risks have been documented."
-  },
-  "operational_risk": {
-    "level": "None",
-    "details": "Continuous monitoring of latest news and reports; no specific operational risks linked to sanctioned entities or activities have been observed."
-  },
-  "key_relationships": {
-    "partners": [
-      "There have been no identified political or operational ties with sanctioned states or individuals."
-    ]
-  }
-},
   {
-  "url": "www.men-defencetec.de",
-  "contacts": {"email":"info@men-defencetec.de"},
-  "founded": 1958,
-  "founder": "",
-  "address": {
-    "street": "Elisenhütte 10",
-    "city": "Nassau",
-    "state": "D-56377",
-    "zip": ""
+    "url": "www.olin.com",
+    "contacts": {
+      "email": "contact@olin.com"
+    },
+    "founded": 1892,
+    "founder": "Franklin W. Olin, Mathieson Alkali Works",
+    "status": "approved",
+    "address": {
+      "street": "190 Carondelet Plaza, Suite 1530",
+      "city": "Clayton",
+      "state": "",
+      "zip": ""
+    },
+    "country": "USA",
+    "risk_level": 1,
+    "description": "Olin Corporation is a leading global manufacturer of chemical products and a major U.S. producer of ammunition, involved in defense procurement activities. The company has a diverse portfolio in various chemicals across international markets, including chlor-alkali products and derivatives. Olin Corporation is recognized as a reputable and significant manufacturer within the chemicals and munitions industry, with no detected associations or engagements that would impose a risk under current EU and US sanction regulations. The company is assessed to be a reliable entity for defense procurement with a low-risk profile.",
+    "key_individuals": {
+      "Key Individual": "Hayri Tahirbeyoğlu - Yet to be defined; currently added for monitoring as a key individual."
+    },
+    "security_risk": {
+      "level": "None",
+      "details": "There are currently no recorded security risks specific to Hayri Tahirbeyoğlu or other key individuals associated with Olin."
+    },
+    "financial_risk": {
+      "level": "None",
+      "details": "No specific financial risks have been documented."
+    },
+    "operational_risk": {
+      "level": "None",
+      "details": "Continuous monitoring of latest news and reports; no specific operational risks linked to sanctioned entities or activities have been observed."
+    },
+    "key_relationships": {
+      "partners": [
+        "There have been no identified political or operational ties with sanctioned states or individuals."
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.olin.com. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "country": "Germany",
-  "risk_level": 3,
-  "description": "MEN Defence Tec is engaged in the production of military ammunition for German armed forces, police, and NATO partners. Operating as Metallwerk Elisenhütte GmbH, it primarily produces military ammunition. While online data is limited, general industry compliance suggests moderate caution. Further investigation from authoritative channels or internal resources might clarify specific risks.",
-  "key_individuals": {
-    "Key Individual": ""
-  },
-  "security_risk": {
-    "level": "Medium",
-    "details": "Specific projects or direct security risks related to MEN Defence Tec were not identified due to limited detailed data available online."
-  },
-  "financial_risk": {
-    "level": "None",
-    "details": "No specific financial risks have been identified."
-  },
-  "operational_risk": {
-    "level": "Medium",
-    "details": "Specific projects, activities, or security risks related to MEN Defence Tec were not identified due to limited detailed data available online."
-  },
-  "key_relationships": {
-    "partners": [
-      "No known political or operational ties with sanctioned individuals or countries were identified."
-    ]
-  }
-},
   {
-  "url": "www.fiocchi.com",
-  "contacts": {"email": "www.fiocchi.com"},
-  "founded": 1876,
-  "founder": "",
-  "address": {
-    "street": "Via Santa Barbara 4",
-    "city": "Lecco",
-    "state": "LC",
-    "zip": ""
+    "url": "www.men-defencetec.de",
+    "contacts": {
+      "email": "info@men-defencetec.de"
+    },
+    "founded": 1958,
+    "founder": "",
+    "status": "approved",
+    "address": {
+      "street": "Elisenhütte 10",
+      "city": "Nassau",
+      "state": "D-56377",
+      "zip": ""
+    },
+    "country": "Germany",
+    "risk_level": 3,
+    "description": "MEN Defence Tec is engaged in the production of military ammunition for German armed forces, police, and NATO partners. Operating as Metallwerk Elisenhütte GmbH, it primarily produces military ammunition. While online data is limited, general industry compliance suggests moderate caution. Further investigation from authoritative channels or internal resources might clarify specific risks.",
+    "key_individuals": {
+      "Key Individual": ""
+    },
+    "security_risk": {
+      "level": "Medium",
+      "details": "Specific projects or direct security risks related to MEN Defence Tec were not identified due to limited detailed data available online."
+    },
+    "financial_risk": {
+      "level": "None",
+      "details": "No specific financial risks have been identified."
+    },
+    "operational_risk": {
+      "level": "Medium",
+      "details": "Specific projects, activities, or security risks related to MEN Defence Tec were not identified due to limited detailed data available online."
+    },
+    "key_relationships": {
+      "partners": [
+        "No known political or operational ties with sanctioned individuals or countries were identified."
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.men-defencetec.de. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "country": "Italy",
-  "risk_level": 3,
-  "description": "Fiocchi Munizioni S.p.A. is a significant manufacturer of ammunition for small arms, serving sectors such as hunting, sports shooting, defense, and security. The company operates under the majority ownership of Czechoslovak Group, which holds a 70% stake. While Fiocchi is not directly impacted by sanctions, its Czech ownership raises moderate U.S. security concerns. The company maintains rigorous compliance practices, with awareness of geopolitical influences essential for stable operations and partnerships.",
-  "key_individuals": {
-    "Controlling Stakeholder": "Czechoslovak Group - Controls a 70% stake in Fiocchi Munizioni."
-  },
-  "security_risk": {
-    "level": "Medium",
-    "details": "U.S. security concerns are noted due to Czech ownership, with ongoing compliance tracking recommended."
-  },
-  "financial_risk": {
-    "level": "Medium",
-    "details": "No specific financial risks have been identified, but attention to international acquisitions is advised."
-  },
-  "operational_risk": {
-    "level": "Medium",
-    "details": "Further examination under antitrust laws may be necessary due to international acquisition involvement."
-  },
-  "key_relationships": {
-    "partners": [
-      "Czechoslovak Group"
-    ]
-  }
-},
   {
-  "url": "www.mesko.com",
-  "contacts":  {"email": "www.mesko.com.pl"},
-  "founded": "1922",
-  "founder": "Państwowa Fabryka Amunicji",
-  "address": {
-    "street": "al. Armii Krajowej 22",
-    "city": "Skarżysko-Kamienna",
-    "state": "",
-    "zip": ""
+    "url": "www.fiocchi.com",
+    "contacts": {
+      "email": "www.fiocchi.com"
+    },
+    "founded": 1876,
+    "founder": "",
+    "status": "approved",
+    "address": {
+      "street": "Via Santa Barbara 4",
+      "city": "Lecco",
+      "state": "LC",
+      "zip": ""
+    },
+    "country": "Italy",
+    "risk_level": 3,
+    "description": "Fiocchi Munizioni S.p.A. is a significant manufacturer of ammunition for small arms, serving sectors such as hunting, sports shooting, defense, and security. The company operates under the majority ownership of Czechoslovak Group, which holds a 70% stake. While Fiocchi is not directly impacted by sanctions, its Czech ownership raises moderate U.S. security concerns. The company maintains rigorous compliance practices, with awareness of geopolitical influences essential for stable operations and partnerships.",
+    "key_individuals": {
+      "Controlling Stakeholder": "Czechoslovak Group - Controls a 70% stake in Fiocchi Munizioni."
+    },
+    "security_risk": {
+      "level": "Medium",
+      "details": "U.S. security concerns are noted due to Czech ownership, with ongoing compliance tracking recommended."
+    },
+    "financial_risk": {
+      "level": "Medium",
+      "details": "No specific financial risks have been identified, but attention to international acquisitions is advised."
+    },
+    "operational_risk": {
+      "level": "Medium",
+      "details": "Further examination under antitrust laws may be necessary due to international acquisition involvement."
+    },
+    "key_relationships": {
+      "partners": [
+        "Czechoslovak Group"
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.fiocchi.com. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "country": "Poland",
-  "risk_level": 3,
-  "description": "MESKO S.A. specializes in defense technology, focusing on munitions and missile systems for the Polish Armed Forces and NATO. Part of the Polska Grupa Zbrojeniowa (PGZ), MESKO maintains robust ties with the Polish Ministry of Defence, holding a medium risk level.",
-  "key_individuals": {
-    "Personnel Review": "Detailed review of key company personnel against sanction lists reveals no immediate risks."
-  },
-  "security_risk": {
-    "level": "None",
-    "details": "No current connections between MESKO and blacklisted entities or sanctioned countries."
-  },
-  "financial_risk": {
-    "level": "None",
-    "details": "No specific financial risks identified."
-  },
-  "operational_risk": {
-    "level": "Low",
-    "details": "No direct operational threats currently detected; monitoring advised."
-  },
-  "key_relationships": {
-    "partners": [
-      "Polish Ministry of Defence"
-    ]
-  }
-},
   {
-  "url": "www.ggg-ammo.lt",
-  "contacts": {"email": "www.ggg-ammo.lt"},
-  "founded": "2000",
-  "founder": "Ministry of Finance of the Republic of Lithuania",
-  "address": {
-    "street": "Topolių g. 8",
-    "city": "Giraitės k.",
-    "state": "Kauno r. sav.",
-    "zip": ""
+    "url": "www.mesko.com",
+    "contacts": {
+      "email": "www.mesko.com.pl"
+    },
+    "founded": "1922",
+    "founder": "Państwowa Fabryka Amunicji",
+    "status": "approved",
+    "address": {
+      "street": "al. Armii Krajowej 22",
+      "city": "Skarżysko-Kamienna",
+      "state": "",
+      "zip": ""
+    },
+    "country": "Poland",
+    "risk_level": 3,
+    "description": "MESKO S.A. specializes in defense technology, focusing on munitions and missile systems for the Polish Armed Forces and NATO. Part of the Polska Grupa Zbrojeniowa (PGZ), MESKO maintains robust ties with the Polish Ministry of Defence, holding a medium risk level.",
+    "key_individuals": {
+      "Personnel Review": "Detailed review of key company personnel against sanction lists reveals no immediate risks."
+    },
+    "security_risk": {
+      "level": "None",
+      "details": "No current connections between MESKO and blacklisted entities or sanctioned countries."
+    },
+    "financial_risk": {
+      "level": "None",
+      "details": "No specific financial risks identified."
+    },
+    "operational_risk": {
+      "level": "Low",
+      "details": "No direct operational threats currently detected; monitoring advised."
+    },
+    "key_relationships": {
+      "partners": [
+        "Polish Ministry of Defence"
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.mesko.com. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "country": "Lithuania",
-  "risk_level": 2,
-  "description": "AB Giraitės Ginkluotės Gamykla (GGG) is the sole ammunition manufacturer in the Baltic region, producing high-quality ammunition for both military and civilian use. The company is wholly owned by the Lithuanian government and recognized for its strategic value in defense procurement.",
-  "key_individuals": {
-    "Chairman of the Board of Directors": "Kazimieras Juraitis - Monitors regulatory changes. No known security risks."
-  },
-  "security_risk": {
-    "level": "None",
-    "details": "No sanctions or blacklists associated with AB Giraitės Ginkluotės Gamykla or its key figures under EU or US regulations."
-  },
-  "financial_risk": {
-    "level": "None",
-    "details": ""
-  },
-  "operational_risk": {
-    "level": "Low",
-    "details": "Potential risks due to geopolitical tensions affecting defense procurement in the Baltic region."
-  },
-  "key_relationships": {
-    "partners": [
-      "Lithuanian Ministry of Defence",
-      "Other regional security organizations"
-    ]
-  }
-},
   {
-  "url": "www.nammo.com",
-  "contacts": {"email": "www.nammo.com"},
-  "founded": "1998",
-  "founder": "Joint venture involving the governments of Norway, Sweden, and Finland",
-  "address": {
-    "street": "Raufoss Industriområde",
-    "city": "Raufoss",
-    "state": "Oppland",
-    "zip": ""
+    "url": "www.ggg-ammo.lt",
+    "contacts": {
+      "email": "www.ggg-ammo.lt"
+    },
+    "founded": "2000",
+    "founder": "Ministry of Finance of the Republic of Lithuania",
+    "status": "approved",
+    "address": {
+      "street": "Topolių g. 8",
+      "city": "Giraitės k.",
+      "state": "Kauno r. sav.",
+      "zip": ""
+    },
+    "country": "Lithuania",
+    "risk_level": 2,
+    "description": "AB Giraitės Ginkluotės Gamykla (GGG) is the sole ammunition manufacturer in the Baltic region, producing high-quality ammunition for both military and civilian use. The company is wholly owned by the Lithuanian government and recognized for its strategic value in defense procurement.",
+    "key_individuals": {
+      "Chairman of the Board of Directors": "Kazimieras Juraitis - Monitors regulatory changes. No known security risks."
+    },
+    "security_risk": {
+      "level": "None",
+      "details": "No sanctions or blacklists associated with AB Giraitės Ginkluotės Gamykla or its key figures under EU or US regulations."
+    },
+    "financial_risk": {
+      "level": "None",
+      "details": ""
+    },
+    "operational_risk": {
+      "level": "Low",
+      "details": "Potential risks due to geopolitical tensions affecting defense procurement in the Baltic region."
+    },
+    "key_relationships": {
+      "partners": [
+        "Lithuanian Ministry of Defence",
+        "Other regional security organizations"
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.ggg-ammo.lt. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "country": "Norway",
-  "risk_level": 2,
-  "description": "Nammo is a leading international aerospace and defense company, specializing in high-performance defense products, including ammunition, rocket motors, and technology solutions.",
-  "key_individuals": {
-    "CEO": "Morten Brandtzæg - CEO with no known security or sanction-related risks, aligned with Nammo's zero-tolerance policy on corruption."
+  {
+    "url": "www.nammo.com",
+    "contacts": {
+      "email": "www.nammo.com"
+    },
+    "founded": "1998",
+    "founder": "Joint venture involving the governments of Norway, Sweden, and Finland",
+    "status": "approved",
+    "address": {
+      "street": "Raufoss Industriområde",
+      "city": "Raufoss",
+      "state": "Oppland",
+      "zip": ""
+    },
+    "country": "Norway",
+    "risk_level": 2,
+    "description": "Nammo is a leading international aerospace and defense company, specializing in high-performance defense products, including ammunition, rocket motors, and technology solutions.",
+    "key_individuals": {
+      "CEO": "Morten Brandtzæg - CEO with no known security or sanction-related risks, aligned with Nammo's zero-tolerance policy on corruption."
+    },
+    "security_risk": {
+      "level": "Low",
+      "details": "No public information links Morten Brandtzæg or Nammo to security or sanctions-related risks. The company maintains a zero-tolerance policy on corruption."
+    },
+    "financial_risk": {
+      "level": "None",
+      "details": "No current financial risks stated."
+    },
+    "operational_risk": {
+      "level": "Low",
+      "details": "Expansion and financial growth may indirectly involve politically unstable regions. No direct operational risks concerning sanctions or security identified."
+    },
+    "key_relationships": {
+      "partners": [
+        "Joint venture with the governments of Norway, Sweden, and Finland"
+      ]
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.nammo.com. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
   },
-  "security_risk": {
-    "level": "Low",
-    "details": "No public information links Morten Brandtzæg or Nammo to security or sanctions-related risks. The company maintains a zero-tolerance policy on corruption."
-  },
-  "financial_risk": {
-    "level": "None",
-    "details": "No current financial risks stated."
-  },
-  "operational_risk": {
-    "level": "Low",
-    "details": "Expansion and financial growth may indirectly involve politically unstable regions. No direct operational risks concerning sanctions or security identified."
-  },
-  "key_relationships": {
-    "partners": [
-      "Joint venture with the governments of Norway, Sweden, and Finland"
-    ]
-  }
-},
   {
     "url": "www.baesystems.com",
-    "contacts": {"email": "www.baesystems.com"},
+    "contacts": {
+      "email": "www.baesystems.com"
+    },
     "founded": null,
     "founder": "Not found",
+    "status": "approved",
     "address": {
       "street": "Not found",
       "city": "Not found",
@@ -311,41 +363,49 @@
     },
     "key_relationships": {
       "partners": ""
+    },
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.baesystems.com. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
     }
   },
   {
     "url": "www.parrot.com",
     "contacts": {
-        "email": "www.parrot.com"
+      "email": "www.parrot.com"
     },
     "founded": "1994",
     "founder": "Henri Seydoux",
+    "status": "approved",
     "address": {
-        "street": "174 Quai de Jemmapes",
-        "city": "Paris",
-        "state": "France",
-        "zip": ""
+      "street": "174 Quai de Jemmapes",
+      "city": "Paris",
+      "state": "France",
+      "zip": ""
     },
     "country": "France",
     "risk_level": 4,
     "description": "Parrot is a leading French company in the drone industry, specializing in innovative UAV technology for both consumer and professional markets. Their focus includes intricate designs and software development, creating drones that cater to aerial photography, 3D mapping, surveying, and defense applications. Parrot presents a high-security risk based on its associations with blacklisted organizations and a concerning relationship with the Russian Defense Ministry. Ongoing diligence is necessary to monitor new developments that might affect their risk profile.",
-    "key_individuals": {"CEO": "Henri Seydoux. Further research is needed to determine if there are security risks related to defense procurement, especially concerning ties with blacklisted entities."},
+    "key_individuals": {
+      "CEO": "Henri Seydoux. Further research is needed to determine if there are security risks related to defense procurement, especially concerning ties with blacklisted entities."
+    },
     "security_risk": {
-        "level": "High",
-        "details": "Potential links with blacklisted entities under EU regulations. [Official EU Sanctions List](https://www.sanctionsmap.eu)"
+      "level": "High",
+      "details": "Potential links with blacklisted entities under EU regulations. [Official EU Sanctions List](https://www.sanctionsmap.eu)"
     },
     "financial_risk": {
-        "level": "None",
-        "details": ""
+      "level": "None",
+      "details": ""
     },
     "operational_risk": {
-        "level": "Medium",
-        "details": "Requires research on recent projects or news related to Parrot, especially those with sanctioned connections."
+      "level": "Medium",
+      "details": "Requires research on recent projects or news related to Parrot, especially those with sanctioned connections."
     },
     "key_relationships": {
-        "partners": "Identified ties with Russian Defense Ministry, a concerning relationship due to EU regulations."
+      "partners": "Identified ties with Russian Defense Ministry, a concerning relationship due to EU regulations."
     },
-    "summary": "Parrot is a leading French company in the drone industry, specializing in innovative UAV technology for both consumer and professional markets. Their focus includes intricate designs and software development, creating drones that cater to aerial photography, 3D mapping, surveying, and defense applications. Parrot presents a high-security risk based on its associations with blacklisted organizations and a concerning relationship with the Russian Defense Ministry. Ongoing diligence is necessary to monitor new developments that might affect their risk profile."
-}
-
+    "summary": "Parrot is a leading French company in the drone industry, specializing in innovative UAV technology for both consumer and professional markets. Their focus includes intricate designs and software development, creating drones that cater to aerial photography, 3D mapping, surveying, and defense applications. Parrot presents a high-security risk based on its associations with blacklisted organizations and a concerning relationship with the Russian Defense Ministry. Ongoing diligence is necessary to monitor new developments that might affect their risk profile.",
+    "metadata": {
+      "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: https://www.parrot.com. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
+    }
+  }
 ]
