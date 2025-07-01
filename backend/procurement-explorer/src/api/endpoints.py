@@ -196,13 +196,19 @@ async def get_companies(
         limit=limit,
         offset=offset,
     )
+
+    companies_all_results = await query_companies(
+        query=query,
+        status=status,
+        industry=industry,
+        country=country,
+    )
     # Map each company to the wrapper
     companies_wrapped = [map_company_to_wrapper(company) for company in companies]
     companies_wrapped = jsonable_encoder(companies_wrapped)
 
-    total = await get_count_documents()
     return {
-        "total": total,
+        "total": len(companies_all_results),
         "offset": offset,
         "limit": limit,
         "companies": companies_wrapped,
