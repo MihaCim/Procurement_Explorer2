@@ -11,7 +11,6 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt && \
     pip install --upgrade streamlit
 
-#COPY ./src/streamlit_app.py ./streamlit_app.py
 COPY ./src .
 
 # Expose Streamlit port
