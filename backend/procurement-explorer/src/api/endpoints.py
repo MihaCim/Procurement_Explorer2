@@ -288,7 +288,9 @@ async def get_due_diligence_prof(company_url: str):
 
     dd_result = await get_dd_profile_from_cache(company_url)
     if "profile" not in dd_result:
-        return dd_result
+        raise HTTPException(
+            status_code=404, detail=f"DueDiligence profile not found for {company_url}"
+        )
 
     profile = dd_result["profile"]
     assert isinstance(profile, dict)
@@ -316,6 +318,10 @@ async def delete_due_diligence_profile_(company_url: str):
     due_diligence_profile = await get_due_diligence_by_website(company_url)
     if due_diligence_profile:
         await delete_due_diligence_profile(due_diligence_profile)
+    else:
+        raise HTTPException(
+            status_code=404, detail=f"DueDiligence profile not found for {company_url}"
+        )
 
 
 @router.get("/companies/{id}/due_diligence/status")
