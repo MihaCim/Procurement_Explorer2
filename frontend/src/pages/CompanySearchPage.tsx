@@ -45,8 +45,13 @@ const CompanySearchPage: React.FC = () => {
     searchTerm: '',
   });
 
-  const { state, searchCompany, searchCompanyByDescription } =
-    useCompanyContext();
+  const {
+    state,
+    resetSearchState,
+    searchCompany,
+    searchCompanyByDescription,
+    searchCompanyByFile,
+  } = useCompanyContext();
 
   return (
     <PageContainer>
@@ -77,9 +82,9 @@ const CompanySearchPage: React.FC = () => {
                     searchTerm: ev.target.value,
                   }));
                 }}
-                // onEnter={() => {
-                //   searchCompanyByDescription(searchState.searchTerm);
-                // }}
+                onEnter={() => {
+                  searchCompanyByDescription(searchState.searchTerm);
+                }}
                 rows={4}
                 fullWidth
                 placeholder="Search"
@@ -99,7 +104,15 @@ const CompanySearchPage: React.FC = () => {
               </SearchIconButtonContainer>
             </div>
           ) : searchState.option === 'Document' ? (
-            <DragAndDropUpload />
+            <DragAndDropUpload
+              accept={['application/pdf']}
+              onfilesChange={(files) => {
+                if (!files || files.length !== 1) resetSearchState();
+                else {
+                  searchCompanyByFile(files[0]);
+                }
+              }}
+            />
           ) : (
             <div className="flex relative">
               <TextField

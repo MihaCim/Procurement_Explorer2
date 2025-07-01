@@ -2,6 +2,7 @@ import {
   Company,
   DetailedCompany,
   PaginatedCompanies,
+  SearchByDocResponse,
 } from '../models/Company';
 import { CompanyProcessing } from '../models/CompanyProcessing';
 import { CompanyProcessingStatus } from '../models/CompanyProcessingStatus';
@@ -39,7 +40,7 @@ class CompanyService {
       `/companies/similar?text=${encodeURI(description)}&n=10`,
     );
   }
-  public async getCompaniesByFile(file: File): Promise<Company[]> {
+  public async getCompaniesByFile(file: File): Promise<SearchByDocResponse> {
     const formData = new FormData();
     formData.append('file', file);
     return new APIService().postMultipart(

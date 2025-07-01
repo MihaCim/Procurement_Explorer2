@@ -10,19 +10,19 @@ interface IconButtonProps extends PropsWithChildren {
 
 const Button = styled.button`
   cursor: pointer;
+  padding: 4px;
   border-radius: 50%;
   &:hover {
-    background: var(--color-hover-primary, #003064);
+    background: #f3f3f8;
   }
   &:disabled {
     cursor: not-allowed;
   }
 `;
 
-const ContainedButton = styled.button`
+const PrimaryButton = styled.button`
   display: flex;
-
-  padding: 8px 18px 8px 10px;
+  cursor: pointer;
   justify-content: flex-end;
   align-items: center;
   border-radius: var(--radius-radius-small, 4px);
@@ -35,14 +35,12 @@ const ContainedButton = styled.button`
   }
 `;
 
-const OutlinedButton = styled.button`
+const DefaultButton = styled.button`
   display: flex;
+  cursor: pointer;
 
-  padding: 8px 18px 8px 10px;
   justify-content: flex-end;
   align-items: center;
-  border-radius: var(--radius-radius-small, 4px);
-  border: 1px solid var(--color-primary, #014289);
   background: #fff;
   color: var(--color-primary, #014289);
   gap: 8px;
@@ -59,23 +57,23 @@ const IconButton: React.FC<IconButtonProps> = ({
   style = undefined,
 }) => {
   return variant === 'contained' ? (
-    <ContainedButton
+    <PrimaryButton
       type="button"
       onClick={onClick}
       disabled={disabled}
       style={style}
     >
       {children}
-    </ContainedButton>
+    </PrimaryButton>
   ) : variant === 'outlined' ? (
-    <OutlinedButton
+    <DefaultButton
       type="button"
       onClick={onClick}
       disabled={disabled}
       style={style}
     >
       {children}
-    </OutlinedButton>
+    </DefaultButton>
   ) : (
     <Button type="button" onClick={onClick} disabled={disabled} style={style}>
       {children}

@@ -36,10 +36,16 @@ export const H2 = styled.h2`
 export const AttachmentTypo = styled.p`
   color: var(--color-primary, #173fa5);
   font-family: Poppins;
-  font-size: 14px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 24px; /* 171.429% */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis; /* This will work for single line overflow, but -webkit-line-clamp handles the multiline ellipsis */
+  white-space: normal; /* Ensure text wraps normally within the lines */
 `;
 
 export const P = styled.p`

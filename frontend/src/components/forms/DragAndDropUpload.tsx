@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import AttachmentIcon from '../../assets/icons/attachment.svg?react';
@@ -14,12 +14,14 @@ const LinkTypo = styled.p`
   font-weight: 500;
   line-height: normal;
   text-decoration-line: underline;
+  cursor: pointer;
 `;
 
 const DragAndDropContainer = styled.div`
   border-radius: var(--radius, 4px);
   border: 1px dashed var(--grey-2, #6d7276);
   background: var(--bg-card, #fff);
+  align-self: stretch;
 
   /* Shadow / xs */
   box-shadow: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
@@ -33,11 +35,18 @@ const DragAndDropContainer = styled.div`
 
 const FileListElement = styled.li`
   display: flex;
-  padding-bottom: 4px;
   align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid #d2d2d5;
   width: fit-content;
+`;
+
+const GrayText = styled.p`
+  color: #6d7276;
+  text-align: center;
+  font-family: Poppins;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px; /* 200% */
 `;
 
 interface DragAndDropUploadProps {
@@ -52,6 +61,7 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
   sizeLimit = 200,
 }) => {
   const [files, setFiles] = useState<File[]>([]);
+  const isInitialMount = useRef(true);
 
   const validateFile = useCallback(
     (file: File | null) => {
@@ -67,6 +77,12 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
   );
 
   useEffect(() => {
+    // Prevent onfilesChange from being called on the initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     if (onfilesChange) {
       onfilesChange(files);
     }
@@ -129,7 +145,7 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full flex items-center justify-center">
       <DragAndDropContainer onDrop={handleDrop} onDragOver={handleDragOver}>
         <div className="flex flex-col items-center justify-center gap-2 pl-5 pr-5">
           <div className="flex gap-1">
@@ -138,24 +154,27 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
               <LinkTypo>Choose file</LinkTypo>
             </button>
           </div>
+
+          {files.length > 0 ? (
+            <ul className="mt-1">
+              {files.map((file, index) => (
+                <FileListElement key={index}>
+                  <div className="flex gap-1 items-center">
+                    <AttachmentIcon height={16} width={16} />
+                    <AttachmentTypo>{file.name}</AttachmentTypo>
+                  </div>
+
+                  <IconButton onClick={() => handleRemoveFile(index)}>
+                    <CrossIcon height={16} width={16} />
+                  </IconButton>
+                </FileListElement>
+              ))}
+            </ul>
+          ) : (
+            <GrayText>No file attached</GrayText>
+          )}
         </div>
       </DragAndDropContainer>
-      {files.length > 0 && (
-        <ul className="mt-4">
-          {files.map((file, index) => (
-            <FileListElement key={index}>
-              <div className="flex gap-1">
-                <AttachmentIcon />
-                <AttachmentTypo>{file.name}</AttachmentTypo>
-              </div>
-
-              <IconButton onClick={() => handleRemoveFile(index)}>
-                <CrossIcon />
-              </IconButton>
-            </FileListElement>
-          ))}
-        </ul>
-      )}
     </div>
   );
 };

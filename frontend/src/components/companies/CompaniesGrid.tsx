@@ -22,12 +22,12 @@ const MediumText = styled.p`
 
 const CompaniesGrid: React.FC = () => {
   const {
-    state: { loaded, loading, hasMore, companies },
+    state: { firstLoaded, loaded, loading, hasMore, companies },
     fetchMore,
   } = useCompanyContext();
 
   return (
-    loaded && (
+    firstLoaded && (
       <div className="w-full flex flex-col gap-4">
         <div className="w-full flex flex-col gap-3">
           <H2>Results</H2>
@@ -36,12 +36,12 @@ const CompaniesGrid: React.FC = () => {
               <NoResultIcon />
               <MediumText>Nothing matched your search.</MediumText>
               <MediumText>Adjust your input, or</MediumText>
-              <BtnLink>Start a scraping process</BtnLink>
+              <BtnLink>Start gathering information</BtnLink>
             </div>
           ) : (
             <p>
               Didn't find the company that you are looking for ? You can{' '}
-              <BtnLink>start a scraping process</BtnLink>
+              <BtnLink>start gathering information.</BtnLink>
             </p>
           )}
         </div>
@@ -62,12 +62,6 @@ const CompaniesGrid: React.FC = () => {
                 ))}
               </div>
             }
-            // endMessage={
-            //   // What to display when all data has been loaded
-            //   <MediumText style={{ textAlign: 'center', margin: '20px 0' }}>
-            //     <b>Yay! You have seen it all.</b>
-            //   </MediumText>
-            // }
             scrollThreshold="200px"
           >
             <div

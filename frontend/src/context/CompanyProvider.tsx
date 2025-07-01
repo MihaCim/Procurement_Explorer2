@@ -5,7 +5,7 @@ import useCompanyService from '../services/companyService';
 
 interface CompanyContextProps {
   state: ICompanyState;
-  setCompanies: (companies: Company[]) => void;
+  resetSearchState: () => void;
   searchCompany: (text: string, newSearch?: boolean) => void;
   searchCompanyByDescription: (text: string) => void;
   searchCompanyByFile: (file: File) => void;
@@ -137,11 +137,11 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
         .then((data) => {
           setCompanySearch({
             hasMore: false, // No pagination for this type
-            companies: data,
+            companies: data?.companies_list ?? [],
             currentOffset: 0,
             lastSearchText: null,
             lastSearchType: 'file',
-            totalCompanies: data.length,
+            totalCompanies: data?.companies_list.length ?? 0,
           });
           setFirstLoaded(true);
           setLoaded(true);
@@ -180,7 +180,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
           hasMore: companySearch.hasMore,
           lastSearchType: companySearch.lastSearchType,
         },
-        setCompanies,
+        resetSearchState,
         searchCompany,
         searchCompanyByDescription,
         searchCompanyByFile,
