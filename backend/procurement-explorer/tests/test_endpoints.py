@@ -166,52 +166,49 @@ HOST = "localhost"
 PORT = "8000"
 
 BASE_URL = f"http://{HOST}:{PORT}"
+URL = f"{BASE_URL}/due-diligence/profile?company_url={MODEL_URL}"
 
 
 async def create_model() -> dict[str, Any]:
-    url = f"{BASE_URL}/due-diligence/profile?company_url={MODEL_URL}"
     async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=MODEL) as response:
+        async with session.post(URL, json=MODEL) as response:
             if response.status != 200:
                 return {
                     "status": "failed",
-                    "msg": f"failed to create DueDiligence for {MODEL_URL}",
+                    "msg": f"failed to create DueDiligence for {URL}",
                 }
             return await response.json()
 
 
 async def get_model() -> dict[str, Any]:
-    url = f"{BASE_URL}/due-diligence/profile?company_url={MODEL_URL}"
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
+        async with session.get(URL) as response:
             if response.status != 200:
                 return {
                     "status": "failed",
-                    "msg": f"failed to get DueDiligence for {MODEL_URL}",
+                    "msg": f"failed to get DueDiligence for {URL}",
                 }
             return await response.json()
 
 
 async def delete_model() -> dict[str, Any]:
-    url = f"{BASE_URL}/due-diligence/profile?company_url={MODEL_URL}"
     async with aiohttp.ClientSession() as session:
-        async with session.delete(url) as response:
+        async with session.delete(URL) as response:
             if response.status != 200:
                 return {
                     "status": "failed",
-                    "msg": f"failed to delete DueDiligence for {MODEL_URL}",
+                    "msg": f"failed to delete DueDiligence for {URL}",
                 }
             return await response.json()
 
 
 async def update_model(model: dict[str, Any]) -> dict[str, Any]:
-    url = f"{BASE_URL}/due-diligence/profile?company_url={MODEL_URL}"
     async with aiohttp.ClientSession() as session:
-        async with session.put(url, json=model) as response:
+        async with session.put(URL, json=model) as response:
             if response.status != 200:
                 return {
                     "status": "failed",
-                    "msg": f"failed to update DueDiligence for {MODEL_URL}",
+                    "msg": f"failed to update DueDiligence for {URL}",
                 }
             return await response.json()
 
