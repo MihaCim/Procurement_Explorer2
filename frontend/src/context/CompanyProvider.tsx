@@ -12,7 +12,7 @@ interface CompanyContextProps {
   fetchMore: () => void;
 }
 
-type SearchType = 'text' | 'description' | 'file' | null;
+export type SearchType = 'text' | 'description' | 'file' | null;
 
 interface CompanySearch {
   hasMore: boolean;
@@ -27,8 +27,10 @@ export interface ICompanyState {
   companies: Company[];
   selectedCompany?: Company;
   loading: boolean;
+  firstLoaded: boolean;
   loaded: boolean;
   hasMore: boolean;
+  lastSearchType: SearchType;
 }
 
 const CompanyContext = createContext({} as CompanyContextProps);
@@ -53,6 +55,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [firstLoaded, setFirstLoaded] = useState(false);
 
   const setCompanies = useCallback((companies: Company[]) => {
     setCompanySearch((prev) => ({ ...prev, companies }));
@@ -68,7 +71,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
       lastSearchType: null,
       totalCompanies: 0,
     });
-    setLoaded(false); // Reset loaded state for new search
+    setLoaded(false);
   }, [setCompanies]);
 
   const searchCompany = useCallback(
@@ -77,7 +80,6 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
         resetSearchState(); // Reset for a brand new search
         setCurrentTextSearchQuery(text); // Store the text for subsequent fetches
       }
-
       setIsLoading(true);
       const offsetToUse = newSearch ? 0 : companySearch.currentOffset;
 
@@ -93,6 +95,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
             lastSearchType: 'text',
             totalCompanies: data.total,
           }));
+          setFirstLoaded(true);
           setLoaded(true);
         })
         .finally(() => setIsLoading(false));
@@ -102,9 +105,10 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
 
   const searchCompanyByDescription = useCallback(
     (text: string) => {
+      setIsLoading(true);
       resetSearchState();
       setCurrentTextSearchQuery(null);
-      setIsLoading(true);
+
       getCompaniesByDescription(text)
         .then((data) => {
           setCompanySearch({
@@ -115,6 +119,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
             lastSearchType: 'description',
             totalCompanies: data.length,
           });
+          setFirstLoaded(true);
           setLoaded(true);
         })
         .finally(() => setIsLoading(false));
@@ -127,6 +132,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
       resetSearchState();
       setCurrentTextSearchQuery(null);
       setIsLoading(true);
+
       getCompaniesByFile(file)
         .then((data) => {
           setCompanySearch({
@@ -137,6 +143,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
             lastSearchType: 'file',
             totalCompanies: data.length,
           });
+          setFirstLoaded(true);
           setLoaded(true);
         })
         .finally(() => setIsLoading(false));
@@ -165,11 +172,13 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
     <CompanyContext.Provider
       value={{
         state: {
+          firstLoaded,
           loaded,
           companies: companySearch.companies,
           selectedCompany: undefined,
           loading: isLoading,
           hasMore: companySearch.hasMore,
+          lastSearchType: companySearch.lastSearchType,
         },
         setCompanies,
         searchCompany,

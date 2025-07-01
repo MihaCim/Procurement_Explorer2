@@ -6,6 +6,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Company } from '../../models/Company';
+import TruncatedParagraph from '../commons/TuncatedParagraph';
 import { H2 } from '../Typography';
 
 countries.registerLocale(enLocale);
@@ -29,7 +30,7 @@ const Card = styled.a<{ $disabled: boolean }>`
   background: #fff;
 
   /* new shadow */
-  box-shadow: 1px 2px 7px 9px rgba(70, 72, 80, 0.07);
+  box-shadow: 1px 2px 7px 2px rgba(70, 72, 80, 0.07);
 
   &:hover {
     border-radius: 4px;
@@ -37,11 +38,11 @@ const Card = styled.a<{ $disabled: boolean }>`
     background: #f0f3f8;
 
     /* new shadow */
-    box-shadow: 1px 2px 7px 9px rgba(70, 72, 80, 0.07);
+    box-shadow: 1px 2px 7px 2px rgba(70, 72, 80, 0.07);
   }
 `;
 
-const Info = styled.p`
+const Info = styled(TruncatedParagraph)`
   color: var(--color-text-primary, #292c3d);
   font-family: Lato;
   font-size: 15px;

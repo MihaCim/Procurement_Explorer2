@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 
 interface LayoutContextProps {
-  layoutRef: React.RefObject<HTMLDivElement> | null;
+  layoutRef: React.RefObject<HTMLDivElement | null> | null;
   scrollToSection: (ref: HTMLElement | null) => void;
   isScrollWithinSection: (ref: HTMLElement | null) => boolean;
 }
@@ -73,6 +73,7 @@ export const LayoutProvider: React.FC<PropsWithChildren> = ({ children }) => {
       className="relative max-w-screen-2xl flex-1 overflow-auto"
       style={{ height: 'calc(100vh - 64px)', scrollbarWidth: 'thin' }}
       ref={layoutRef}
+      id="scrollablelayout"
     >
       <LayoutContext.Provider
         value={{ layoutRef, scrollToSection, isScrollWithinSection }}

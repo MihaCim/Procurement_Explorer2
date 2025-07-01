@@ -31,7 +31,7 @@ const CompaniesGrid: React.FC = () => {
       <div className="w-full flex flex-col gap-4">
         <div className="w-full flex flex-col gap-3">
           <H2>Results</H2>
-          {!loading && companies.length === 0 ? (
+          {!loading && loaded && companies.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center">
               <NoResultIcon />
               <MediumText>Nothing matched your search.</MediumText>
@@ -46,15 +46,13 @@ const CompaniesGrid: React.FC = () => {
           )}
         </div>
 
-        {/* Infinite Scroll Container */}
-        {/* Only render InfiniteScroll if there are companies or if loading. */}
         {(companies.length > 0 || loading) && (
           <InfiniteScroll
-            dataLength={companies.length} // This is important: tells InfiniteScroll how many items are currently rendered
-            next={fetchMore} // Function to call when more data is needed
-            hasMore={hasMore} // Boolean to indicate if there are more items to load
+            dataLength={companies.length}
+            next={fetchMore}
+            hasMore={hasMore}
+            scrollableTarget={'scrollablelayout'}
             loader={
-              // What to display while loading more items
               <div
                 className="w-full grid gap-3 grid-cols-[repeat(auto-fit,minmax(400px,1fr))]"
                 style={{ marginTop: '1rem' }}
@@ -64,18 +62,18 @@ const CompaniesGrid: React.FC = () => {
                 ))}
               </div>
             }
-            endMessage={
-              // What to display when all data has been loaded
-              <MediumText style={{ textAlign: 'center', margin: '20px 0' }}>
-                <b>Yay! You have seen it all.</b>
-              </MediumText>
-            }
-            scrollThreshold="200px" // Optional: how close to the bottom to trigger `next`
+            // endMessage={
+            //   // What to display when all data has been loaded
+            //   <MediumText style={{ textAlign: 'center', margin: '20px 0' }}>
+            //     <b>Yay! You have seen it all.</b>
+            //   </MediumText>
+            // }
+            scrollThreshold="200px"
           >
             <div
-              className="w-full grid 
-              gap-3 
-              grid-cols-[repeat(auto-fit,minmax(400px,1fr))]"
+              className="w-full grid
+            gap-3
+            grid-cols-[repeat(auto-fit,minmax(400px,1fr))]"
             >
               {companies.map((company, i) => (
                 <CompanyCard key={`${company.id}-${i}`} {...company} />
@@ -84,11 +82,10 @@ const CompaniesGrid: React.FC = () => {
           </InfiniteScroll>
         )}
 
-        {/* Initial loading skeletons (if no companies loaded yet) */}
         {loading && companies.length === 0 && (
           <div
             className="w-full grid gap-3 grid-cols-[repeat(auto-fit,minmax(400px,1fr))]"
-            style={{ minHeight: '300px' /* Or adjust as needed */ }}
+            style={{ minHeight: '300px' }}
           >
             {Array.from(Array(8).keys()).map((i) => (
               <Skeleton key={i} height={200} />

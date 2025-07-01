@@ -25,6 +25,12 @@ export const H2 = styled.h2`
   font-style: normal;
   font-weight: 700;
   line-height: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis; /* This will work for single line overflow, but -webkit-line-clamp handles the multiline ellipsis */
+  white-space: normal; /* Ensure text wraps normally within the lines */
 `;
 
 export const AttachmentTypo = styled.p`

@@ -50,7 +50,7 @@ const CompanySearchPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Content $loaded={state.loaded}>
+      <Content $loaded={state.firstLoaded}>
         <div className="flex flex-col gap-2 items-center self-stretch">
           <LargeFontH1>Search for a company</LargeFontH1>
         </div>
