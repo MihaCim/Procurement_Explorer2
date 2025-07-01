@@ -39,7 +39,8 @@ class DueDiligenceResult(BaseModel):
 
 
 class DDLogger:
-    def __init__(self, company_name: str) -> None:
+    def __init__(self, company_name: str, max_log_len: int) -> None:
+        self.max_log_len = max_log_len
         self.company_name = company_name
         self.key = f"generate_profile:{company_name}"
 
@@ -69,6 +70,8 @@ class DDLogger:
         dd_result = self._get_cache()
         log_data = dict[str, str | datetime]({"log": log, "timestamp": datetime.now()})
         dd_result.logs.append(log_data)
+        if len(dd_result.logs) > self.max_log_len:
+            dd_result.logs.pop(0)
         dd_result.profile["status"] = "running"
         self._set_cache(dd_result)
 
@@ -89,7 +92,7 @@ async def run_dd_process(company_name: str) -> None:
     redis_client.set(key, json.dumps(dd_result.model_dump_json()))
 
     company_data = CompanyData()
-    logger = DDLogger(company_name)
+    logger = DDLogger(company_name=company_name, max_log_len=10)
 
     logger.add_log("Started DueDiligence")
 
