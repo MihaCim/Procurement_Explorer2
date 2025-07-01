@@ -8,6 +8,8 @@ from openai import AsyncOpenAI
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+AZURE_API_KEY = os.getenv("AZURE_API_KEY")
+AZURE_URL = os.getenv("AZURE_URL")
 
 
 class LLMClient: 
@@ -19,6 +21,8 @@ class LLMClient:
         self.stop_token = None
         self.client_gemini = genai.Client(api_key=GEMINI_API_KEY)
         self.client_openai = AsyncOpenAI(api_key=OPENAI_API_KEY, timeout=300.0)
+        self.azure_key=AZURE_API_KEY
+        self.azure_url=AZURE_URL
 
 
     async def generate_gemini_response(self, prompt: str) -> str:
