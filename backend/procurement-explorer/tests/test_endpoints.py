@@ -223,7 +223,6 @@ async def main() -> None:
     assert result["status"] == "failed"
 
     result = await create_model()
-
     assert "status" in result
     assert "id" in result
     assert result["status"] == "finished"
