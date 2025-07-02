@@ -1,28 +1,66 @@
 export interface DueDiligenceProfile {
-  id?: number;
-  name: string;
-  website?: string;
-  contacts?: Record<string, string>;
-  founded?: number;
-  founder?: string;
-  address?: Record<string, string>;
-  country?: string;
-  last_revision?: string; // ISO 8601 datetime string
-  risk_level?: number;
-  description?: string;
-  key_individuals?: Record<string, string>;
-  security_risk?: Record<string, string>;
-  financial_risk?: Record<string, string>;
-  operational_risk?: Record<string, string>;
-  key_relationships?: Record<string, string>;
+  company_name: string;
+  url: string;
+  founded: string;
+  founder: string;
+  address: Address;
+  description: string;
   due_diligence_timestamp?: string; // ISO 8601 datetime string
+
+  //THESE SEEMS INJECTED IN ADDITION OF LLM RESULT
+  metadata?: Record<string, string>;
+  status?: 'running' | 'finished';
+  // END
+
+  key_individuals: {
+    [role: string]: unknown;
+  };
+  security_risks: {
+    [key: string]: unknown;
+  };
+  financial_risks: {
+    [key: string]: unknown;
+  };
+  key_relationships: {
+    [key: string]: unknown;
+  };
+  operational_risks: {
+    [key: string]: unknown;
+  };
+
+  risk_level: {
+    [key: string]: unknown;
+  };
+  risk_level_int: number;
+  summary?: string; //Is it used or is it description ?
+}
+
+export interface KeyRelationship {
+  name: string;
+  details: string;
+}
+
+export interface DueDiligenceLog {
+  [key: string]: string;
+}
+
+export interface DueDiligenceResult {
+  logs: DueDiligenceLog[];
+  profile: DueDiligenceProfile;
+  errors: string[];
+  started: Date;
+  lastUpdated: Date;
+}
+
+export interface DueDiligenceCreationResult {
+  msg: string;
+  status: 'ok' | 'nok';
 }
 
 export interface Address {
-  zip: string;
-  city: string;
-  state: string;
   street: string;
+  city: string;
+  country: string;
 }
 
 export interface KeyIndividuals {

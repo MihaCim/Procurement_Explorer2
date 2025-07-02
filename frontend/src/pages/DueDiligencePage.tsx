@@ -2,8 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import AgenticFeedback from '../components/dueDiligence/AgenticFeedback';
-import DueDiligenceSidePanel from '../components/dueDiligence/DueDiligenceSidePanel';
-import GeneralInformation from '../components/dueDiligence/GeneralInformation';
+import RiskProfile from '../components/dueDiligence/RiskProfile';
 import StartNewAnalysisCard from '../components/dueDiligence/StartNewAnalysisCard';
 import LoadingCard from '../components/LoadingCard';
 import PageContainer from '../components/PageContainer';
@@ -15,33 +14,27 @@ const PageLayout = styled.div`
   gap: 16px;
   flex: 1 0 0;
   align-self: stretch;
+  height: 100%;
 `;
 
 const DueDiligencePage: React.FC = () => {
   const {
-    state: { loading, company, profile },
-    export: { targetRef },
+    state: { loadingCompany, profile },
   } = useDueDiligenceContext();
 
   return (
-    <PageContainer id="due-diligence-page">
-      {loading ? (
+    <PageContainer id="due-diligence-page" className="h-full">
+      {loadingCompany ? (
         <div className="w-full top-1/2 left-1/2">
           <LoadingCard text="Retrieving document structure" />
         </div>
       ) : (
-        <PageLayout ref={targetRef}>
-          <div id="sidepanel" className="z-50 sticky top-4">
-            <DueDiligenceSidePanel />
-          </div>
-
-          {company?.status === 'Available' && profile ? (
-            <div className="flex flex-col gap-2">
+        <PageLayout>
+          {profile ? (
+            <div className="flex flex-col self-stretch">
               <AgenticFeedback />
-              <GeneralInformation />
+              <RiskProfile />
             </div>
-          ) : company?.status === 'Pending' ? (
-            <>Pending status...loading...connecting to WebSockets</>
           ) : (
             <StartNewAnalysisCard />
           )}

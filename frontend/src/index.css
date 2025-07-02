@@ -9,3 +9,8 @@ html,
   font-size: 14px;
   background-color: var(--background-primary, '#f6f6f8');
 }
+
+ul {
+  list-style: disc;
+  padding-left: 25px;
+}

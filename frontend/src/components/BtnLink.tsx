@@ -8,12 +8,7 @@ const StyledBtnLink = styled.button`
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  text-decoration-line: underline;
-  text-decoration-style: solid;
-  text-decoration-skip-ink: none;
-  text-decoration-thickness: auto;
-  text-underline-offset: auto;
-  text-underline-position: from-font;
+
   cursor: pointer;
 `;
 const BtnLink: React.FC<

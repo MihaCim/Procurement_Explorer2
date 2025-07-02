@@ -8,7 +8,6 @@ import RootBoundary from './errorBoundaries/RootBoundary';
 import { Layout } from './layout';
 import AddCompany from './pages/AddCompany';
 import AddCompanyDetails from './pages/AddCompanyDetails';
-import AgenticDD from './pages/AgenticDD';
 import CompanyHistory from './pages/CompanyHistory';
 import CompanySearchPage from './pages/CompanySearchPage';
 import DueDiligencePage from './pages/DueDiligencePage';
@@ -53,7 +52,7 @@ const APP_ROUTES = [
         ],
       },
       {
-        path: '/due-diligence/:id',
+        path: '/due-diligence',
         errorElement: <DetailsBoundary />,
         element: (
           <DueDiligenceProvider>
@@ -62,18 +61,13 @@ const APP_ROUTES = [
         ),
       },
       {
-        path: '/wsclient',
+        path: '/due-diligence/:id',
+        errorElement: <DetailsBoundary />,
         element: (
           <DueDiligenceProvider>
-            <Outlet />
+            <DueDiligencePage />
           </DueDiligenceProvider>
         ),
-        children: [
-          {
-            path: ':id',
-            element: <AgenticDD />,
-          },
-        ],
       },
     ],
   },

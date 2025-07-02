@@ -9,16 +9,22 @@ interface ILabelProps {
 }
 
 const StyledTitle = styled.div`
-  color: var(--color-text-primary, #292c3d);
-  font-size: 13px;
+  color: var(--Color-color-text-primary, #292c3d);
+  font-family: Poppins;
+  font-size: 12px;
+  font-style: normal;
   font-weight: 400;
+  line-height: normal;
+  word-break: break-word;
 `;
 
 const StyledContent = styled.div`
-  color: var(--color-text-secondary, #121213);
-  font-size: 14px;
+  color: var(--Color-color-text-secondary, #121213);
+  font-family: Poppins;
+  font-size: 13px;
   font-style: normal;
   font-weight: 600;
+  line-height: normal;
   word-break: break-word;
 `;
 
