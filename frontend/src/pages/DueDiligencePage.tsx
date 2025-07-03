@@ -15,12 +15,15 @@ const PageLayout = styled.div`
   flex: 1 0 0;
   align-self: stretch;
   height: 100%;
+  width: 100%;
 `;
 
 const DueDiligencePage: React.FC = () => {
   const {
     state: { loadingCompany, profile },
   } = useDueDiligenceContext();
+
+  console.log('DueDiligencePage profile', profile);
 
   return (
     <PageContainer id="due-diligence-page" className="h-full">
@@ -30,8 +33,9 @@ const DueDiligencePage: React.FC = () => {
         </div>
       ) : (
         <PageLayout>
-          {profile ? (
-            <div className="flex flex-col self-stretch">
+          {profile?.status &&
+          ['running', 'finished', 'generated'].includes(profile?.status) ? (
+            <div className="flex flex-col self-stretch w-full">
               <AgenticFeedback />
               <RiskProfile />
             </div>

@@ -14,6 +14,7 @@ const Bar = styled.div`
   justify-content: space-between;
   align-items: center;
   align-self: stretch;
+  gap: 8px;
 
   border-radius: var(--radius-radius-small, 4px) var(--radius-radius-small, 4px)
     0px 0px;
@@ -27,6 +28,7 @@ const AnimatedContent = styled.div<{ $expanded: boolean }>`
   max-height: ${(props) => (props.$expanded ? '800px' : '0')};
   opacity: ${(props) => (props.$expanded ? 1 : 0)};
   overflow-y: scroll;
+  scrollbar-width: thin;
   overflow-x: hidden;
   transition:
     max-height 0.4s ease,
@@ -50,13 +52,12 @@ const FeebackTypo = styled.p`
 `;
 
 const AgentWorkflowTitle = styled.h3`
-  color: var(--Color-color-text-secondary, #121213);
+  color: var(--color-text-secondary, #121213);
   font-family: Poppins;
-  font-size: 17px;
+  font-size: 16px;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 600;
   line-height: normal;
-  letter-spacing: -0.17px;
 `;
 
 const LinkTypo = styled.p`
@@ -103,11 +104,23 @@ const AgentFeedbackContainer = styled.div`
   box-shadow: 1px 1px 10px 0px rgba(73, 76, 91, 0.03) inset;
 `;
 
-const AgentFeedback = (feedback: DueDiligenceLog) => {
+const AgentFeedback: React.FC<{
+  feedback: DueDiligenceLog;
+  isCurrent: boolean;
+  isFinished: boolean;
+}> = ({ feedback, isCurrent, isFinished }) => {
   return (
     <AgentFeedbackContainer>
-      <FeebackTypo>{feedback['agent']}</FeebackTypo>
-      <FeedbackText>{feedback['message']}</FeedbackText>
+      <FeebackTypo>
+        {isCurrent &&
+          (isFinished ? (
+            <AcceptIcon height={24} />
+          ) : (
+            <CircularProgress size={24} borderWidth={2} />
+          ))}
+        {feedback['agent']}
+      </FeebackTypo>
+      <FeedbackText>{feedback['log']}</FeedbackText>
     </AgentFeedbackContainer>
   );
 };
@@ -126,26 +139,23 @@ const AgenticFeedback: React.FC = () => {
   return (
     <Bar>
       <div className="flex justify-between items-center gap-3 w-full">
-        {isExpanded ? (
-          <AgentWorkflowTitle>Agent Workflow</AgentWorkflowTitle>
-        ) : (
-          <div className="flex items-center">
-            {profile?.status === 'finished' ? (
-              <AcceptIcon />
+        <div className="flex items-center gap-2">
+          {profile?.status === 'finished' ? (
+            <AcceptIcon height={24} />
+          ) : (
+            <CircularProgress size={16} borderWidth={2} />
+          )}
+          <div className="flex flex-1">
+            {currentFeedback ? (
+              <FeebackTypo>
+                {`${currentFeedback['agent']}: ${currentFeedback['log']}`}
+              </FeebackTypo>
             ) : (
-              <CircularProgress size={24} borderWidth={2} />
+              <FeebackTypo>Initialisation...</FeebackTypo>
             )}
-            <div className="flex flex-1">
-              {currentFeedback ? (
-                <FeebackTypo>
-                  {`${currentFeedback['agent']}: ${currentFeedback['message']}`}
-                </FeebackTypo>
-              ) : (
-                <FeebackTypo>Initialisation...</FeebackTypo>
-              )}
-            </div>
           </div>
-        )}
+        </div>
+
         <BtnLink
           className="flex gap-1"
           onClick={() => setIsExpanded((prev) => !prev)}
@@ -158,10 +168,37 @@ const AgenticFeedback: React.FC = () => {
       </div>
 
       <AnimatedContent $expanded={isExpanded}>
-        <div className="flex flex-col self-stretch">
-          {logs.map((log, i) => (
-            <AgentFeedback key={`logs_${i}`} {...log} />
-          ))}
+        <div className="flex flex-col self-stretch gap-4">
+          <div className="flex flex-col self-stretch gap-3">
+            <AgentWorkflowTitle>Metadata</AgentWorkflowTitle>
+            {profile?.metadata && Object.keys(profile.metadata).length > 0 ? (
+              <div className="flex flex-col gap-2">
+                {Object.entries(profile.metadata).map(([key, value]) => (
+                  <div key={key} className="flex gap-2">
+                    <p className="font-semibold">{key}:</p>
+                    <p>{value}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <FeedbackText>No metadata available</FeedbackText>
+            )}
+          </div>
+          <div className="flex flex-col self-stretch">
+            <AgentWorkflowTitle>Logs</AgentWorkflowTitle>
+            {logs && logs.length === 0 ? (
+              <FeedbackText>No logs available</FeedbackText>
+            ) : (
+              logs.map((log, i) => (
+                <AgentFeedback
+                  key={`logs_${i}`}
+                  isCurrent={i === logs.length - 1}
+                  isFinished={profile?.status === 'finished'}
+                  feedback={log}
+                />
+              ))
+            )}
+          </div>
         </div>
       </AnimatedContent>
     </Bar>

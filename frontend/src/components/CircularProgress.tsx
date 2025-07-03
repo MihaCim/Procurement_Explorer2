@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const CircularProgress = styled.div<{
+export const CircularProgress = styled.span<{
   size?: number;
   borderWidth?: number;
 }>`

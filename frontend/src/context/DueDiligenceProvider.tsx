@@ -110,7 +110,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   //   updateQuery.mutate(data);
   // };
 
-  const { profile, logs } = data ?? { profile: null, logs: [], errors: [] };
+  const profile = data;
 
   useEffect(() => {
     if (profile?.status === 'finished' && !profile_generated)
@@ -189,8 +189,8 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
       value={{
         // export: { exportToPDF, targetRef },
         state: {
-          profile,
-          logs: logs ?? [],
+          profile: profile ?? null,
+          logs: profile?.logs ?? [],
           company: company ?? null,
           loadingCompany: loadingCompany ?? false,
           loadingProfile: loadingProfile ?? false,

@@ -76,6 +76,7 @@ const TextField = ({
           name={name}
           value={value}
           disabled={disabled}
+          autoComplete="off"
           $fullWidth={fullWidth}
           $width={width}
           $error={!!error}

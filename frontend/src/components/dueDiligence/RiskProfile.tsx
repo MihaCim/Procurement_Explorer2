@@ -8,6 +8,7 @@ import { H2, H4 } from '../Typography';
 
 const Container = styled.div`
   display: flex;
+
   min-height: 700px;
   padding: 16px 24px;
   flex-direction: column;
@@ -23,7 +24,8 @@ const TwoColDiv = styled.div`
   display: flex;
   align-items: flex-start;
   align-content: flex-start;
-  gap: 80px;
+  column-gap: 80px;
+  row-gap: 12px;
   align-self: stretch;
   flex-wrap: wrap;
 `;
@@ -33,7 +35,7 @@ const OneColDiv = styled.div`
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  flex: 1 0 0;
+  flex: 1 0 45%;
 `;
 
 const SubContent = styled.div`
@@ -117,7 +119,7 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
   return (
     <div className="flex flex-1 flex-col">
       <H4>{title}:</H4>
-      {value ? (
+      {value && Object.keys(value).length >= 0 ? (
         renderSubDictionnary(value, 0)
       ) : pending ? (
         <Skeleton height={100} />
@@ -142,6 +144,11 @@ const RiskProfile: React.FC = () => {
           <TwoColDiv>
             <OneColDiv>
               <Label
+                textTitle="Name"
+                textContent={profile?.company_name ?? '-'}
+                loading={profile?.status === 'running'}
+              />
+              <Label
                 textTitle="Industry"
                 textContent={company?.industry ?? '-'}
                 loading={loadingCompany}
@@ -165,6 +172,15 @@ const RiskProfile: React.FC = () => {
               />
             </OneColDiv>
             <OneColDiv>
+              <Label
+                textTitle="Adress"
+                textContent={
+                  profile?.address
+                    ? Object.values(profile.address).join(' ')
+                    : '-'
+                }
+                loading={profile?.status === 'running'}
+              />
               <Label
                 textTitle="Product portfolio"
                 textContent={

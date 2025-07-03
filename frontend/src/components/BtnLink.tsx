@@ -8,7 +8,7 @@ const StyledBtnLink = styled.button`
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-
+  white-space: nowrap;
   cursor: pointer;
 `;
 const BtnLink: React.FC<

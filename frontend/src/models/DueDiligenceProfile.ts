@@ -9,7 +9,7 @@ export interface DueDiligenceProfile {
 
   //THESE SEEMS INJECTED IN ADDITION OF LLM RESULT
   metadata?: Record<string, string>;
-  status?: 'running' | 'finished';
+  status?: 'running' | 'finished' | 'not_available';
   // END
 
   key_individuals: {
@@ -44,12 +44,9 @@ export interface DueDiligenceLog {
   [key: string]: string;
 }
 
-export interface DueDiligenceResult {
+export interface DueDiligenceResult extends DueDiligenceProfile {
   logs: DueDiligenceLog[];
-  profile: DueDiligenceProfile;
-  errors: string[];
-  started: Date;
-  lastUpdated: Date;
+  errors?: string[];
 }
 
 export interface DueDiligenceCreationResult {
