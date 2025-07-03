@@ -3,6 +3,8 @@ import styled from 'styled-components';
 
 import NoProfileFoundIcon from '../../assets/icons/profile_not_found.svg?react';
 import { useDueDiligenceContext } from '../../context/DueDiligenceProvider';
+import InitializationModal from '../modals/InitializationModal';
+import StartGatheringInfoModal from '../modals/StartGatheringInfoModal';
 import PrimaryButton from '../PrimaryButton';
 
 const Container = styled.div`
@@ -33,24 +35,41 @@ const InfoFrame = styled.div`
 
 const StartNewAnalysisCard: React.FC = () => {
   const {
-    state: { company, loadingCompany },
+    state: { company, loadingCompany, profile_initiating },
     startDueDiligence,
   } = useDueDiligenceContext();
+
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+
   return (
-    <Container>
-      <InfoFrame>
-        <NoProfileFoundIcon />
-        <p>No information gathered yet</p>
-      </InfoFrame>
-      <PrimaryButton
-        btnProps={{ disabled: !!loadingCompany }}
-        onClick={() => {
-          if (company?.website) startDueDiligence(company?.website);
+    <>
+      <Container>
+        <InfoFrame>
+          <NoProfileFoundIcon />
+          <p>No information gathered yet</p>
+        </InfoFrame>
+        <PrimaryButton
+          btnProps={{ disabled: !!loadingCompany }}
+          onClick={() => {
+            if (company?.website) startDueDiligence(company?.website);
+            else setIsModalOpen(true);
+          }}
+        >
+          Start gathering information
+        </PrimaryButton>
+      </Container>
+
+      <StartGatheringInfoModal
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+        onConfirm={(url) => {
+          setIsModalOpen(false);
+          startDueDiligence(url);
         }}
-      >
-        Start gathering information
-      </PrimaryButton>
-    </Container>
+      />
+
+      <InitializationModal isOpen={profile_initiating} />
+    </>
   );
 };
 

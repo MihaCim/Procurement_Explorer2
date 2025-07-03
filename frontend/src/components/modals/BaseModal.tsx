@@ -15,9 +15,9 @@ const modalStyle = {
     bottom: 'auto',
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
-    background: 'none',
     border: 'none',
     overflow: 'visible',
+    background: 'var(--color-white, #ffffff)',
   },
   overlay: { zIndex: 1000, background: 'rgba(0, 0, 0, 0.5)' },
 };

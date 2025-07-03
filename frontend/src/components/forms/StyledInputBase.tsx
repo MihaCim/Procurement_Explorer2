@@ -21,6 +21,7 @@ const StyledInputBase = styled.input<{
     props.$error
       ? '1px solid rgb(239 68 68)'
       : '1px solid var(--stroke, #EBEBF1)'};
+
   background: var(--color-white, #fff);
   &:disabled {
     color: #434346;

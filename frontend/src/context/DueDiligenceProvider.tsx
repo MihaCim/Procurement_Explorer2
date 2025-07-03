@@ -31,6 +31,7 @@ export interface IDueDiligenceState {
   company: DetailedCompany | null;
   profile_generated: boolean;
   profile_started: boolean;
+  profile_initiating: boolean;
 }
 
 const DueDiligenceContext = createContext({} as DueDiligenceContext);
@@ -45,6 +46,8 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
 
   const [profile_generated, set_profile_generated] = React.useState(false);
   const [profile_started, set_profile_started] = React.useState(false);
+  const [profile_initiating, set_profile_initiating] = React.useState(false);
+  // const [risk_level, setRiskLevel] = React.useState
 
   const [profile_url, set_profile_url] = React.useState<string | null>(null);
 
@@ -89,7 +92,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     // refetch,
   } = useQuery({
     queryKey: ['profile', profile_url],
-    queryFn: () => getDueDiligenceProfile(Number(id)),
+    queryFn: ({ queryKey }) => getDueDiligenceProfile(queryKey[1]!),
     enabled: refreshEnabled,
     refetchInterval: 2000,
   });
@@ -118,11 +121,14 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     async (url: string) => {
       if (url) {
         try {
+          set_profile_initiating(true);
           await startDueDiligenceProfile(url);
           set_profile_url(url);
           set_profile_started(true);
         } catch (error) {
           console.log(error); //TODO
+        } finally {
+          set_profile_initiating(false);
         }
       }
     },
@@ -189,6 +195,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
           loadingCompany: loadingCompany ?? false,
           loadingProfile: loadingProfile ?? false,
           updating: false,
+          profile_initiating,
           profile_generated,
           profile_started,
         },

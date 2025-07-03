@@ -1,5 +1,6 @@
 import React from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import NoResultIcon from '../../assets/search_no_result.svg?react';
@@ -26,6 +27,8 @@ const CompaniesGrid: React.FC = () => {
     fetchMore,
   } = useCompanyContext();
 
+  const navigate = useNavigate();
+
   return (
     firstLoaded && (
       <div className="w-full flex flex-col gap-4">
@@ -36,12 +39,16 @@ const CompaniesGrid: React.FC = () => {
               <NoResultIcon />
               <MediumText>Nothing matched your search.</MediumText>
               <MediumText>Adjust your input, or</MediumText>
-              <BtnLink>Start gathering information</BtnLink>
+              <BtnLink onClick={() => navigate('/due-diligence')}>
+                Start gathering information
+              </BtnLink>
             </div>
           ) : (
             <p>
               Didn't find the company that you are looking for ? You can{' '}
-              <BtnLink>start gathering information.</BtnLink>
+              <BtnLink onClick={() => navigate('/due-diligence')}>
+                start gathering information.
+              </BtnLink>
             </p>
           )}
         </div>
