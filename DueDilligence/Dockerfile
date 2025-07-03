@@ -17,4 +17,5 @@ COPY ./src .
 EXPOSE 8501
 
 # Entry point
-ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+#ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+ENTRYPOINT ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "8501", "--workers", "4"]
