@@ -1,6 +1,6 @@
 import os
 from urllib.parse import quote
-
+from models.models import DueDiligenceProfile
 import aiohttp
 
 dd_host = os.getenv("DD_URL")

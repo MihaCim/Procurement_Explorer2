@@ -29,7 +29,7 @@ class CompanyWrapper(BaseModel):
     id: int
     name: Optional[str] = None
     website: str
-    status: Optional[str] = "Pending"
+    status: Optional[str] = "Not Available"
     industry: Optional[str] = None
     country: Optional[str] = None
     review_date: Optional[str] = None
@@ -112,13 +112,13 @@ class searchCompaniesWrapper(BaseModel):
     details: CompanyDetailsWrapper
 
 
-def map_company_to_wrapper(company: Company) -> CompanyWrapper:
+def map_company_to_wrapper(company: Company, dd_profile: DueDiligenceProfile | None ) -> CompanyWrapper | None:
+    
     try:
-        return CompanyWrapper(
+        kwargs = dict(
             id=company.id,
             name=company.Name,
             website=company.Website,
-            status=company.Due_Diligence_Status,
             industry=company.Industry,
             country=company.Country,
             review_date=(
@@ -137,6 +137,11 @@ def map_company_to_wrapper(company: Company) -> CompanyWrapper:
                 qualityStandards=company.Quality_Standards,
             ),
         )
+        # only set status if we actually have one
+        if dd_profile and dd_profile.status is not None:
+            kwargs["status"] = dd_profile.status
+        return CompanyWrapper(**kwargs)
+    
     except Exception as e:
         logger.info(f"company status: {company.Status}")
         logger.error(f"Error mapping company to wrapper: {e}", exc_info=True)

@@ -17,7 +17,7 @@ from langchain_core.documents import Document
 from pypdf import PdfReader
 from src.connectors.postgres_conector import PostgresConnector
 from src.models.models import Company, CompanyProfile, DueDiligenceProfile
-
+from dd_service import get_dd_profile_from_cache
 from ..services.vector_store_service import VectorStoreService
 
 logging.basicConfig(
@@ -449,12 +449,24 @@ async def get_companies_similarity_profiles(
 async def get_due_diligence_by_website(
     url: str, source: PostgresConnector = PostgresConnector()
 ) -> DueDiligenceProfile | None:
-    query = "SELECT * FROM due_diligence_profiles WHERE url = %s;"
-    result = source.execute_query(query, (url,), fetchone=True)
-    if not result:
+    
+    #check for profile in cache
+    response = await get_dd_profile_from_cache(url)
+    dd_data = response.get("profile") if response else None
+    
+    #if not in cache, check for profile in DB
+    if not dd_data:
+        query = "SELECT * FROM due_diligence_profiles WHERE url = %s;"
+        dd_data = source.execute_query(query, (url,), fetchone=True)
+        if not dd_data:
+            return None 
+        
+    #build respsonse model
+    try:
+        return DueDiligenceProfile(**dd_data)
+    except Exception as e:
+        logger.error(f"Failed to create DueDiligenceProfile from data for {url}: {e}", exc_info=True)
         return None
-    due_diligence_profile = DueDiligenceProfile(**result)
-    return due_diligence_profile
 
 
 async def create_due_diligence_profile(

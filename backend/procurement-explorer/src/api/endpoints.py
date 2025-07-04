@@ -116,6 +116,7 @@ async def get_company_info(
     id: str,
 ):
     company: Optional[Company] = await get_company(id)
+    dd_profile: Optional[DueDiligenceProfile] = await get_company(id)
     if company is None:
         raise HTTPException(status_code=404, detail="Company not found")
     # Map the company model to the CompanyWrapper
@@ -138,7 +139,6 @@ async def get_company_status(id: int):
     company: Optional[Company] = await get_company(id)
     if company is None:
         raise HTTPException(status_code=404, detail="Company not found")
-    print(company)
     return {"id": id, "status": company.Due_Diligence_Status}
 
 
@@ -159,7 +159,6 @@ async def get_company_count() -> JSONResponse:
 
 @router.put("/companies/{id}/verdict")
 async def update_company_verdict_status(id: str, verdict: str):
-    print("is confirmed: ", verdict)
     if verdict == "true":
         company = await update_company_verdict(id)
         vs.add_document_to_vector_store(id, company)
@@ -247,6 +246,9 @@ async def find_companies_by_document(
         doc_profile, collection_name="company_profile_nomic", k=k
     )
     companies = await get_companies_similarity_profiles(response)
+    dd_profiles = [
+        get_due_diligence_by_website(company.Website) for company in companies if company is not None
+    ]
     companies_wrapped = [
         map_company_to_wrapper(company) for company in companies if company is not None
     ]
