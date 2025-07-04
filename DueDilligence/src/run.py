@@ -6,12 +6,11 @@ from typing import Any
 from data_models import DueDiligenceCompanyProfile, DueDiligenceResult
 from data_models import map_company_data_to_profile
 import uvicorn
-from cache import AsyncInFlightCache
 from company_data import CompanyData
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from prompts.prompts2 import Prompts
 from pydantic import BaseModel
-from redis_connector import RedisStore
+from DueDilligence.src.redis import RedisStore
 from thread import TaskThread
 from logger import DDLogger
 
