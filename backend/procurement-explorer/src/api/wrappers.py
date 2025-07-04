@@ -72,6 +72,7 @@ class DueDiligenceProfileWrapper(BaseModel):
     due_diligence_timestamp: Optional[datetime] = None
     metadata: Optional[dict] = None
     status: Optional[str] = None
+    logs: Optional[List[dict]] = None
 
 
 class FileWrapper(BaseModel):
@@ -196,30 +197,44 @@ def map_company_to_search_company(company: Company) -> searchCompaniesWrapper:
 def map_due_diligence_to_wrapper(
     profile: DueDiligenceProfile, company: Company = None
 ) -> DueDiligenceProfileWrapper:
-    return DueDiligenceProfileWrapper(
-        id=profile.id,
-        name=company.Name if company else profile.name,
-        url=profile.url,
-        email=str(
-            profile.contacts
-        ),  # company.Contact_Information if company else str(profile.contacts),
-        founded=profile.founded,
-        founder=profile.founder,
-        address=profile.address,
-        country=company.Country if company else profile.country,
-        Last_revision=str(profile.last_revision),
-        risk_level=profile.risk_level,
-        status=company.Due_Diligence_Status if company else "PENDING",
-        description=profile.description,
-        key_individuals=profile.key_individuals,
-        security_risk=profile.security_risk,
-        financial_risk=profile.financial_risk,
-        operational_risk=profile.operational_risk,
-        key_relationships=profile.key_relationships,
-        due_diligence_timestamp=profile.due_diligence_timestamp,
-        metadata=profile.metadata,
-    )
-
+    
+    def to_int(value):
+        try:
+            value = int(value)
+            print("CURRENT VALUE: ", value)
+            return value
+        except (TypeError, ValueError):
+            return None
+        
+    try:
+        return DueDiligenceProfileWrapper(
+            id=profile.id if profile.id else None,
+            name=company.Name if company else profile.name,
+            url=profile.url,
+            email=str(
+                profile.contacts
+            ),  
+            # company.Contact_Information if company else str(profile.contacts),
+            founded=to_int(profile.founded),
+            founder=profile.founder,
+            address=profile.address,
+            country=company.Country if company else "",
+            Last_revision=str(profile.last_revision),
+            risk_level=to_int(profile.risk_level),
+            status=profile.status,
+            description=profile.description,
+            key_individuals=profile.key_individuals,
+            security_risk=profile.security_risk,
+            financial_risk=profile.financial_risk,
+            operational_risk=profile.operational_risk,
+            key_relationships=profile.key_relationships,
+            due_diligence_timestamp=profile.due_diligence_timestamp,
+            metadata=profile.metadata,
+            logs=profile.logs
+        )
+    except Exception as e:
+        logger.error(f"Failed to serialilze DueDiligenceProfile from data for {url}: {e}", exc_info=True)
+        return None
 
 def map_wrapper_to_due_diligence(
     wrapper: DueDiligenceProfileWrapper,
@@ -228,17 +243,15 @@ def map_wrapper_to_due_diligence(
 
     # Map fields from DueDiligenceProfileWrapper to DueDiligenceProfile
     return DueDiligenceProfile(
-        id=wrapper.id,
+        id=wrapper.id if wrapper.id else None,
         name=wrapper.name or "",
         url=wrapper.url,
-        contacts={"email": wrapper.email}
-        if wrapper.email
-        else None,  # Mapping email to contacts
+        contacts={"email": wrapper.email} if wrapper.email else None,
         founded=wrapper.founded,
         founder=wrapper.founder,
         address=wrapper.address,
         country=wrapper.country,
-        last_revision=datetime.now(),
+        last_revision=wrapper.Last_revision,
         risk_level=wrapper.risk_level,
         description=wrapper.description,
         key_individuals=wrapper.key_individuals,
@@ -248,4 +261,5 @@ def map_wrapper_to_due_diligence(
         key_relationships=wrapper.key_relationships,
         due_diligence_timestamp=wrapper.due_diligence_timestamp,
         metadata=wrapper.metadata,
+        logs=wrapper.logs or []
     )

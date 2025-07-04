@@ -73,9 +73,8 @@ async def get_profile(
     key = f"generate_profile:{company_name}"
     json_data = redis.get_json(key)
     if not json_data:
+        print ("REQUEST QUERY: ", key)
         raise HTTPException(status_code=404, detail=f"cache for {company_name} does not exists")
-    print("**************************************")
-    print ("cashed data json: ", json_data)
     dd_result = DueDiligenceResult.model_validate(json_data)
     return map_company_data_to_profile (dd_result)
 

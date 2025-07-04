@@ -18,44 +18,12 @@ class DueDiligenceCompanyProfile(BaseModel):
     last_revision: Optional[str] = Field(
         default_factory=lambda: datetime.now().isoformat(), alias="last_revision")
     due_diligence_timestamp: Optional[str] = Field(
-        default_factory=lambda: datetime.now().isoformat(), alias="due_diligence_timestamp")
+        default_factory=lambda: datetime.now().isoformat(), alias="start")
     summary: Optional[str] = Field(default=None, alias="summary")
     status: Optional[str] = Field(default="not available", alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
     logs: Optional[List[dict]] = Field(default=None, alias="logs")
     
-
-class DueDiligenceProfileWrapper(BaseModel):
-    # Side card
-    name: Optional[str] = None
-    url: Optional[str] = None  # Add URL field
-    email: Optional[str] = None  # Add email field
-    founded: Optional[int] = None
-    founder: Optional[str] = None
-    address: Optional[Dict[str, str]] = (
-        None  # Address as a dictionary (street and city)
-    )
-    country: Optional[str] = None  # Add country field
-    Last_revision: Optional[str] = None  # Add last revision field
-    risk_level: Optional[int] = None
-    status: Optional[str] = None  # Add URL field
-
-    # Upper card
-    description: Optional[str] = None
-
-    # Lower card
-    key_individuals: Optional[Dict] = None  # Dictionary for key individuals
-    security_risk: Optional[Dict] = None  # Dictionary for security risk
-    financial_risk: Optional[Dict] = None  # Dictionary for financial risk
-    operational_risk: Optional[Dict] = None  # Dictionary for operational risk
-    key_relationships: Optional[Dict] = None  # Dictionary for key relationships
-
-    # Timestamps and other fields
-    due_diligence_timestamp: Optional[datetime] = None
-    metadata: Optional[dict] = None
-    status: Optional[str] = None
-    logs: Optional[List[dict]] = Field(default=None, alias="logs")
-
 
 class DueDiligenceResult(BaseModel):
     logs: list[dict[str, str | datetime]] = list()
@@ -65,6 +33,8 @@ class DueDiligenceResult(BaseModel):
     started: datetime = datetime.now()
     last_updated: datetime = datetime.now()
 
+def empty_str_to_none(value):
+    return None if value is None or (isinstance(value, str) and value.strip() == '') else value
 
 def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligenceCompanyProfile:
     
@@ -75,10 +45,10 @@ def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligence
             name=profile.get("company_name", ""),
             status=profile.get("status", "not available"),
             url=data.url,
-            founded=str(profile.get("founded")) if profile.get("founded") is not None else None,
+            founded=empty_str_to_none(str(profile.get("founded"))),
             founder=profile.get("founder"),
             address=profile.get("address"),
-            risk_level=str(profile.get("risk_level_int")) if profile.get("risk_level_int") is not None else None,
+            risk_level=empty_str_to_none(str(profile.get("risk_level_int"))),
             description=profile.get("description"),
             key_individuals=profile.get("key_individuals"),
             security_risk=profile.get("security_risks"),

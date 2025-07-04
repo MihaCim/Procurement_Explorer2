@@ -24,7 +24,6 @@ from ..services.dd_service import (
 from ..services.document_service import (
     build_company_model_from_company_profile,
     build_initial_company_model,
-    create_due_diligence_profile,
     delete_company,
     delete_due_diligence_profile,
     get_companies_similarity_profiles,
@@ -97,7 +96,6 @@ async def add_company(
     input: CompanyInput,  # TODO: Check the CompanyInput model
     background_tasks: BackgroundTasks,
 ):
-    print("received request companies/add")
     url = input.website
     # Step 0: Check if the company already exists in the database
     company: Optional[Company] = await get_company_by_website(url)
@@ -272,46 +270,54 @@ async def start_dd_process_(company_url: str):
         return await start_dd_process(company_url)
 
 
-@router.post("/due-diligence/profile")
-async def create_due_diligence_profile_(
-    new_profile: DueDiligenceProfileWrapper,
-) -> dict[str, str]:
-    dd_profile = map_wrapper_to_due_diligence(new_profile)
-    try:
-        result = await create_due_diligence_profile(dd_profile)
-        if result["status"] == "failed":
-            raise HTTPException(status_code=400, detail=result["msg"])
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"{e}")
+# @router.post("/due-diligence/profile")
+# async def create_due_diligence_profile_(
+#     new_profile: DueDiligenceProfileWrapper,
+# ) -> dict[str, str]:
+#     dd_profile = map_wrapper_to_due_diligence(new_profile)
+#     try:
+#         result = await create_due_diligence_profile(dd_profile)
+#         if result["status"] == "failed":
+#             raise HTTPException(status_code=400, detail=result["msg"])
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=f"{e}")
 
-    await delete_dd_profile_from_cache(new_profile.url)
+#     await delete_dd_profile_from_cache(new_profile.url)
 
-    return {"id": result["msg"], "status": new_profile.status}
+#     return {"id": result["msg"], "status": new_profile.status}
 
 
 @router.get("/due-diligence/profile")
-async def get_due_diligence_prof(company_url: str):
-    if due_diligence_profile := await get_due_diligence_by_website(company_url):
-        return map_due_diligence_to_wrapper(due_diligence_profile)
+async def get_due_diligence_profile(company_url: str):
+
+    if company_url is None or '':
+        return {
+            "status": "failed",
+            "msg": f"profile url not defined",
+            }
 
     dd_result = await get_dd_profile_from_cache(company_url)
-    if "profile" not in dd_result:
-        raise HTTPException(
-            status_code=404, detail=f"DueDiligence profile not found for {company_url}"
-        )
 
-    profile = dd_result["profile"]
-    assert isinstance(profile, dict)
-    profile["logs"] = dd_result.get("logs", [])
-
-    return profile
+    if isinstance(dd_result, DueDiligenceProfile):
+        return map_due_diligence_to_wrapper(dd_result)
+    
+    if due_diligence_profile := await get_due_diligence_by_website(company_url):
+        return map_due_diligence_to_wrapper(due_diligence_profile)
+    
+    return {
+            "status": "failed",
+            "msg": f"No DueDiligence for {company_url} found in system",
+            }
 
 
 @router.put("/due-diligence/profile")
-async def update_due_diligence_profile_(
+async def save_due_diligence_profile_(
     updated_profile: DueDiligenceProfileWrapper,
 ) -> dict[str, str]:
     dd_profile = map_wrapper_to_due_diligence(updated_profile)
+    dd_profile.status = "Approved"
+
+    print("DD_profile: ", dd_profile)
 
     result = await update_due_diligence_profile(dd_profile)
     if result["status"] == "failed":
@@ -332,13 +338,13 @@ async def delete_due_diligence_profile_(company_url: str):
         )
 
 
-@router.get("/companies/{id}/due_diligence/status")
-# get status of risk level for the company: 1-5
-async def due_diligence_status(id: int):
-    for profile in due_diligence_db:
-        if profile.id == id:
-            return {profile.risk_level}
-    raise HTTPException(status_code=404, detail="Company not found")
+# @router.get("/companies/{id}/due_diligence/status")
+# # get status of risk level for the company: 1-5
+# async def due_diligence_status(id: int):
+#     for profile in due_diligence_db:
+#         if profile.id == id:
+#             return {profile.risk_level}
+#     raise HTTPException(status_code=404, detail="Company not found")
 
 
 # @router.post("/chat")
@@ -448,7 +454,7 @@ async def initial_dd_loading_dd_profiles(
         try:
             dd_profile = DueDiligenceProfile(**profile_data)
             # dd_profile = parse_due_diligence_profile(profile_data)
-            dd_profile_id = await create_due_diligence_profile(dd_profile)
+            dd_profile_id = await update_due_diligence_profile(dd_profile)
             num_inserts += 1
             new_profiles.append(dd_profile_id)
         except ValidationError as e:

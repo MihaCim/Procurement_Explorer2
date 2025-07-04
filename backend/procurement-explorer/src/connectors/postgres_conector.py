@@ -83,6 +83,7 @@ class PostgresConnector:
         query = (
             f"INSERT INTO {collection_name} ({columns}) VALUES ({values}) RETURNING id;"
         )
+        print("EXECUTING THE QUERY: ", query, "DOCUMENT: ", document)
         result = self.execute_query(
             query, document, fetchone=True
         )  # Fetch one to get the returned ID

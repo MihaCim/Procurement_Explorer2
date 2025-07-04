@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import Dict, List, Literal, Optional
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -108,6 +107,7 @@ class DueDiligenceProfile(BaseModel):
     )
     status: Optional[str] = Field(default=None, alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
+    logs: Optional[List[dict]] = Field(default=None, alias="logs")
     model_config = ConfigDict(
         populate_by_name=True,
     )

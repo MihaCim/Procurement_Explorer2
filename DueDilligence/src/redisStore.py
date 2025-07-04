@@ -28,7 +28,6 @@ class RedisStore:
 
         return cls._client
 
-
     @classmethod
     def get_json(cls, key: str) -> Any | None:
         
