@@ -1,32 +1,7 @@
 import os, json
 import redis
-from typing import Dict, List, Literal, Optional, Any
+from typing import Optional, Any
 from fastapi import HTTPException
-
-# def get_redis_client() -> redis.Redis:
-#     redis_host = os.getenv("REDIS_HOST")
-#     assert redis_host
-
-#     redis_port = os.getenv("REDIS_PORT")
-#     assert redis_port
-#     redis_port = int(redis_port)
-
-#     redis_db = os.getenv("REDIS_DB")
-#     assert redis_db
-#     redis_db = int(redis_db)
-
-#     return redis.Redis(
-#         host=redis_host, port=redis_port, db=redis_db, decode_responses=True
-#     )
-
-# def get_json_data_from_key(key: str) -> Any | None:
-#     if redis_client.exists(key):
-#         data = redis_client.get(key)
-#         data = json.loads(data)
-#         if isinstance(data, str):
-#             data = json.loads(data)
-#         return data
-
 
 
 class RedisStore:

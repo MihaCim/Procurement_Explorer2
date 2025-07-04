@@ -9,8 +9,7 @@ import uvicorn
 from company_data import CompanyData
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from prompts.prompts2 import Prompts
-from pydantic import BaseModel
-from DueDilligence.src.redis import RedisStore
+from redisStore import RedisStore
 from thread import TaskThread
 from logger import DDLogger
 
@@ -20,10 +19,6 @@ sys.path.append(parent_dir)
 app = FastAPI()
 prompts = Prompts()
 redis = RedisStore()
-#redis_client = get_redis_client()
-
-#cache = AsyncInFlightCache()
-
 
 async def run_dd_process(company_name: str) -> None:
     system_prompt = prompts.get_system_prompt(company_name)
@@ -34,9 +29,8 @@ async def run_dd_process(company_name: str) -> None:
         started=datetime.now(),
         last_updated=datetime.now(),
         )
+    
     redis.set_json(key, dd_result.model_dump_json())
-    #redis_client.set(key, json.dumps(dd_result.model_dump_json()))
-
     logger = DDLogger(company_name=company_name, max_log_len=10, RedisStore=redis)
     logger.add_log("Started new DueDiligence Profile")
 
@@ -51,7 +45,6 @@ async def run_dd_process(company_name: str) -> None:
     dd_result = DueDiligenceResult.model_validate(json_data)
     dd_result.profile["status"] = "generated"
     dd_result.last_updated = datetime.now()
-    #redis_client.set(key, json.dumps(dd_result.model_dump_json()))
     redis.set_json(key, dd_result.model_dump_json())
 
 @app.delete("/flush_redis")
@@ -65,10 +58,6 @@ async def delete_profile(
     company_name: str | None,
 ) -> None:
     key = f"generate_profile:{company_name}"
-    # redis_client = redis.get_client()
-    # if not redis_client.exists(key):
-    #     raise HTTPException(status_code=404, detail=f"{key} not found in cache")
-    # redis_client.delete(key)
     redis.delete_json(key)
 
 
@@ -82,9 +71,6 @@ async def get_profile(
         )
 
     key = f"generate_profile:{company_name}"
-    #redis_client = redis.get_client()
-    #if redis_client.exists(key):
-    #    data = redis_client.get(key)
     json_data = redis.get_json(key)
     if not json_data:
         raise HTTPException(status_code=404, detail=f"cache for {company_name} does not exists")
