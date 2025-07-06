@@ -14,7 +14,7 @@ from ..models.models import Company, CompanyInput, DueDiligenceProfile
 from ..services.database_initialization import (
     get_initialization_data,
     load_dd_profiles,
-    parse_company_profile,
+    parse_company_profile
 )
 from ..services.dd_service import (
     delete_dd_profile_from_cache,
@@ -25,13 +25,13 @@ from ..services.document_service import (
     build_company_model_from_company_profile,
     build_initial_company_model,
     delete_company,
-    delete_due_diligence_profile,
+    delete_due_diligence_profile_db,
     get_companies_similarity_profiles,
     get_company,
     get_company_by_name,
     get_company_by_website,
     get_count_documents,
-    get_due_diligence_by_website,
+    get_due_diligence_by_website_db,
     get_text,
     get_text_from_crawler,
     query_companies,
@@ -264,27 +264,10 @@ async def get_all_added_companies():
 
 
 @router.post("/due-diligence/start")
-async def start_dd_process_(company_url: str):
+async def create_dd_profile_(company_url: str):
     due_diligence_profile = await get_due_diligence_by_website(company_url)
     if due_diligence_profile is None:
         return await start_dd_process(company_url)
-
-
-# @router.post("/due-diligence/profile")
-# async def create_due_diligence_profile_(
-#     new_profile: DueDiligenceProfileWrapper,
-# ) -> dict[str, str]:
-#     dd_profile = map_wrapper_to_due_diligence(new_profile)
-#     try:
-#         result = await create_due_diligence_profile(dd_profile)
-#         if result["status"] == "failed":
-#             raise HTTPException(status_code=400, detail=result["msg"])
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=f"{e}")
-
-#     await delete_dd_profile_from_cache(new_profile.url)
-
-#     return {"id": result["msg"], "status": new_profile.status}
 
 
 @router.get("/due-diligence/profile")
@@ -295,13 +278,13 @@ async def get_due_diligence_profile(company_url: str):
             "status": "failed",
             "msg": f"profile url not defined",
             }
-
+    # check for profile in cache
     dd_result = await get_dd_profile_from_cache(company_url)
-
     if isinstance(dd_result, DueDiligenceProfile):
         return map_due_diligence_to_wrapper(dd_result)
     
-    if due_diligence_profile := await get_due_diligence_by_website(company_url):
+    #check for profile in database
+    if due_diligence_profile := await get_due_diligence_by_website_db(company_url):
         return map_due_diligence_to_wrapper(due_diligence_profile)
     
     return {
@@ -314,28 +297,42 @@ async def get_due_diligence_profile(company_url: str):
 async def save_due_diligence_profile_(
     updated_profile: DueDiligenceProfileWrapper,
 ) -> dict[str, str]:
+
+    if not updated_profile.url or updated_profile.url.strip() == "":
+        raise HTTPException(status_code=400, detail="Error: Profile url is not defined")
+    
     dd_profile = map_wrapper_to_due_diligence(updated_profile)
     dd_profile.status = "Approved"
-
-    print("DD_profile: ", dd_profile)
 
     result = await update_due_diligence_profile(dd_profile)
     if result["status"] == "failed":
         raise HTTPException(status_code=400, detail=result["msg"])
-
+    
+    delete_dd_profile_from_cache(updated_profile.url)
+    
     return {"id": f"{result['msg']}", "status": updated_profile.status}
 
 
 @router.delete("/due-diligence/profile")
-async def delete_due_diligence_profile_(company_url: str):
-    await delete_dd_profile_from_cache(company_url)
-    due_diligence_profile = await get_due_diligence_by_website(company_url)
-    if due_diligence_profile:
-        await delete_due_diligence_profile(due_diligence_profile)
-    else:
-        raise HTTPException(
-            status_code=404, detail=f"DueDiligence profile not found for {company_url}"
-        )
+async def delete_due_diligence_profile_(
+    company_url: str,
+    saved:str = None,
+    cached:str = None
+    ):
+
+    #remove from cache
+    if cached == "cached":
+        await delete_dd_profile_from_cache(company_url)
+        return {f"Deleted profile with ur: {company_url} from cache"}    
+    
+    #remove from db
+    if saved == "saved":
+        profile_db = await get_due_diligence_by_website_db(company_url)
+        if profile_db:
+            await delete_due_diligence_profile_db()
+            return {f"Deleted profile with id: {profile_db.id}"}
+        
+    return "No profile deleted"
 
 
 # @router.get("/companies/{id}/due_diligence/status")

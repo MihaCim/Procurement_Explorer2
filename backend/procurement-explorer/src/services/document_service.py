@@ -17,16 +17,8 @@ from langchain_core.documents import Document
 from pypdf import PdfReader
 from src.connectors.postgres_conector import PostgresConnector
 from src.models.models import Company, CompanyProfile, DueDiligenceProfile
-from ..services.dd_service import get_dd_profile_from_cache
 from ..services.vector_store_service import VectorStoreService
 
-logging.basicConfig(
-    level=logging.INFO,  # Set the logging level to INFO or DEBUG
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),  # Output to stdout
-    ],
-)
 
 vs = VectorStoreService(vector_store_name="company_vector_store")
 
@@ -247,7 +239,6 @@ async def update_company_verdict(
     verdict: str = "CONFIRMED",
     source: PostgresConnector = PostgresConnector(),
 ):
-    print("updating verdict")
     source.update_document("companies", company_id, {"verdict": verdict})
     return await get_company(company_id, source)
 
@@ -446,75 +437,48 @@ async def get_companies_similarity_profiles(
     return companies_list
 
 
-async def get_due_diligence_by_website(
+async def get_due_diligence_by_website_db(
     url: str, source: PostgresConnector = PostgresConnector()
 ) -> DueDiligenceProfile | None:
     
-    #check for profile in cache
-    response = await get_dd_profile_from_cache(url)
-    if isinstance(response, DueDiligenceProfile):
-        return response
-    
-    #check for profile in db
     query = "SELECT * FROM due_diligence_profiles WHERE url = %s;"
     dd_data = source.execute_query(query, (url,), fetchone=True)
     if not dd_data:
         return None 
     return DueDiligenceProfile(**dd_data)
 
-# async def create_due_diligence_profile(
-#     dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
-# ) -> dict[str, str]:
-#     if dd_profile.status == "running":
-#         return {
-#             "status": "failed",
-#             "msg": "cannot create due diligence profile with 'running' status",
-#         }
-
-#     old_profile = await get_due_diligence_by_website(dd_profile.url):
-#     if old_profile: 
-#         dd_profile.id = old_profile.id 
-    
-#     dd_profile.last_revision = datetime.now().isoformat()
-#     dump = dd_profile.model_dump()
-#     for field in dump:
-#         if isinstance(dump[field], dict):
-#             dump[field] = json.dumps(dump[field])
-
-#     if "id" in dump:
-#         del dump["id"]
-
-#     profile_id = source.upload_document("due_diligence_profiles", dump)
-#     dd_profile.id = profile_id
-#     return {"status": "ok", "msg": profile_id}
-
 
 async def update_due_diligence_profile(
     dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
 ) -> dict[str, str]:
+    
     if dd_profile.status == "running":
         return {
             "status": "failed",
             "msg": "cannot update due diligence profile with 'running' status",
         }
 
-    old_profile = await get_due_diligence_by_website(dd_profile.url)
+    old_profile = await get_due_diligence_by_website_db(dd_profile.url)
     dd_profile.last_revision = datetime.now().isoformat() 
     dump = dd_profile.model_dump()
    
     for field in dump:
         if isinstance(dump[field], dict):
             dump[field] = json.dumps(dump[field])
-            #dump[field] = Json(dump[field])
-        #elif isinstance(v, list) and k == "logs":
-            #dump[k] = Json(v)  # logs is a list of dicts
 
+    # update exsiting profile
     if old_profile:
+        # check that the correct object is updated:
+        if dd_profile.id is not None and dd_profile.id != old_profile.id:
+            logger.error(f"Error: Profile URL and ID do not match in database")
+            raise HTTPException(status_code=400, detail="Error: Profile URL and ID do not match in database")
+        #update the profile
         dump["id"] = old_profile.id
         print("UPDATING OLD PROFILE: ", dump)
         source.update_document("due_diligence_profiles", dump["id"], dump)
         return {"status": "ok", "msg": dump["id"]}
 
+    #save new profile
     dump.pop("id", None)
     profile = stringify_json_fields(dump)
     profile_id = source.upload_document("due_diligence_profiles", profile)

@@ -58,7 +58,7 @@ CREATE TABLE document_suitable_companies (
 
 -- Create the due_diligence_profiles table based on the DueDiligenceProfile model
 CREATE TABLE due_diligence_profiles (
-    id SERIAL PRIMARY KEY,                  -- Primary Key: Unique identifier for each profile
+    id BIGSERIAL PRIMARY KEY,                  -- Primary Key: Unique identifier for each profile
     name VARCHAR,                           -- Optional: Name of the company or profile
     url VARCHAR,                            -- Optional: URL field
     contacts JSONB,                         -- Optional: COntacts dict

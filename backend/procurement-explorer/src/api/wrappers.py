@@ -12,7 +12,7 @@ from ..models.models import (
     DueDiligenceProfile,
 )
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 # for testing proposes added by Marcio  #
@@ -201,7 +201,6 @@ def map_due_diligence_to_wrapper(
     def to_int(value):
         try:
             value = int(value)
-            print("CURRENT VALUE: ", value)
             return value
         except (TypeError, ValueError):
             return None
