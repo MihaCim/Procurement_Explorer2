@@ -120,7 +120,7 @@ async def get_company_info(
     if company is None:
         raise HTTPException(status_code=404, detail="Company not found")
     # Map the company model to the CompanyWrapper
-    return map_company_to_wrapper(company)
+    return await map_company_to_wrapper(company)
 
 
 @router.get("/companies/name/{name}")
@@ -129,7 +129,7 @@ async def find_company_by_name(name: str):
     if companies is None:
         raise HTTPException(status_code=404, detail="Company not found")
     # Map each company to the wrapper
-    companies_wrapped = [map_company_to_wrapper(company) for company in companies]
+    companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
 
     return companies_wrapped
 
@@ -203,7 +203,7 @@ async def get_companies(
         country=country,
     )
     # Map each company to the wrapper
-    companies_wrapped = [map_company_to_wrapper(company) for company in companies]
+    companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
     companies_wrapped = jsonable_encoder(companies_wrapped)
 
     return {
@@ -224,7 +224,7 @@ async def find_similar_companies(text: str, k: int = 10):
     )
     companies = await get_companies_similarity_profiles(response)
     companies_wrapped = [
-        map_company_to_wrapper(company) for company in companies if company is not None
+        await map_company_to_wrapper(company) for company in companies if company is not None
     ]
     companies_wrapped = jsonable_encoder(companies_wrapped)
     return companies_wrapped
@@ -258,7 +258,7 @@ async def find_companies_by_document(
 async def get_all_added_companies():
     companies = await query_companies(verdict="NOT CONFIRMED", limit=100)
     companies_wrapped = [
-        await map_company_to_search_company(company) for company in companies
+        map_company_to_search_company(company) for company in companies
     ]
     return companies_wrapped
 
