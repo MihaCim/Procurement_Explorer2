@@ -261,7 +261,7 @@ async def update_company(
     vs.update_document_in_vector_store(str(company_id), company)
     return company
 
-
+#TODO: fix the function - ad get company
 async def delete_company(
     company_id: int, source: PostgresConnector = PostgresConnector()
 ):
@@ -446,6 +446,7 @@ async def get_due_diligence_by_website_db(
     if not dd_data:
         return None 
     return DueDiligenceProfile(**dd_data)
+
 
 async def get_due_diligence_status(
         url: str

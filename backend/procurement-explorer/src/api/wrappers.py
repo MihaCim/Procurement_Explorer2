@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 from fastapi import UploadFile
 from pydantic import BaseModel, ConfigDict
+from ..services.document_service import get_due_diligence_status
 
 from ..models.models import (
     Company,
@@ -115,7 +116,11 @@ class searchCompaniesWrapper(BaseModel):
     details: CompanyDetailsWrapper
 
 
-def map_company_to_wrapper(company: Company, dd_profile: DueDiligenceProfile | None ) -> CompanyWrapper | None:
+async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
+    
+    dd_profile = None
+    if company and company.Website:
+        dd_profile: DueDiligenceProfile = await get_due_diligence_status(company.Website)
     
     try:
         kwargs = dict(

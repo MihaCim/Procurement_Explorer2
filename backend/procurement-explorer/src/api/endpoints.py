@@ -246,11 +246,9 @@ async def find_companies_by_document(
         doc_profile, collection_name="company_profile_nomic", k=k
     )
     companies = await get_companies_similarity_profiles(response)
-    dd_profiles = [
-        get_due_diligence_by_website(company.Website) for company in companies if company is not None
-    ]
+
     companies_wrapped = [
-        map_company_to_wrapper(company) for company in companies if company is not None
+        await map_company_to_wrapper(company) for company in companies if company is not None
     ]
     companies_wrapped = jsonable_encoder(companies_wrapped)
     return {"companies_list": companies_wrapped, "document_profile": doc_profile}
@@ -260,7 +258,7 @@ async def find_companies_by_document(
 async def get_all_added_companies():
     companies = await query_companies(verdict="NOT CONFIRMED", limit=100)
     companies_wrapped = [
-        map_company_to_search_company(company) for company in companies
+        await map_company_to_search_company(company) for company in companies
     ]
     return companies_wrapped
 
