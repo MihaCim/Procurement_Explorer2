@@ -70,7 +70,6 @@ async def insert_company(id: int, url: str):
         return JSONResponse(
             content={"error": "Failed to extract text from the provided URL."}
         )
-    print("received request add company")
 
     # Step 1: Generate company profile
     response = new_generate_company_profile(url_text)
@@ -236,9 +235,7 @@ async def find_companies_by_document(
     content_type="application/pdf",
     k: int = 10,
 ):
-    print("received request files/upload")
     document_text = get_text(file, content_type)
-    print(document_text)
     # create document profile for similarity search
     doc_profile = generate_document_profile(document_text)
     # Based on the document profile search vector store for suitable companies
@@ -306,7 +303,6 @@ async def save_due_diligence_profile_(
         raise HTTPException(status_code=400, detail="Error: Profile url is not defined")
     
     dd_profile = map_wrapper_to_due_diligence(updated_profile)
-    print("DD_PROFILE_MAPPED: ", dd_profile)
     dd_profile.status = "Approved"
 
     result = await update_due_diligence_profile(dd_profile)
@@ -389,7 +385,6 @@ async def due_diligence_status(url: str) -> int | None:
 async def initial_db_loading(
     password: str,
 ):
-    print("received data loading request")
     # only possible with authentication
     if password != os.getenv("POSTGRES_PASSWORD"):
         return "Access Denied: Wrong Password"
@@ -401,12 +396,10 @@ async def initial_db_loading(
 
     # run the inserts for each company in loading file
     for idx, company in enumerate(companies[:1000]):
-        # Step 1: Parse company profile
+        
         company_profile, website = parse_company_profile(company, idx)
-
-        print("website: ", website)
         existing_company = await get_company_by_website(website)
-        # Step 3
+       
         # : If company is already in database, skipp
         if existing_company:
             continue
