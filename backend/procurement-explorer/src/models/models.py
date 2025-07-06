@@ -106,7 +106,7 @@ class DueDiligenceProfile(BaseModel):
     key_relationships: Optional[dict] = Field(default=None, alias="key_relationships")
     status: Optional[str] = Field(default=None, alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
-    logs: List[dict] = Field(default_factory=None, alias="logs")
+    logs: List[dict] = Field(default=None, alias="logs")
 
     model_config = ConfigDict(populate_by_name=True)
 

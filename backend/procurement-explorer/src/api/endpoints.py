@@ -8,7 +8,7 @@ from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from langchain_core.documents import Document
-from pydantic import BaseModel, ValidationError, ConfigDict
+from pydantic import BaseModel, ValidationError
 
 from ..models.models import Company, CompanyInput, DueDiligenceProfile
 from ..services.database_initialization import (
@@ -314,7 +314,7 @@ async def save_due_diligence_profile_(
     if result["status"] == "failed":
         raise HTTPException(status_code=400, detail=result["msg"])
     
-    #await delete_dd_profile_from_cache(updated_profile.url)
+    await delete_dd_profile_from_cache(updated_profile.url)
     
     return {"id": f"{result['msg']}", "status": updated_profile.status}
 
