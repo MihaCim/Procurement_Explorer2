@@ -492,7 +492,7 @@ def stringify_json_fields(data: dict) -> dict:
     }
 
 
-async def delete_due_diligence_profile(
+async def delete_due_diligence_profile_db(
     dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
 ):
     source.delete_document("due_diligence_profiles", dd_profile.id)
