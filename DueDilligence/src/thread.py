@@ -588,6 +588,7 @@ class TaskThread:
 
         self.buffer = list[str]()
         self.is_finished = False
+        self.logger.update_profile(self.result)
 
         for i in range(0, self.max_calls_agent):
             if self.is_finished:

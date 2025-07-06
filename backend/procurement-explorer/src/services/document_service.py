@@ -493,9 +493,11 @@ def stringify_json_fields(data: dict) -> dict:
 
 
 async def delete_due_diligence_profile_db(
-    dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
+    url: str, source: PostgresConnector = PostgresConnector()
 ):
-    source.delete_document("due_diligence_profiles", dd_profile.id)
+    profile = await get_due_diligence_by_website_db(url)
+    if profile:
+        source.delete_document("due_diligence_profiles", profile.id)
 
 
 async def get_last_n_profiles(
