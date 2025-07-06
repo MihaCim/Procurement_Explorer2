@@ -7,7 +7,7 @@ import sys
 from datetime import datetime
 from typing import List, Optional, Union
 from urllib.parse import urlparse
-
+from psycopg2.extras import Json
 import aiohttp
 import docx2txt
 from fastapi import HTTPException
@@ -17,16 +17,9 @@ from langchain_core.documents import Document
 from pypdf import PdfReader
 from src.connectors.postgres_conector import PostgresConnector
 from src.models.models import Company, CompanyProfile, DueDiligenceProfile
-
 from ..services.vector_store_service import VectorStoreService
+from ..services.dd_service import get_dd_profile_from_cache
 
-logging.basicConfig(
-    level=logging.INFO,  # Set the logging level to INFO or DEBUG
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),  # Output to stdout
-    ],
-)
 
 vs = VectorStoreService(vector_store_name="company_vector_store")
 
@@ -184,7 +177,6 @@ async def get_text_from_crawler(
                 if response.status == 200:
                     sites = await response.json()
                     for site in sites:
-                        # print(site)
                         if site["Url"] == website and site["Status"] == "done":
                             docs = source.get_document("raw_data", site["Name"])
 
@@ -247,7 +239,6 @@ async def update_company_verdict(
     verdict: str = "CONFIRMED",
     source: PostgresConnector = PostgresConnector(),
 ):
-    print("updating verdict")
     source.update_document("companies", company_id, {"verdict": verdict})
     return await get_company(company_id, source)
 
@@ -270,7 +261,7 @@ async def update_company(
     vs.update_document_in_vector_store(str(company_id), company)
     return company
 
-
+#TODO: fix the function - ad get company
 async def delete_company(
     company_id: int, source: PostgresConnector = PostgresConnector()
 ):
@@ -446,75 +437,79 @@ async def get_companies_similarity_profiles(
     return companies_list
 
 
-async def get_due_diligence_by_website(
+async def get_due_diligence_by_website_db(
     url: str, source: PostgresConnector = PostgresConnector()
 ) -> DueDiligenceProfile | None:
+    
     query = "SELECT * FROM due_diligence_profiles WHERE url = %s;"
-    result = source.execute_query(query, (url,), fetchone=True)
-    if not result:
-        return None
-    due_diligence_profile = DueDiligenceProfile(**result)
-    return due_diligence_profile
+    dd_data = source.execute_query(query, (url,), fetchone=True)
+    if not dd_data:
+        return None 
+    return DueDiligenceProfile(**dd_data)
 
 
-async def create_due_diligence_profile(
-    dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
-) -> dict[str, str]:
-    if dd_profile.status == "running":
-        return {
-            "status": "failed",
-            "msg": "cannot create due diligence profile with 'running' status",
-        }
+async def get_due_diligence_status(
+        url: str
+        ) -> DueDiligenceProfile | None:
 
-    assert dd_profile.url is not None
-    if await get_due_diligence_by_website(dd_profile.url):
-        return {
-            "status": "failed",
-            "msg": f"due diligence profile with {dd_profile.url} already exists",
-        }
-
-    dd_profile.last_revision = datetime.now().isoformat()
-    dump = dd_profile.model_dump()
-    for field in dump:
-        if isinstance(dump[field], dict):
-            dump[field] = json.dumps(dump[field])
-
-    if "id" in dump:
-        del dump["id"]
-
-    profile_id = source.upload_document("due_diligence_profiles", dump)
-    dd_profile.id = profile_id
-    return {"status": "ok", "msg": profile_id}
+    if profile := await get_due_diligence_by_website_db(url):
+        return profile
+    if profile := await get_dd_profile_from_cache(url):
+        return profile
+    
+    return None
 
 
 async def update_due_diligence_profile(
     dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
 ) -> dict[str, str]:
+    
     if dd_profile.status == "running":
         return {
             "status": "failed",
             "msg": "cannot update due diligence profile with 'running' status",
         }
 
-    assert dd_profile.url is not None
-    old_profile = await get_due_diligence_by_website(dd_profile.url)
-    assert old_profile is not None
-    dd_profile.last_revision = datetime.now().isoformat()
-
+    old_profile = await get_due_diligence_by_website_db(dd_profile.url)
+    dd_profile.last_revision = datetime.now().isoformat() 
     dump = dd_profile.model_dump()
+    dump.pop("logs", None)    # not saving the logs field
+
     for field in dump:
         if isinstance(dump[field], dict):
             dump[field] = json.dumps(dump[field])
 
-    dump["id"] = old_profile.id
-    source.update_document("due_diligence_profiles", dump["id"], dump)
-    return {"status": "ok", "msg": dump["id"]}
+    # update exsiting profile
+    if old_profile:
+        # check that the correct object is updated:
+        if dd_profile.id is not None and dd_profile.id != old_profile.id:
+            logger.error(f"Error: Profile URL and ID do not match in database")
+            raise HTTPException(status_code=400, detail="Error: Profile URL and ID do not match in database")
+        #update the profile
+        dump["id"] = old_profile.id
+        source.update_document("due_diligence_profiles", dump["id"], dump)
+        return {"status": "ok", "msg": dump["id"]}
+
+    #save new profile
+    dump.pop("id", None)
+    profile = stringify_json_fields(dump)
+    profile_id = source.upload_document("due_diligence_profiles", profile)
+    return {"status": "ok", "msg": profile_id}
 
 
-async def delete_due_diligence_profile(
-    dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
+def stringify_json_fields(data: dict) -> dict:
+    return {
+        k: json.dumps(v) if isinstance(v, (dict, list)) else v
+        for k, v in data.items()
+    }
+
+
+async def delete_due_diligence_profile_db(
+    url: str, source: PostgresConnector = PostgresConnector()
 ):
-    source.delete_document("due_diligence_profiles", dd_profile.id)
+    profile = await get_due_diligence_by_website_db(url)
+    if profile:
+        source.delete_document("due_diligence_profiles", profile.id)
 
 
 async def get_last_n_profiles(

@@ -58,15 +58,15 @@ CREATE TABLE document_suitable_companies (
 
 -- Create the due_diligence_profiles table based on the DueDiligenceProfile model
 CREATE TABLE due_diligence_profiles (
-    id SERIAL PRIMARY KEY,                  -- Primary Key: Unique identifier for each profile
+    id BIGSERIAL PRIMARY KEY,                  -- Primary Key: Unique identifier for each profile
     name VARCHAR,                           -- Optional: Name of the company or profile
     url VARCHAR,                            -- Optional: URL field
-    contacts JSONB,                          -- Optional: COntacts dict
+    contacts JSONB,                         -- Optional: COntacts dict
     founded INTEGER,                        -- Optional: Year the company was founded
     founder VARCHAR,                        -- Optional: Founder of the company
     address JSONB,                          -- Optional: Address as a JSON object (e.g., street, city)
     country VARCHAR,                        -- Optional: Country field
-    last_revision TIMESTAMP,                  -- Optional: Last revision field
+    last_revision TIMESTAMP,                -- Optional: Last revision field
     risk_level INTEGER,                     -- Optional: Risk level (e.g., 1-5 scale)
     description TEXT,                       -- Optional: Description of the profile
     key_individuals JSONB,                  -- Optional: Key individuals as a JSON object (e.g., name, title)
@@ -74,8 +74,8 @@ CREATE TABLE due_diligence_profiles (
     financial_risk JSONB,                   -- Optional: Financial risk as a JSON object
     operational_risk JSONB,                 -- Optional: Operational risk as a JSON object
     key_relationships JSONB,                -- Optional: Key relationships as a JSON object
-    metadata JSONB,                          -- Optional: Metadata for due diligence
-    status VARCHAR,                         -- Optional: Status for due diligence    
+    metadata JSONB,                         -- Optional: Metadata for due diligence
+    status VARCHAR,                         -- Optional: Status for due diligence
     due_diligence_timestamp TIMESTAMP       -- Optional: Timestamp for due diligence    
 );
 
