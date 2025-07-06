@@ -18,6 +18,7 @@ from pypdf import PdfReader
 from src.connectors.postgres_conector import PostgresConnector
 from src.models.models import Company, CompanyProfile, DueDiligenceProfile
 from ..services.vector_store_service import VectorStoreService
+from ..services.dd_service import get_dd_profile_from_cache
 
 
 vs = VectorStoreService(vector_store_name="company_vector_store")
@@ -176,7 +177,6 @@ async def get_text_from_crawler(
                 if response.status == 200:
                     sites = await response.json()
                     for site in sites:
-                        # print(site)
                         if site["Url"] == website and site["Status"] == "done":
                             docs = source.get_document("raw_data", site["Name"])
 
@@ -447,6 +447,17 @@ async def get_due_diligence_by_website_db(
         return None 
     return DueDiligenceProfile(**dd_data)
 
+async def get_due_diligence_status(
+        url: str
+        ) -> DueDiligenceProfile | None:
+
+    if profile := await get_due_diligence_by_website_db(url):
+        return profile
+    if profile := await get_dd_profile_from_cache(url):
+        return profile
+    
+    return None
+
 
 async def update_due_diligence_profile(
     dd_profile: DueDiligenceProfile, source: PostgresConnector = PostgresConnector()
@@ -475,7 +486,6 @@ async def update_due_diligence_profile(
             raise HTTPException(status_code=400, detail="Error: Profile URL and ID do not match in database")
         #update the profile
         dump["id"] = old_profile.id
-        print("UPDATING OLD PROFILE: ", dump)
         source.update_document("due_diligence_profiles", dump["id"], dump)
         return {"status": "ok", "msg": dump["id"]}
 

@@ -234,7 +234,7 @@ def map_due_diligence_to_wrapper(
             logs=profile.logs
         )
     except Exception as e:
-        logger.error(f"Failed to serialilze DueDiligenceProfile from data for {url}: {e}", exc_info=True)
+        logger.error(f"Failed to serialilze DueDiligenceProfile from data for {profile.url}: {e}", exc_info=True)
         return None
 
 def map_wrapper_to_due_diligence(

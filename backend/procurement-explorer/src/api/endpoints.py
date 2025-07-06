@@ -40,6 +40,7 @@ from ..services.document_service import (
     update_company_status,
     update_company_verdict,
     update_due_diligence_profile,
+    get_due_diligence_status,
 )
 from ..services.llm.llm_service import (
     generate_document_profile,
@@ -332,13 +333,13 @@ async def delete_due_diligence_profile_(
         await delete_due_diligence_profile_db(company_url)         
 
 
-# @router.get("/companies/{id}/due_diligence/status")
-# # get status of risk level for the company: 1-5
-# async def due_diligence_status(id: int):
-#     for profile in due_diligence_db:
-#         if profile.id == id:
-#             return {profile.risk_level}
-#     raise HTTPException(status_code=404, detail="Company not found")
+@router.get("/due_diligence/{id}/risklevel") 
+# get status of risk level for the company: 1-5
+async def due_diligence_status(url: str) -> int | None:
+    if profile := await get_due_diligence_status(url):
+        return str(profile.risk_level)
+    return None
+
 
 
 # @router.post("/chat")

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import json
 
 class DueDiligenceCompanyProfile(BaseModel):
@@ -23,8 +23,8 @@ class DueDiligenceCompanyProfile(BaseModel):
     summary: Optional[str] = Field(default=None, alias="summary")
     status: Optional[str] = Field(default="not available", alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
-    logs: Optional[List[dict]] = Field(default=None, alias="logs")
-    
+    logs: Optional[List[dict]] = Field(default=None, alias="logs")    
+    model_config = ConfigDict(populate_by_name=True)
 
 class DueDiligenceResult(BaseModel):
     logs: list[dict[str, str | datetime]] = list()
@@ -49,37 +49,88 @@ def empty_str_to_none(value: Any) -> Any:
     return value
 
 
+def replace_none_with_empty(obj: Any) -> Any:
+    """
+    Recursively replaces None with empty string in dicts and lists.
+    """
+    if obj is None:
+        return ""
+    elif isinstance(obj, dict):
+        return {k: replace_none_with_empty(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [replace_none_with_empty(item) for item in obj]
+    else:
+        return obj
+
+
 def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligenceCompanyProfile:
-    
     if data:
         profile = data.profile
-    
+
         kwargs = dict(
-            name=profile.get("company_name", None),
+            name=profile.get("company_name", ""),
             status=profile.get("status", "not available"),
-            url=data.url,
+            url=data.url or "",
             founded=empty_str_to_none(str(profile.get("founded"))),
-            founder=profile.get("founder"),
-            address=profile.get("address"),
+            founder=profile.get("founder") or "",
+            address=replace_none_with_empty(profile.get("address", {})),
             risk_level=empty_str_to_none(str(profile.get("risk_level_int"))),
-            description=profile.get("description"),
-            key_individuals=profile.get("key_individuals"),
-            security_risk=profile.get("security_risks"),
-            financial_risk=profile.get("financial_risks"),
-            operational_risk=profile.get("operational_risks"),
-            key_relationships=profile.get("key_relationships"),
-            summary=profile.get("summary"),
-            metadata=profile.get("metadata"),
-            last_revision=(data.last_updated.isoformat()
-                    if isinstance(data.last_updated, datetime)
-                    else str(data.last_updated) or datetime.now().isoformat()),
-            due_diligence_timestamp=(data.started.isoformat()
-                    if isinstance(data.started, datetime)
-                    else str(data.started) or datetime.now().isoformat()),
-            logs=data.logs if data.logs else None,
+            description=profile.get("description") or "",
+            key_individuals=replace_none_with_empty(profile.get("key_individuals", {})),
+            security_risk=replace_none_with_empty(profile.get("security_risks", {})),
+            financial_risk=replace_none_with_empty(profile.get("financial_risks", {})),
+            operational_risk=replace_none_with_empty(profile.get("operational_risks", {})),
+            key_relationships=replace_none_with_empty(profile.get("key_relationships", {})),
+            summary=profile.get("summary") or "",
+            metadata=replace_none_with_empty(profile.get("metadata", {})),
+            last_revision=(
+                data.last_updated.isoformat()
+                if isinstance(data.last_updated, datetime)
+                else str(data.last_updated) or datetime.now().isoformat()
+            ),
+            due_diligence_timestamp=(
+                data.started.isoformat()
+                if isinstance(data.started, datetime)
+                else str(data.started) or datetime.now().isoformat()
+            ),
+            logs=replace_none_with_empty(data.logs or []),
         )
+
         return DueDiligenceCompanyProfile(**kwargs)
+    
     return None
+
+# def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligenceCompanyProfile:
+    
+#     if data:
+#         profile = data.profile
+    
+#         kwargs = dict(
+#             name=profile.get("company_name", None),
+#             status=profile.get("status", "not available"),
+#             url=data.url,
+#             founded=empty_str_to_none(str(profile.get("founded"))),
+#             founder=profile.get("founder"),
+#             address=profile.get("address"),
+#             risk_level=empty_str_to_none(str(profile.get("risk_level_int"))),
+#             description=profile.get("description"),
+#             key_individuals=profile.get("key_individuals"),
+#             security_risk=profile.get("security_risks"),
+#             financial_risk=profile.get("financial_risks"),
+#             operational_risk=profile.get("operational_risks"),
+#             key_relationships=profile.get("key_relationships"),
+#             summary=profile.get("summary"),
+#             metadata=profile.get("metadata"),
+#             last_revision=(data.last_updated.isoformat()
+#                     if isinstance(data.last_updated, datetime)
+#                     else str(data.last_updated) or datetime.now().isoformat()),
+#             due_diligence_timestamp=(data.started.isoformat()
+#                     if isinstance(data.started, datetime)
+#                     else str(data.started) or datetime.now().isoformat()),
+#             logs=data.logs if data.logs else None,
+#         )
+#         return DueDiligenceCompanyProfile(**kwargs)
+#     return None
 
 # def _process_jsonb_value(value: Any, target_pydantic_type: type) -> Any:
 #     """
