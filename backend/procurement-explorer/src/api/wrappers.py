@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from fastapi import UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from ..models.models import (
     Company,
@@ -73,6 +73,8 @@ class DueDiligenceProfileWrapper(BaseModel):
     metadata: Optional[dict] = None
     status: Optional[str] = None
     logs: Optional[List[dict]] = None
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class FileWrapper(BaseModel):
@@ -238,8 +240,7 @@ def map_due_diligence_to_wrapper(
 def map_wrapper_to_due_diligence(
     wrapper: DueDiligenceProfileWrapper,
 ) -> DueDiligenceProfile:
-    # Parse the `Last_revision` field from string to `datetime`, if it exists
-
+    
     # Map fields from DueDiligenceProfileWrapper to DueDiligenceProfile
     return DueDiligenceProfile(
         id=wrapper.id if wrapper.id else None,

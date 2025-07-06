@@ -8,7 +8,7 @@ from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from langchain_core.documents import Document
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError, ConfigDict
 
 from ..models.models import Company, CompanyInput, DueDiligenceProfile
 from ..services.database_initialization import (
@@ -307,13 +307,14 @@ async def save_due_diligence_profile_(
         raise HTTPException(status_code=400, detail="Error: Profile url is not defined")
     
     dd_profile = map_wrapper_to_due_diligence(updated_profile)
+    print("DD_PROFILE_MAPPED: ", dd_profile)
     dd_profile.status = "Approved"
 
     result = await update_due_diligence_profile(dd_profile)
     if result["status"] == "failed":
         raise HTTPException(status_code=400, detail=result["msg"])
     
-    await delete_dd_profile_from_cache(updated_profile.url)
+    #await delete_dd_profile_from_cache(updated_profile.url)
     
     return {"id": f"{result['msg']}", "status": updated_profile.status}
 

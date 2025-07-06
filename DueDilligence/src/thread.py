@@ -624,7 +624,12 @@ class TaskThread:
                                 <AgentMessageContent>{agent_response}</AgentMessageContent>
                             </AgentMessage>"""
                     )
-                    self.logger.add_log(f"agent name: {agent_name}, agent response: {agent_response}")
+                    log_data = {
+                        "agent name": agent_name,
+                        "agent response": agent_response
+                        }
+
+                    self.logger.add_log(json.dumps(log_data))
                     self.logger.update_profile(self.result)
 
             buffer_str = await self.get_buffer_str()

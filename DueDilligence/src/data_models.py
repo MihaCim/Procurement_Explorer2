@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Dict, List, Literal, Optional, Any
-from pydantic import BaseModel, ConfigDict, Field
+from typing import List, Optional, Any
+from pydantic import BaseModel, Field
+import json
 
 class DueDiligenceCompanyProfile(BaseModel):
     name: str = Field(default="", alias="name")
@@ -79,3 +80,35 @@ def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligence
         )
         return DueDiligenceCompanyProfile(**kwargs)
     return None
+
+# def _process_jsonb_value(value: Any, target_pydantic_type: type) -> Any:
+#     """
+#     Helper to process values coming from JSONB fields to conform to Pydantic types.
+#     - Converts empty dicts `{}` to `None` for dict fields or `[]` for list fields.
+#     - Attempts to `json.loads` strings if the target type is dict or list.
+#     """
+#     # Handle `None` explicitly first
+#     if value is None:
+#         return None
+
+#     # Case 1: Value is an empty dictionary {}
+#     if isinstance(value, dict) and not value:
+#         if target_pydantic_type is list:
+#             return None
+
+#     # Case 2: Value is a string, attempt to parse if target is dict or list
+#     if isinstance(value, str):
+#         try:
+#             parsed_value = json.loads(value)
+#             # Ensure parsed value matches the expected target Pydantic type
+#             if (target_pydantic_type is dict and isinstance(parsed_value, dict)) or \
+#                (target_pydantic_type is list and isinstance(parsed_value, list)):
+#                 return parsed_value
+#         except json.JSONDecodeError:
+#             # It's a string, but not valid JSON, so Pydantic will handle
+#             # validation based on the original type hint if it's not a string field.
+#             pass
+    
+#     # Case 3: Value is already in the correct Python type (dict, list) or a non-JSON string
+#     return value
+

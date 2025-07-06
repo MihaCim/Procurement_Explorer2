@@ -78,9 +78,8 @@ class Company(CompanyProfile):
     )
     Description: Optional[str] = Field(default=None, alias="description")
     Verdict: Optional[str] = Field(default=None, alias="verdict")
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
+    
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class DueDiligenceProfile(BaseModel):
@@ -93,7 +92,10 @@ class DueDiligenceProfile(BaseModel):
     address: Optional[dict] = Field(default=None, alias="address")
     country: Optional[str] = Field(default=None, alias="country")
     last_revision: Optional[datetime] = Field(
-        default=datetime.now().isoformat(), alias="last_revision"
+        default_factory=datetime.now, alias="last_revision"
+    )
+    due_diligence_timestamp: Optional[datetime] = Field(
+        default_factory=datetime.now, alias="due_diligence_timestamp"
     )
     risk_level: Optional[int] = Field(default=None, alias="risk_level")
     description: Optional[str] = Field(default=None, alias="description")
@@ -102,15 +104,11 @@ class DueDiligenceProfile(BaseModel):
     financial_risk: Optional[dict] = Field(default=None, alias="financial_risk")
     operational_risk: Optional[dict] = Field(default=None, alias="operational_risk")
     key_relationships: Optional[dict] = Field(default=None, alias="key_relationships")
-    due_diligence_timestamp: Optional[datetime] = Field(
-        default=datetime.now().isoformat(), alias="due_diligence_timestamp"
-    )
     status: Optional[str] = Field(default=None, alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
-    logs: Optional[List[dict]] = Field(default=None, alias="logs")
-    model_config = ConfigDict(
-        populate_by_name=True,
-    )
+    logs: List[dict] = Field(default_factory=None, alias="logs")
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class DocumentProfile(BaseModel):
