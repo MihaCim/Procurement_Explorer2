@@ -265,9 +265,7 @@ async def get_all_added_companies():
 
 @router.post("/due-diligence/start")
 async def create_dd_profile_(company_url: str):
-    due_diligence_profile = await get_due_diligence_by_website(company_url)
-    if due_diligence_profile is None:
-        return await start_dd_process(company_url)
+    return await start_dd_process(company_url)
 
 
 @router.get("/due-diligence/profile")

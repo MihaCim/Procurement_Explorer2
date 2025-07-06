@@ -33,8 +33,20 @@ class DueDiligenceResult(BaseModel):
     started: datetime = datetime.now()
     last_updated: datetime = datetime.now()
 
-def empty_str_to_none(value):
-    return None if value is None or (isinstance(value, str) and value.strip() == '') else value
+
+def empty_str_to_none(value: Any) -> Any:
+    """
+    Converts None, empty strings, or the string 'None' (case-insensitive) to Python's None.
+    Retains other values.
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        stripped_value = value.strip()
+        if stripped_value == '' or stripped_value.lower() == 'none':
+            return None
+    return value
+
 
 def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligenceCompanyProfile:
     
@@ -42,7 +54,7 @@ def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligence
         profile = data.profile
     
         kwargs = dict(
-            name=profile.get("company_name", ""),
+            name=profile.get("company_name", None),
             status=profile.get("status", "not available"),
             url=data.url,
             founded=empty_str_to_none(str(profile.get("founded"))),
