@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from fastapi import UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from ..services.document_service import get_due_diligence_status
 
 from ..models.models import (
     Company,
@@ -12,7 +13,7 @@ from ..models.models import (
     DueDiligenceProfile,
 )
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 # for testing proposes added by Marcio  #
@@ -29,7 +30,7 @@ class CompanyWrapper(BaseModel):
     id: int
     name: Optional[str] = None
     website: str
-    status: Optional[str] = "Pending"
+    status: Optional[str] = "Not Available"
     industry: Optional[str] = None
     country: Optional[str] = None
     review_date: Optional[str] = None
@@ -72,6 +73,9 @@ class DueDiligenceProfileWrapper(BaseModel):
     due_diligence_timestamp: Optional[datetime] = None
     metadata: Optional[dict] = None
     status: Optional[str] = None
+    logs: Optional[List[dict]] = None
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class FileWrapper(BaseModel):
@@ -112,13 +116,17 @@ class searchCompaniesWrapper(BaseModel):
     details: CompanyDetailsWrapper
 
 
-def map_company_to_wrapper(company: Company) -> CompanyWrapper:
+async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
+    
+    dd_profile = None
+    if company and company.Website:
+        dd_profile: DueDiligenceProfile = await get_due_diligence_status(company.Website)
+    
     try:
-        return CompanyWrapper(
+        kwargs = dict(
             id=company.id,
             name=company.Name,
             website=company.Website,
-            status=company.Due_Diligence_Status,
             industry=company.Industry,
             country=company.Country,
             review_date=(
@@ -137,6 +145,11 @@ def map_company_to_wrapper(company: Company) -> CompanyWrapper:
                 qualityStandards=company.Quality_Standards,
             ),
         )
+        # only set status if we actually have one
+        if dd_profile and dd_profile.status is not None:
+            kwargs["status"] = dd_profile.status
+        return CompanyWrapper(**kwargs)
+    
     except Exception as e:
         logger.info(f"company status: {company.Status}")
         logger.error(f"Error mapping company to wrapper: {e}", exc_info=True)
@@ -191,49 +204,59 @@ def map_company_to_search_company(company: Company) -> searchCompaniesWrapper:
 def map_due_diligence_to_wrapper(
     profile: DueDiligenceProfile, company: Company = None
 ) -> DueDiligenceProfileWrapper:
-    return DueDiligenceProfileWrapper(
-        id=profile.id,
-        name=company.Name if company else profile.name,
-        url=profile.url,
-        email=str(
-            profile.contacts
-        ),  # company.Contact_Information if company else str(profile.contacts),
-        founded=profile.founded,
-        founder=profile.founder,
-        address=profile.address,
-        country=company.Country if company else profile.country,
-        Last_revision=str(profile.last_revision),
-        risk_level=profile.risk_level,
-        status=company.Due_Diligence_Status if company else "PENDING",
-        description=profile.description,
-        key_individuals=profile.key_individuals,
-        security_risk=profile.security_risk,
-        financial_risk=profile.financial_risk,
-        operational_risk=profile.operational_risk,
-        key_relationships=profile.key_relationships,
-        due_diligence_timestamp=profile.due_diligence_timestamp,
-        metadata=profile.metadata,
-    )
-
+    
+    def to_int(value):
+        try:
+            value = int(value)
+            return value
+        except (TypeError, ValueError):
+            return None
+        
+    try:
+        return DueDiligenceProfileWrapper(
+            id=profile.id if profile.id else None,
+            name=company.Name if company else profile.name,
+            url=profile.url,
+            email=str(
+                profile.contacts
+            ),  
+            # company.Contact_Information if company else str(profile.contacts),
+            founded=to_int(profile.founded),
+            founder=profile.founder,
+            address=profile.address,
+            country=company.Country if company else "",
+            Last_revision=str(profile.last_revision),
+            risk_level=to_int(profile.risk_level),
+            status=profile.status,
+            description=profile.description,
+            key_individuals=profile.key_individuals,
+            security_risk=profile.security_risk,
+            financial_risk=profile.financial_risk,
+            operational_risk=profile.operational_risk,
+            key_relationships=profile.key_relationships,
+            due_diligence_timestamp=profile.due_diligence_timestamp,
+            metadata=profile.metadata,
+            logs=profile.logs
+        )
+    except Exception as e:
+        logger.error(f"Failed to serialilze DueDiligenceProfile from data for {profile.url}: {e}", exc_info=True)
+        return None
 
 def map_wrapper_to_due_diligence(
     wrapper: DueDiligenceProfileWrapper,
 ) -> DueDiligenceProfile:
-    # Parse the `Last_revision` field from string to `datetime`, if it exists
-
+    
     # Map fields from DueDiligenceProfileWrapper to DueDiligenceProfile
     return DueDiligenceProfile(
-        id=wrapper.id,
+        id=wrapper.id if wrapper.id else None,
         name=wrapper.name or "",
         url=wrapper.url,
-        contacts={"email": wrapper.email}
-        if wrapper.email
-        else None,  # Mapping email to contacts
+        contacts={"email": wrapper.email} if wrapper.email else None,
         founded=wrapper.founded,
         founder=wrapper.founder,
         address=wrapper.address,
         country=wrapper.country,
-        last_revision=datetime.now(),
+        last_revision=wrapper.Last_revision,
         risk_level=wrapper.risk_level,
         description=wrapper.description,
         key_individuals=wrapper.key_individuals,
@@ -243,4 +266,5 @@ def map_wrapper_to_due_diligence(
         key_relationships=wrapper.key_relationships,
         due_diligence_timestamp=wrapper.due_diligence_timestamp,
         metadata=wrapper.metadata,
+        logs=wrapper.logs or []
     )

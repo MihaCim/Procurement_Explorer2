@@ -15,22 +15,15 @@ from llm_client import LLMClient
 from logger import Logger, logger
 from prompts.prompts2 import Prompts
 
-# import uvicorn
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-LLM_TYPE = os.getenv("LLM_TYPE")
-app = FastAPI()
-
 load_dotenv()
+LLM_TYPE = os.getenv("LLM_TYPE")
+CONTEXT_LIMIT = int(os.getenv("CONTEXT_LIMIT", 1000))
+MAXIMUM_CALLS_AGENT = int(os.getenv("MAXIMUM_CALLS_AGENT", 8))
+MAXIMUM_CALLS_THREAD = int(os.getenv("MAXIMUM_CALLS_THREAD", 15))
+
+app = FastAPI()
 llm_client = LLMClient()
 prompts = Prompts()
-
-CHAT_MODEL_SMALL = "gpt-4o-mini"
-CHAT_MODEL_BIG = "gpt-4o"
-CHAT_MODEL = CHAT_MODEL_BIG
-
-CONTEXT_LIMIT = 10000
-MAXIMUM_CALLS_AGENT = 8
-MAXIMUM_CALLS_THREAD = 15
 
 
 async def call_llm(prompt: str) -> str:
@@ -100,12 +93,10 @@ class FunctionalAgent:
         logger: Logger,
         name: str = "Agent",
         system_prompt: str = None,
-        model: str = CHAT_MODEL,
         functions: list[Callable[..., Any]] | None = None,
     ):
         self.registry = dict[str, dict[str, Any]]()
         self.maximum_calls = MAXIMUM_CALLS_AGENT
-        self.model = model
         self.name = name
         self.system_prompt = system_prompt or (
             f"You are a {name}. You can call any of the following functions."
@@ -405,12 +396,13 @@ class TaskThread:
         self.task_manager_name = ""
         self.company_data = company_data
         self.logger = logger
+        self.max_calls_agent = MAXIMUM_CALLS_AGENT
+        self.max_calls_thred = MAXIMUM_CALLS_THREAD
 
         task_manager = FunctionalAgent(
             name="Ethan Pierce (Product Manager)",
             logger=logger,
             system_prompt=prompts.Ethan,
-            model=CHAT_MODEL,
             functions=[
                 self.set_finished,
                 self.update_report,
@@ -424,7 +416,6 @@ class TaskThread:
             name="Nora Caldwell (Researcher)",
             logger=logger,
             system_prompt=prompts.Nora,
-            model=CHAT_MODEL,
             functions=[
                 search_google,
                 extract_text_from_url,
@@ -448,7 +439,6 @@ class TaskThread:
             name="Julian Frost (Risk Analyst)",
             logger=logger,
             system_prompt=prompts.Julian,
-            model=CHAT_MODEL,
             functions=[
                 search_google,
                 extract_text_from_url,
@@ -467,7 +457,6 @@ class TaskThread:
             name="Evelyn Fields (Documentation Specialist)",
             logger=logger,
             system_prompt=prompts.Evelin,
-            model=CHAT_MODEL,
             functions=[
                 search_google,
                 extract_text_from_url,
@@ -603,8 +592,9 @@ class TaskThread:
 
         self.buffer = list[str]()
         self.is_finished = False
+        self.logger.update_profile(self.result)
 
-        for i in range(0, MAXIMUM_CALLS_AGENT):
+        for i in range(0, self.max_calls_agent):
             if self.is_finished:
                 break
 
@@ -640,8 +630,13 @@ class TaskThread:
                                 <AgentMessageContent>{agent_response}</AgentMessageContent>
                             </AgentMessage>"""
                     )
-                    self.logger.add_log(f"{agent_name}: {agent_response}")
-                    self.logger.info(self.result)
+                    log_data = {
+                        "agent name": agent_name,
+                        "agent response": agent_response,
+                    }
+
+                    self.logger.add_log(json.dumps(log_data))
+                    self.logger.update_profile(self.result)
 
             buffer_str = await self.get_buffer_str()
 
@@ -670,7 +665,7 @@ class TaskThread:
             )
 
         buffer_str = await self.get_buffer_str()
-        self.logger.info(self.result)
+        self.logger.update_profile(self.result)
 
         conversation_part = (
             f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n" if buffer_str else ""
@@ -687,8 +682,9 @@ class TaskThread:
         {conversation_part}
         """
         )
+
         await self.agents.get(self.task_manager_name).run(input_string=agent_input)
-        print("Final report: ", self.result)
+        self.logger.update_profile(self.result)
 
         return self.result
 

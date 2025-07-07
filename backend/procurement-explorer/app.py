@@ -7,7 +7,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.endpoints import router as api_router
-from src.utils.misc import setup_logging
+from src.utils.logger_config import setup_logging
 
 # Set up logging
 setup_logging()
