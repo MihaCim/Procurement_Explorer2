@@ -15,25 +15,31 @@ const Bar = styled.div`
   align-items: center;
   align-self: stretch;
   gap: 8px;
+  min-height: 48px;
 
   border-radius: var(--radius-radius-small, 4px) var(--radius-radius-small, 4px)
     0px 0px;
   border: 1px solid var(--stroke, #ebebf1);
   background: rgba(255, 255, 255, 0.5);
-  overflow: hidden;
   flex-direction: column;
 `;
 
 const AnimatedContent = styled.div<{ $expanded: boolean }>`
-  max-height: ${(props) => (props.$expanded ? '800px' : '0')};
+  max-height: ${(props) => (props.$expanded ? '700px' : '0')};
   opacity: ${(props) => (props.$expanded ? 1 : 0)};
-  overflow-y: scroll;
+  // overflow-y: scroll;
   scrollbar-width: thin;
-  overflow-x: hidden;
+  overflow: hidden;
   transition:
     max-height 0.4s ease,
     opacity 0.4s ease;
   width: 100%;
+
+  ${(props) =>
+    props.$expanded &&
+    `
+    overflow-y: auto; 
+  `}
 `;
 
 const FeebackTypo = styled.p`
@@ -100,7 +106,6 @@ const AgentFeedbackContainer = styled.div`
 
   border-bottom: 1px solid var(--stroke, #ebebf1);
 
-  /* shadow thinking */
   box-shadow: 1px 1px 10px 0px rgba(73, 76, 91, 0.03) inset;
 `;
 
@@ -111,15 +116,19 @@ const AgentFeedback: React.FC<{
 }> = ({ feedback, isCurrent, isFinished }) => {
   return (
     <AgentFeedbackContainer>
-      <FeebackTypo>
-        {isCurrent &&
-          (isFinished ? (
-            <AcceptIcon height={24} />
-          ) : (
-            <CircularProgress size={24} borderWidth={2} />
-          ))}
-        {feedback['agent']}
-      </FeebackTypo>
+      {isCurrent && isFinished ? (
+        <div className="flex items-center gap-2">
+          <AcceptIcon height={24} />
+          <FeebackTypo>{feedback['agent']}</FeebackTypo>
+        </div>
+      ) : isCurrent ? (
+        <div className="flex items-center gap-2">
+          <CircularProgress size={24} borderWidth={2} />
+          <FeebackTypo>{feedback['agent']}</FeebackTypo>
+        </div>
+      ) : (
+        <FeebackTypo>{feedback['agent']}</FeebackTypo>
+      )}
       <FeedbackText>{feedback['log']}</FeedbackText>
     </AgentFeedbackContainer>
   );

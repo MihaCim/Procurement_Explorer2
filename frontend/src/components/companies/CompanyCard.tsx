@@ -7,6 +7,7 @@ import styled from 'styled-components';
 
 import { Company } from '../../models/Company';
 import TruncatedParagraph from '../commons/TuncatedParagraph';
+import StatusChip from '../dueDiligence/StatusChip';
 import { H2 } from '../Typography';
 
 countries.registerLocale(enLocale);
@@ -71,9 +72,9 @@ const CompanyCard: React.FC<ICompanyCardProps> = ({
   return (
     <Card $disabled={!id} href={`/due-diligence/${id}`}>
       <div className="flex flex-1 flex-col gap-1 self-stretch">
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-1">
           <H2>{name}</H2>
-          <p>{status}</p>
+          <StatusChip status={status} />
         </div>
 
         <Info>{countries.getName(country, 'en') ?? '-'}</Info>

@@ -12,6 +12,7 @@ const SkeletonAnimation = keyframes`
 
 const SkeletonRectangular = styled.div<{ height: string }>`
   width: 100%;
+  min-width: 200px;
   height: ${(props) => props.height};
   border-radius: 4px;
   animation: ${SkeletonAnimation} 1s linear infinite alternate;

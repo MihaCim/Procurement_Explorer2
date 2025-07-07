@@ -6,7 +6,12 @@ export interface IButtonProps {
   onClick?: (event: any) => void;
   children: React.ReactNode;
   loading?: boolean;
-  variant?: 'contained' | 'outlined' | 'reject' | 'neutral';
+  variant?:
+    | 'contained'
+    | 'outlined'
+    | 'reject'
+    | 'neutral'
+    | 'neutralWithoutBorder';
   startEndorment?: React.ReactNode;
   endEndorment?: React.ReactNode;
   btnProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
@@ -82,6 +87,34 @@ const NeutralButton = styled(PrimaryOutlinedButton)`
   cursor: pointer;
 `;
 
+const NeutralButtonWithoutBorder = styled(NeutralButton)`
+  border: none;
+  background: transparent;
+
+  color: var(--color-text-primary, #292c3d);
+  font-family: Poppins;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 19px; /* 146.154% */
+  letter-spacing: -0.13px;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+
+  box-shadow: none;
+  &:hover {
+    background: hsla(0, 0%, 80%);
+  }
+  & > svg > path {
+    fill: var(--grey-1, #292c3d);
+  }
+  cursor: pointer;
+`;
+
 const LoadingSpinnerAnimation = keyframes`
 from {
   transform: rotate(0turn);
@@ -145,6 +178,15 @@ const PrimaryButton = ({
     >
       <ButtonContent {...props} />
     </NeutralButton>
+  ) : variant === 'neutralWithoutBorder' ? (
+    <NeutralButtonWithoutBorder
+      onClick={props.onClick}
+      type="button"
+      {...btnProps}
+      disabled={!!props.loading || btnProps?.disabled}
+    >
+      <ButtonContent {...props} />
+    </NeutralButtonWithoutBorder>
   ) : null;
 };
 

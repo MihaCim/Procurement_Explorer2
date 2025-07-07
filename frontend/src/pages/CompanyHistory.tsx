@@ -39,7 +39,6 @@ const CompanyHistory: React.FC = () => {
 
   const {
     state: { companies, loading: searchLoading },
-    setCompanies,
   } = useCompanyContext();
 
   const {

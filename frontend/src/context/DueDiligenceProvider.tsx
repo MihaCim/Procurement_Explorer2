@@ -47,7 +47,6 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   const [profile_generated, set_profile_generated] = React.useState(false);
   const [profile_started, set_profile_started] = React.useState(false);
   const [profile_initiating, set_profile_initiating] = React.useState(false);
-  // const [risk_level, setRiskLevel] = React.useState
 
   const [profile_url, set_profile_url] = React.useState<string | null>(null);
 

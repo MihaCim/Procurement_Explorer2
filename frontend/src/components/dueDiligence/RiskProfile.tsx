@@ -4,12 +4,12 @@ import styled from 'styled-components';
 import { useDueDiligenceContext } from '../../context/DueDiligenceProvider';
 import Label from '../forms/Label';
 import Skeleton from '../Skeleton';
-import { H2, H4 } from '../Typography';
+import { H2 } from '../Typography';
+import DictionaryContent from './DictionaryContent';
 
 const Container = styled.div`
   display: flex;
 
-  min-height: 700px;
   padding: 16px 24px;
   flex-direction: column;
   align-items: flex-start;
@@ -56,80 +56,6 @@ const Title = styled.p`
   line-height: normal;
 `;
 
-const MAX_DEPTH = 3;
-
-interface IDictionaryContentProps {
-  title: string;
-  value?: Record<string, unknown>;
-  pending: boolean;
-}
-
-function isRecordStringUnknown(
-  value: unknown,
-): value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-
-  if (Array.isArray(value)) {
-    return false;
-  }
-
-  const proto = Object.getPrototypeOf(value);
-  if (proto === null) {
-    return true;
-  }
-  return proto.constructor === Object;
-}
-
-const renderSubDictionnary = (
-  content: Record<string, unknown>,
-  depth: number,
-) => {
-  if (depth > MAX_DEPTH) {
-    return <span style={{ color: 'gray' }}>[Max Depth Exceeded]</span>;
-  }
-  if (Object.keys(content).length === 0) {
-    return <span>None</span>; // Display "None" for empty objects
-  }
-
-  return (
-    <ul>
-      {Object.entries(content).map(([key, value]) => (
-        <li key={key}>
-          {key}:{' '}
-          {!value
-            ? 'None'
-            : isRecordStringUnknown(value)
-              ? renderSubDictionnary(value, depth + 1)
-              : String(value).trim() === ''
-                ? 'None'
-                : String(value)}
-        </li>
-      ))}
-    </ul>
-  );
-};
-
-const DictionaryContent: React.FC<IDictionaryContentProps> = ({
-  title,
-  value,
-  pending,
-}) => {
-  return (
-    <div className="flex flex-1 flex-col">
-      <H4>{title}:</H4>
-      {value && Object.keys(value).length >= 0 ? (
-        renderSubDictionnary(value, 0)
-      ) : pending ? (
-        <Skeleton height={100} />
-      ) : (
-        <span>-</span>
-      )}
-    </div>
-  );
-};
-
 const RiskProfile: React.FC = () => {
   const {
     state: { company, loadingCompany, profile },
@@ -146,7 +72,9 @@ const RiskProfile: React.FC = () => {
               <Label
                 textTitle="Name"
                 textContent={profile?.company_name ?? '-'}
-                loading={profile?.status === 'running'}
+                loading={
+                  !profile?.company_name && profile?.status === 'running'
+                }
               />
               <Label
                 textTitle="Industry"
@@ -176,10 +104,12 @@ const RiskProfile: React.FC = () => {
                 textTitle="Adress"
                 textContent={
                   profile?.address
-                    ? Object.values(profile.address).join(' ')
+                    ? typeof profile.address === 'string'
+                      ? profile.address
+                      : Object.values(profile.address).join(' ')
                     : '-'
                 }
-                loading={profile?.status === 'running'}
+                loading={!profile?.address && profile?.status === 'running'}
               />
               <Label
                 textTitle="Product portfolio"
@@ -252,6 +182,12 @@ const RiskProfile: React.FC = () => {
           <DictionaryContent
             title={'Key relationships'}
             value={profile?.key_relationships}
+            pending={profile?.status === 'running'}
+          />
+
+          <DictionaryContent
+            title={'Risk level'}
+            value={profile?.risk_level}
             pending={profile?.status === 'running'}
           />
         </div>

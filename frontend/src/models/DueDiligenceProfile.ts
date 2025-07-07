@@ -3,7 +3,7 @@ export interface DueDiligenceProfile {
   url: string;
   founded: string;
   founder: string;
-  address: Address;
+  address: unknown;
   description: string;
   due_diligence_timestamp?: string; // ISO 8601 datetime string
 
@@ -12,25 +12,18 @@ export interface DueDiligenceProfile {
   status?: 'running' | 'finished' | 'not_available';
   // END
 
-  key_individuals: {
-    [role: string]: unknown;
-  };
-  security_risks: {
-    [key: string]: unknown;
-  };
-  financial_risks: {
-    [key: string]: unknown;
-  };
-  key_relationships: {
-    [key: string]: unknown;
-  };
-  operational_risks: {
-    [key: string]: unknown;
-  };
+  key_individuals: unknown;
 
-  risk_level: {
-    [key: string]: unknown;
-  };
+  security_risks: unknown;
+
+  financial_risks: unknown;
+
+  key_relationships: unknown;
+
+  operational_risks: unknown;
+
+  risk_level: unknown;
+
   risk_level_int: number;
   summary?: string; //Is it used or is it description ?
 }
