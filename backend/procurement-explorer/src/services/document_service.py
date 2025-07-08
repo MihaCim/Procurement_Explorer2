@@ -265,6 +265,7 @@ async def update_company(
 async def delete_company(
     company_id: int, source: PostgresConnector = PostgresConnector()
 ):
+    company = await get_company(company_id)
     if company is None:
         logger.error(f"Company with ID {company_id} does not exist.")
         return False
