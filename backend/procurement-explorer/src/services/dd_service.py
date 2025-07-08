@@ -34,40 +34,25 @@ async def get_dd_profile_from_cache(company_url: str) -> Union['DueDiligenceProf
 
                 if response.status != 200:
                     error_detail = await response.text()
-                    # Log an error if the API returns a non-200 status
                     logger.error(f"Due Diligence API returned non-200 status for {company_url}: {response.status}, Details: {error_detail}")
-                    return {
-                        "status": "failed",
-                        "msg": f"failed to get DueDiligence for {company_url} from cache. Status: {response.status}",
-                        "detail": error_detail
-                    }
+                    return None
+                
+                #return the existing profile 
                 data = await response.json()
                 logger.info(f"Successfully retrieved DueDiligenceProfile for {company_url}")
                 return DueDiligenceProfile(**data)
+    
     except aiohttp.ClientConnectorError as e:
-        # Log the connection error with traceback
         logger.error(f"Could not connect to the Due Diligence API: {e}", exc_info=True)
-        return {
-            "status": "failed",
-            "msg": f"Failed to connect to DueDiligence cache API",
-            "error_detail": str(e)
-        }
+        return None
+
     except aiohttp.ClientError as e:
-        # Log other aiohttp client errors with traceback
         logger.error(f"An aiohttp client error occurred in due diligence API call: {e}", exc_info=True)
-        return {
-            "status": "failed",
-            "msg": f"An unexpected http client error occurred while calling DueDiligence API",
-            "error_detail": str(e)
-        }
+        return None
+    
     except Exception as e:
-        # Log any other unexpected errors, automatically including traceback
         logger.exception(f"An unexpected error occurred for {company_url}: {e}")
-        return {
-            "status": "failed",
-            "msg": f"An unexpected error occurred while processing DueDiligence API request for {company_url}.",
-            "error_detail": str(e)
-        }
+        return None
 
 
 async def delete_dd_profile_from_cache(company_url: str) -> dict[str, str]:
