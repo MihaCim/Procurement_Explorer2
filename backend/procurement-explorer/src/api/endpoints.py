@@ -392,7 +392,6 @@ async def initial_db_loading(
     start_time = datetime.now()
     companies = get_initialization_data()
     num_inserts = 0
-    # companies = companies[:100]
 
     # run the inserts for each company in loading file
     for idx, company in enumerate(companies[:1000]):
@@ -428,26 +427,19 @@ async def initial_dd_loading_dd_profiles(
         return "Access Denied: Wrong Password"
 
     start_time = datetime.now()
-    # companies = get_initialization_data()
     num_inserts = 0
-
-    # run the inserts for each company in loading file
     profiles = load_dd_profiles()
     new_profiles = []
 
     for profile_data in profiles:
+        print ("DD_PROFILE_INSERT: ", profile_data)
         print("insert: ", num_inserts)
-        try:
-            dd_profile = DueDiligenceProfile(**profile_data)
-            # dd_profile = parse_due_diligence_profile(profile_data)
-            dd_profile_id = await update_due_diligence_profile(dd_profile)
+        profile = DueDiligenceProfileWrapper(**profile_data) 
+        dd_profile = map_wrapper_to_due_diligence(profile)
+        dd_profile.status = "Approved"
+        result = await update_due_diligence_profile(dd_profile)
+        if result["status"] == "ok":  
             num_inserts += 1
-            new_profiles.append(dd_profile_id)
-        except ValidationError as e:
-            # Skip the profile if validation fails
-            print(f"Data insert for dueDiligence failed, Error: {e}")
-            continue
-
-    if new_profiles:
-        return new_profiles
+            new_profiles.append(result["msg"])
+        
     return {"duration": datetime.now() - start_time, "num_inserts": num_inserts}
