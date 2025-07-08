@@ -1,30 +1,81 @@
 [
   {
-    "id": null,
-    "name": "taha",
+    "name": "TAHA SAVUNMA SANAYI VE TICARET ANONIM SIRKETI",
     "url": "www.tahasavunma.com",
-    "email": "None",
-    "founded": 2000,
-    "founder": "",
-    "address": {},
-    "country": "",
-    "Last_revision": "2025-07-08 09:20:48.601165",
-    "risk_level": null,
-    "status": "running",
-    "description": "",
-    "key_individuals": {},
-    "security_risk": {},
-    "financial_risk": {},
-    "operational_risk": {},
-    "key_relationships": {},
-    "due_diligence_timestamp": "2025-07-08T09:20:50.722653",
+    "founded": "2017",
+    "founder": "Hayri Tahirbeyoğlu",
+    "address": {
+      "street": "N/A",
+      "city": "N/A",
+      "state": "N/A"
+    },
+    "risk_level": "5",
+    "description": "Turkish defense company",
+    "key_individuals": {
+      "Chairman": {
+        "name": "Hayri Tahirbeyoğlu",
+        "background": "Central to the sanctions"
+      }
+    },
+    "security_risk": {
+      "Sanctioned under Executive Order 14024": "https://home.treasury.gov/news/press-releases/jy2546"
+    },
+    "financial_risk": {
+      "difficulty accessing markets, asset freezing, transaction restrictions, increased scrutiny, reputational damage due to sanctions": "https://home.treasury.gov/news/press-releases/jy2546"
+    },
+    "operational_risk": {
+      "supply chain disruptions, production delays, cybersecurity, logistics, reliance on specific suppliers, risks with ammunition/equipment deals": "N/A"
+    },
+    "key_relationships": {
+      "Linked to Sfoglietti and Russia": "Source: Ekonomim"
+    },
+    "last_revision": "2025-07-08T10:20:01.825396",
+    "due_diligence_timestamp": "2025-07-08T10:16:12.269674",
+    "summary": "Company sanctioned under Executive Order 14024 due to key relationships. Faces extreme risks related to finances and operations.",
+    "status": "generated",
     "metadata": {
       "task": "You are part of an AI system designed to generate a comprehensive due diligence report focused \n            on security risks for defense procurement related to the company: www.tahasavunma.com. \n            Your goal is to ensure that the report is thorough, accurate, and well-documented. The report must include:\n            Company Information:Name, founding date, founder(s), address, and a brief description.\n            Security Risks:Links to sanctions, financial issues, or associations with blacklisted individuals or countries under EU regulations.\n            Operational Risks:Risks linked to projects, activities, or connections to sanctioned persons or entities.\n            Key Relationships:Political, operational, or other ties with sanctioned individuals or entities.\n            Description: Abstract of company portfolio and security profile.\n            Start by reading existing report data and search for missing information online.\n            Always extract whole company page text as a start reference. \n            Think step by step and process the task to final complete report"
     },
     "logs": [
       {
-        "log": "Started new DueDiligence Profile",
-        "timestamp": "2025-07-08T09:20:48.601157"
+        "log": "{\"agent name\": \"Julian Frost (Risk Analyst)\", \"agent response\": \"I am providing the final response indicating the completion of the due diligence report and the associated risk level.\"}",
+        "timestamp": "2025-07-08T10:19:21.102678"
+      },
+      {
+        "log": "{\"agent name\": \"Evelyn Fields (Documentation Specialist)\", \"agent response\": \"Responding to the user that the due diligence report is complete and no further actions are required.\"}",
+        "timestamp": "2025-07-08T10:19:23.909204"
+      },
+      {
+        "log": "{\"agent name\": \"Ethan Pierce (Product Manager)\", \"agent response\": \"Responding to the user with the final due diligence report result.\"}",
+        "timestamp": "2025-07-08T10:19:29.052778"
+      },
+      {
+        "log": "{\"agent name\": \"Nora Caldwell (Researcher)\", \"agent response\": \"Responding with the final due diligence report result.\"}",
+        "timestamp": "2025-07-08T10:19:31.819830"
+      },
+      {
+        "log": "{\"agent name\": \"Julian Frost (Risk Analyst)\", \"agent response\": \"Indicate that the due diligence report is complete and no further actions are required.\"}",
+        "timestamp": "2025-07-08T10:19:34.582187"
+      },
+      {
+        "log": "{\"agent name\": \"Evelyn Fields (Documentation Specialist)\", \"agent response\": \"Responding that the due diligence report is complete and no further actions are required.\"}",
+        "timestamp": "2025-07-08T10:19:36.901954"
+      },
+      {
+        "log": "{\"agent name\": \"Ethan Pierce (Product Manager)\", \"agent response\": \"Responding to the user that the due diligence report is complete and no further actions are required.\"}",
+        "timestamp": "2025-07-08T10:19:41.443206"
+      },
+      {
+        "log": "{\"agent name\": \"Nora Caldwell (Researcher)\", \"agent response\": \"I am responding to the user with the final due diligence report result.\"}",
+        "timestamp": "2025-07-08T10:19:44.115489"
+      },
+      {
+        "log": "{\"agent name\": \"Julian Frost (Risk Analyst)\", \"agent response\": \"I am providing the final response to the user, indicating the completion of the due diligence report and the assigned risk level.\"}",
+        "timestamp": "2025-07-08T10:19:46.565749"
+      },
+      {
+        "log": "{\"agent name\": \"Evelyn Fields (Documentation Specialist)\", \"agent response\": \"I am providing the final response to the user, indicating the due diligence report is complete and the final risk level is Extreme (5).\"}",
+        "timestamp": "2025-07-08T10:19:56.905417"
       }
     ]
   }
