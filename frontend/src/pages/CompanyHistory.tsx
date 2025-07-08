@@ -39,6 +39,7 @@ const CompanyHistory: React.FC = () => {
 
   const {
     state: { companies, loading: searchLoading },
+    searchCompany: setCompanies,
   } = useCompanyContext();
 
   const {
@@ -52,7 +53,7 @@ const CompanyHistory: React.FC = () => {
   });
 
   useEffect(() => {
-    setCompanies(data?.companies ?? []);
+    setCompanies('');
   }, [data, setCompanies, isRefetching]);
 
   const columns = useMemo(() => {

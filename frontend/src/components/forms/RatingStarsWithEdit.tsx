@@ -64,7 +64,7 @@ const RatingStarsWEdit: FC<IRatingStarsWEditProps> = ({
     try {
       handleClose(value);
     } catch (e) {
-      console.log('error');
+      console.log('error', e);
     } finally {
       setLoading(false);
       setIsOpen(false);
@@ -82,7 +82,12 @@ const RatingStarsWEdit: FC<IRatingStarsWEditProps> = ({
         <StyledButton onClick={() => setIsOpen(true)}>Edit</StyledButton>
       </div>
       <RatingStarsStandalone max={max} value={currentValue} invert={invert} />
-      <Modal isOpen={isOpen} onRequestClose={() => setIsOpen(false)}>
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        labelledby={''}
+        describedby={''}
+      >
         <StyledContainer>
           <>
             <H2>Edit {title}</H2>

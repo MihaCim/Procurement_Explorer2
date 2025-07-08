@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
@@ -58,7 +59,7 @@ const EditModalText: React.FC<IEditModalProps> = ({
     try {
       handleClose(value);
     } catch (e) {
-      console.log('error');
+      console.log('error', e);
     } finally {
       setLoading(false);
       setIsOpen(false);
@@ -74,7 +75,12 @@ const EditModalText: React.FC<IEditModalProps> = ({
       <StyledButton type={'button'} onClick={() => setIsOpen(true)}>
         Edit
       </StyledButton>
-      <Modal isOpen={isOpen} onRequestClose={() => setIsOpen(false)}>
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        labelledby={''}
+        describedby={''}
+      >
         <StyledContainer>
           <>
             <H2>Edit {valueName}</H2>

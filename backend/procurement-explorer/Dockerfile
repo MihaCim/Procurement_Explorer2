@@ -29,7 +29,7 @@ RUN pip install -r /app/requirements.txt
 # copy project
 COPY . .
 
-RUN chmod +x run.sh
+# RUN chmod +x run.sh
 
 ENV PYTHONPATH=/app
 
