@@ -91,7 +91,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     // refetch,
   } = useQuery({
     queryKey: ['profile', profile_url],
-    queryFn: ({ queryKey }) => getDueDiligenceProfile(queryKey[1]!),
+    queryFn: ({ queryKey }) => getDueDiligenceProfile(queryKey[1]!, true, true),
     enabled: refreshEnabled,
     refetchInterval: 2000,
   });

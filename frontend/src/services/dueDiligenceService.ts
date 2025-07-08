@@ -14,8 +14,14 @@ const useDueDiligenceService = () => {
 export default useDueDiligenceService;
 
 class DueDiligenceService {
-  public async getDueDiligenceProfile(id: string): Promise<DueDiligenceResult> {
-    return new APIService().get(`/due-diligence/profile?company_url=${id}`);
+  public async getDueDiligenceProfile(
+    id: string,
+    cached: boolean,
+    saved: boolean,
+  ): Promise<DueDiligenceResult> {
+    return new APIService().get(
+      `/due-diligence/profile?company_url=${id}&cached=${cached}&saved=${saved}`,
+    );
   }
 
   public async startDueDiligenceProfile(
@@ -29,8 +35,12 @@ class DueDiligenceService {
 }
 
 class FakeDDService {
-  public async getDueDiligenceProfile(id: string): Promise<DueDiligenceResult> {
-    console.log('FAKE getDueDiligenceProfile CALLED', id);
+  public async getDueDiligenceProfile(
+    id: string,
+    cached: boolean,
+    saved: boolean,
+  ): Promise<DueDiligenceResult> {
+    console.log('FAKE getDueDiligenceProfile CALLED', id, cached, saved);
     return Promise.resolve({
       ...EDDA_PROFILE,
       logs: EDDA_LOGS,

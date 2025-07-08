@@ -109,27 +109,43 @@ const AgentFeedbackContainer = styled.div`
   box-shadow: 1px 1px 10px 0px rgba(73, 76, 91, 0.03) inset;
 `;
 
+const parseLog = (
+  log: string,
+): { 'agent name': string; 'agent response': string } | null => {
+  try {
+    return JSON.parse(log);
+  } catch (e) {
+    console.warn('Error parsing log:', e);
+    return { 'agent name': 'Unknown', 'agent response': log };
+  }
+};
+
 const AgentFeedback: React.FC<{
   feedback: DueDiligenceLog;
   isCurrent: boolean;
   isFinished: boolean;
 }> = ({ feedback, isCurrent, isFinished }) => {
+  const log = parseLog(feedback['log']);
+  if (!log) {
+    return null;
+  }
+
   return (
     <AgentFeedbackContainer>
       {isCurrent && isFinished ? (
         <div className="flex items-center gap-2">
           <AcceptIcon height={24} />
-          <FeebackTypo>{feedback['agent']}</FeebackTypo>
+          <FeebackTypo>{log['agent name']}</FeebackTypo>
         </div>
       ) : isCurrent ? (
         <div className="flex items-center gap-2">
           <CircularProgress size={24} borderWidth={2} />
-          <FeebackTypo>{feedback['agent']}</FeebackTypo>
+          <FeebackTypo>{log['agent name']}</FeebackTypo>
         </div>
       ) : (
-        <FeebackTypo>{feedback['agent']}</FeebackTypo>
+        <FeebackTypo>{log['agent name']}</FeebackTypo>
       )}
-      <FeedbackText>{feedback['log']}</FeedbackText>
+      <FeedbackText>{log['agent response']}</FeedbackText>
     </AgentFeedbackContainer>
   );
 };
@@ -145,6 +161,10 @@ const AgenticFeedback: React.FC = () => {
     return logs && logs.length > 0 ? logs[logs.length - 1] : null;
   }, [logs]);
 
+  const currentLog = useMemo(() => {
+    return currentFeedback ? parseLog(currentFeedback['log']) : null;
+  }, [currentFeedback]);
+
   return (
     <Bar>
       <div className="flex justify-between items-center gap-3 w-full">
@@ -155,9 +175,9 @@ const AgenticFeedback: React.FC = () => {
             <CircularProgress size={16} borderWidth={2} />
           )}
           <div className="flex flex-1">
-            {currentFeedback ? (
+            {currentLog ? (
               <FeebackTypo>
-                {`${currentFeedback['agent']}: ${currentFeedback['log']}`}
+                {`${currentLog['agent name']}: ${currentLog['agent response']}`}
               </FeebackTypo>
             ) : (
               <FeebackTypo>Initialisation...</FeebackTypo>

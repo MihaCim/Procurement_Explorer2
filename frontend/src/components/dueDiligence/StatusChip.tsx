@@ -48,8 +48,7 @@ const iconMap: Record<string, React.ReactElement> = {
 };
 
 const StatusChip: React.FC<IStatusChipProps> = ({ status }) => {
-  const displayStatus =
-    statusMap[status.trim().toLocaleLowerCase()] || 'unknown';
+  const displayStatus = statusMap[status.trim()] || 'unknown';
 
   const Icon = iconMap[displayStatus] || undefined;
 
