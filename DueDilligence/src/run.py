@@ -1,7 +1,8 @@
-import json
 import os
 import sys
 from datetime import datetime
+import asyncio
+from asyncio import to_thread, create_task
 from typing import Any
 from data_models import DueDiligenceCompanyProfile, DueDiligenceResult
 from data_models import map_company_data_to_profile
@@ -92,7 +93,7 @@ async def generate_profile(
     key = f"generate_profile:{company_name}"
     redis_client = redis.get_client()
     if not redis_client.exists(key):
-        background_tasks.add_task(run_dd_process, company_name)
+        create_task(to_thread(asyncio.run, run_dd_process(company_name)))
         return {
             "status": "ok",
             "msg": f"started DueDiligence process for {company_name}",
@@ -105,4 +106,4 @@ async def generate_profile(
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8501, workers=4)
+    uvicorn.run(app, host="0.0.0.0", port=8501)
