@@ -61,6 +61,23 @@ def replace_none_with_empty(obj: Any) -> Any:
         return [replace_none_with_empty(item) for item in obj]
     else:
         return obj
+    
+def safe_get_dict(value: Any, default: dict = {}) -> dict:
+    """
+    Ensures the returned value is a dictionary; otherwise returns the default.
+    """
+    if isinstance(value, dict):
+        return value
+    return default
+
+
+def safe_get_list(value: Any, default: list = []) -> list:
+    """
+    Ensures the returned value is a list; otherwise returns the default.
+    """
+    if isinstance(value, list):
+        return value
+    return default
 
 
 def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligenceCompanyProfile:
@@ -73,14 +90,14 @@ def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligence
             url=data.url or "",
             founded=empty_str_to_none(str(profile.get("founded"))),
             founder=profile.get("founder") or "",
-            address=replace_none_with_empty(profile.get("address", {})),
+            address=replace_none_with_empty(safe_get_dict(profile.get("address"))),
             risk_level=empty_str_to_none(str(profile.get("risk_level_int"))),
             description=profile.get("description") or "",
-            key_individuals=replace_none_with_empty(profile.get("key_individuals", {})),
-            security_risk=replace_none_with_empty(profile.get("security_risks", {})),
-            financial_risk=replace_none_with_empty(profile.get("financial_risks", {})),
-            operational_risk=replace_none_with_empty(profile.get("operational_risks", {})),
-            key_relationships=replace_none_with_empty(profile.get("key_relationships", {})),
+            key_individuals=replace_none_with_empty(safe_get_dict(profile.get("key_individuals"))),
+            security_risk=replace_none_with_empty(safe_get_dict(profile.get("security_risks"))),
+            financial_risk=replace_none_with_empty(safe_get_dict(profile.get("financial_risks"))),
+            operational_risk=replace_none_with_empty(safe_get_dict(profile.get("operational_risks"))),
+            key_relationships=replace_none_with_empty(safe_get_dict(profile.get("key_relationships"))),
             summary=profile.get("summary") or "",
             metadata=replace_none_with_empty(profile.get("metadata", {})),
             last_revision=(
@@ -93,7 +110,7 @@ def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligence
                 if isinstance(data.started, datetime)
                 else str(data.started) or datetime.now().isoformat()
             ),
-            logs=replace_none_with_empty(data.logs or []),
+            logs=replace_none_with_empty(safe_get_list(data.logs)),
         )
 
         return DueDiligenceCompanyProfile(**kwargs)
