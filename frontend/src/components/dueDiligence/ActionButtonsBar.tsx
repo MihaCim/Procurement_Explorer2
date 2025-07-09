@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import ConfirmedIcon from '../../assets/icons/check.svg?react';
 import DeleteIcon from '../../assets/icons/delete.svg?react';
 import EditIcon from '../../assets/icons/edit.svg?react';
+import DeleteModal from '../modals/DeleteModal';
 import PrimaryButton from '../PrimaryButton';
 
 const ActionBarContainer = styled.div`
@@ -31,9 +32,8 @@ const ActionBarContainer = styled.div`
 `;
 
 export const ActionButtonsBar: React.FC = () => {
-  const handleDelete = () => {
-    alert('Delete action!');
-  };
+  const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
+  const handleDelete = () => {};
 
   const handleEdit = () => {
     alert('Edit action!');
@@ -44,33 +44,42 @@ export const ActionButtonsBar: React.FC = () => {
   };
 
   return (
-    <ActionBarContainer>
-      <div className="flex flex-1 self-stretch w-full h-full relative items-center justify-center">
-        <div className="absolute left-0">
-          <PrimaryButton
-            startEndorment={<DeleteIcon />}
-            variant="neutralWithoutBorder"
-            onClick={handleDelete}
-          >
-            Delete
-          </PrimaryButton>
+    <>
+      <ActionBarContainer>
+        <div className="flex flex-1 self-stretch w-full h-full relative items-center justify-center">
+          <div className="absolute left-0">
+            <PrimaryButton
+              startEndorment={<DeleteIcon />}
+              variant="neutralWithoutBorder"
+              onClick={() => setDeleteModalOpen(true)}
+            >
+              Delete
+            </PrimaryButton>
+          </div>
+          <div className="flex gap-2">
+            <PrimaryButton
+              startEndorment={<EditIcon />}
+              variant="outlined"
+              onClick={handleEdit}
+            >
+              Edit
+            </PrimaryButton>
+            <PrimaryButton
+              startEndorment={<ConfirmedIcon />}
+              onClick={handleConfirm}
+            >
+              Mark as Confirmed
+            </PrimaryButton>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <PrimaryButton
-            startEndorment={<EditIcon />}
-            variant="outlined"
-            onClick={handleEdit}
-          >
-            Edit
-          </PrimaryButton>
-          <PrimaryButton
-            startEndorment={<ConfirmedIcon />}
-            onClick={handleConfirm}
-          >
-            Mark as Confirmed
-          </PrimaryButton>
-        </div>
-      </div>
-    </ActionBarContainer>
+      </ActionBarContainer>
+      <DeleteModal
+        isOpen={deleteModalOpen}
+        onRequestClose={() => {
+          setDeleteModalOpen(false);
+        }}
+        onConfirm={handleDelete}
+      />
+    </>
   );
 };

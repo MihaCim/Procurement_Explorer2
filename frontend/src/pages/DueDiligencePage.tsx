@@ -10,6 +10,10 @@ import LoadingCard from '../components/LoadingCard';
 import PageContainer from '../components/PageContainer';
 import TitleWithBack from '../components/TitleWithBack';
 import { useDueDiligenceContext } from '../context/DueDiligenceProvider';
+import {
+  isStatusGenerated,
+  NOT_AVAILABLE_STATUS,
+} from '../models/DueDiligenceProfile';
 
 const PageLayout = styled.div`
   display: flex;
@@ -32,11 +36,7 @@ const DueDiligencePage: React.FC = () => {
   console.log('DueDiligencePage profile', profile);
 
   useEffect(() => {
-    if (
-      company &&
-      company.status &&
-      ['running', 'generated', 'Approved', 'finished'].includes(company.status)
-    ) {
+    if (company && company.status && company.status !== NOT_AVAILABLE_STATUS) {
       startDueDiligence(company.website);
     }
   }, [company, company?.status, startDueDiligence]);
@@ -55,14 +55,11 @@ const DueDiligencePage: React.FC = () => {
           </div>
 
           <PageLayout>
-            {profile?.status &&
-            ['running', 'generated', 'Approved', 'finished'].includes(
-              profile?.status,
-            ) ? (
+            {profile?.status && profile?.status !== NOT_AVAILABLE_STATUS ? (
               <div className="flex flex-col w-full">
                 <AgenticFeedback />
                 <RiskProfile />
-                {profile?.status === 'finished' && <ActionButtonsBar />}
+                {isStatusGenerated(profile?.status) && <ActionButtonsBar />}
               </div>
             ) : (
               <StartNewAnalysisCard />

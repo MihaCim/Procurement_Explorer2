@@ -4,7 +4,10 @@ import styled from 'styled-components';
 import AcceptIcon from '../../assets/icons/accept.svg?react';
 import ExpandIcon from '../../assets/icons/expand.svg?react';
 import { useDueDiligenceContext } from '../../context/DueDiligenceProvider';
-import { DueDiligenceLog } from '../../models/DueDiligenceProfile';
+import {
+  DueDiligenceLog,
+  isStatusGenerated,
+} from '../../models/DueDiligenceProfile';
 import BtnLink from '../BtnLink';
 import { CircularProgress } from '../CircularProgress';
 
@@ -169,7 +172,7 @@ const AgenticFeedback: React.FC = () => {
     <Bar>
       <div className="flex justify-between items-center gap-3 w-full">
         <div className="flex items-center gap-2">
-          {profile?.status === 'finished' ? (
+          {isStatusGenerated(profile?.status) ? (
             <AcceptIcon height={24} />
           ) : (
             <CircularProgress size={16} borderWidth={2} />
@@ -222,7 +225,7 @@ const AgenticFeedback: React.FC = () => {
                 <AgentFeedback
                   key={`logs_${i}`}
                   isCurrent={i === logs.length - 1}
-                  isFinished={profile?.status === 'finished'}
+                  isFinished={isStatusGenerated(profile?.status)}
                   feedback={log}
                 />
               ))

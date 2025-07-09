@@ -9,7 +9,7 @@ export interface DueDiligenceProfile {
 
   //THESE SEEMS INJECTED IN ADDITION OF LLM RESULT
   metadata?: Record<string, string>;
-  status?: 'running' | 'finished' | 'not_available';
+  status?: string;
   // END
 
   key_individuals: unknown;
@@ -75,3 +75,19 @@ export interface OperationalRisk {
 export interface KeyRelationships {
   partners: string[];
 }
+
+export const NOT_AVAILABLE_STATUS = 'not available';
+export const RUNNING_STATUS = 'running';
+export const GENERATED_STATUS = 'generated';
+export const APPROVED_STATUS = 'approved';
+
+export const STATUS_LIST = [
+  NOT_AVAILABLE_STATUS,
+  RUNNING_STATUS,
+  GENERATED_STATUS,
+  APPROVED_STATUS,
+];
+
+export const isStatusGenerated = (status?: string): boolean => {
+  return status === GENERATED_STATUS || status === APPROVED_STATUS;
+};

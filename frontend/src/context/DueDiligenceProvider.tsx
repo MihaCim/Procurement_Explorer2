@@ -14,6 +14,7 @@ import { DetailedCompany } from '../models/Company';
 import {
   DueDiligenceLog,
   DueDiligenceProfile,
+  isStatusGenerated,
 } from '../models/DueDiligenceProfile';
 import useCompanyService from '../services/companyService';
 import useDueDiligenceService from '../services/dueDiligenceService';
@@ -112,7 +113,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   const profile = data;
 
   useEffect(() => {
-    if (profile?.status === 'finished' && !profile_generated)
+    if (isStatusGenerated(profile?.status) && !profile_generated)
       set_profile_generated(true);
   }, [profile?.status, profile_generated]);
 

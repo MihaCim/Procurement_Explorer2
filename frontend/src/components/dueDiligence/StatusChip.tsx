@@ -28,11 +28,10 @@ const StatusText = styled.span`
 `;
 
 const statusMap: Record<string, string> = {
-  Available: 'Generated',
-  'Not Available': 'New',
+  'not available': 'New',
   running: 'Running',
-  confirmed: 'Confirmed',
-  finished: 'Generated',
+  approved: 'Confirmed',
+  generated: 'Generated',
 };
 
 const colorMap: Record<string, string> = {
