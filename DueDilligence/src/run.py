@@ -83,7 +83,6 @@ async def get_profile(
 @app.post("/profile")
 async def generate_profile(
     company_name: str | None,
-    background_tasks: BackgroundTasks,
 ) -> dict[str, str]:
     if company_name is None or company_name == "":
         raise HTTPException(
