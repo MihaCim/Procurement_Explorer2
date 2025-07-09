@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+import DocumentIcon from '../assets/icons/document.svg?react';
 import SearchIcon from '../assets/icons/search.svg?react';
+import { Modal, ModalActions, PrimaryButton } from '../components';
+import BtnLink from '../components/BtnLink';
 import IconButton from '../components/commons/IconButton';
 import CompaniesGrid from '../components/companies/CompaniesGrid';
 import { SegmentedControl, TextField } from '../components/forms';
@@ -44,6 +47,8 @@ const CompanySearchPage: React.FC = () => {
   const [searchState, setSearchState] = useState<CompanySearchPageState>({
     searchTerm: '',
   });
+
+  const [docProfileOpen, setDocProfileOpen] = useState(false);
 
   const {
     state,
@@ -146,6 +151,47 @@ const CompanySearchPage: React.FC = () => {
             </div>
           )}
         </div>
+        {state.documentProfile && (
+          <div className="flex gap-2 self-stretch">
+            <IconButton
+              onClick={() => {
+                setDocProfileOpen(true);
+              }}
+            >
+              <DocumentIcon />
+            </IconButton>
+            <BtnLink
+              onClick={() => {
+                setDocProfileOpen(true);
+              }}
+            >
+              See document profile
+            </BtnLink>
+            <Modal
+              size="l"
+              isOpen={docProfileOpen}
+              onRequestClose={() => setDocProfileOpen(false)}
+              labelledby={'document profile'}
+              describedby={'document profile'}
+            >
+              <p className="wrap-break-word whitespace-pre-line mb-4">
+                {state.documentProfile}
+              </p>
+
+              <ModalActions>
+                <PrimaryButton
+                  btnProps={{ type: 'button' }}
+                  variant="outlined"
+                  onClick={() => {
+                    setDocProfileOpen(false);
+                  }}
+                >
+                  Close
+                </PrimaryButton>
+              </ModalActions>
+            </Modal>
+          </div>
+        )}
         <CompaniesGrid />
       </Content>
     </PageContainer>

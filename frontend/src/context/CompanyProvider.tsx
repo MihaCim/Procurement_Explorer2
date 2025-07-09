@@ -21,6 +21,7 @@ interface CompanySearch {
   lastSearchText: string | null;
   lastSearchType: SearchType;
   totalCompanies: number;
+  documentProfile: string | null;
 }
 
 export interface ICompanyState {
@@ -31,6 +32,7 @@ export interface ICompanyState {
   loaded: boolean;
   hasMore: boolean;
   lastSearchType: SearchType;
+  documentProfile: string | null;
 }
 
 const CompanyContext = createContext({} as CompanyContextProps);
@@ -48,6 +50,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
     lastSearchText: null,
     lastSearchType: null,
     totalCompanies: 0,
+    documentProfile: null,
   });
   const [currentTextSearchQuery, setCurrentTextSearchQuery] = useState<
     string | null
@@ -70,6 +73,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
       lastSearchText: null,
       lastSearchType: null,
       totalCompanies: 0,
+      documentProfile: null,
     });
     setLoaded(false);
   }, [setCompanies]);
@@ -94,6 +98,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
             lastSearchText: text,
             lastSearchType: 'text',
             totalCompanies: data.total,
+            documentProfile: null,
           }));
           setFirstLoaded(true);
           setLoaded(true);
@@ -118,6 +123,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
             lastSearchText: null,
             lastSearchType: 'description',
             totalCompanies: data.length,
+            documentProfile: null,
           });
           setFirstLoaded(true);
           setLoaded(true);
@@ -142,7 +148,9 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
             lastSearchText: null,
             lastSearchType: 'file',
             totalCompanies: data?.companies_list.length ?? 0,
+            documentProfile: (data?.document_profile as string) ?? null,
           });
+
           setFirstLoaded(true);
           setLoaded(true);
         })
@@ -179,6 +187,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
           loading: isLoading,
           hasMore: companySearch.hasMore,
           lastSearchType: companySearch.lastSearchType,
+          documentProfile: companySearch.documentProfile,
         },
         resetSearchState,
         searchCompany,
