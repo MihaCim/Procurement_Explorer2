@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import styled from "styled-components";
+import React, { useState } from 'react';
+import styled from 'styled-components';
 
-import SearchButton from "./commons/SearchButton";
-import DragAndDropUpload from "./forms/DragAndDropUpload";
-import Select from "./forms/Select";
-import TextField from "./forms/TextField";
+import SearchButton from './commons/SearchButton';
+import DragAndDropUpload from './forms/DragAndDropUpload';
+import Select from './forms/Select';
+import TextField from './forms/TextField';
 
 const SearchContainer = styled.div`
   display: flex;
@@ -46,7 +46,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       ></Select>
       {selectedSearchType === SearchType.Document && (
         <DragAndDropUpload
-          singleFile
+          // singleFile
           onfilesChange={(files) => {
             setSelectedFile(files[0]);
           }}

@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Modal, { ModalActions } from '../modals/Modal';
+
+import Modal, { ModalActions } from '../modals/BaseModal';
+import PrimaryButton from '../PrimaryButton';
+import { H2 } from '../Typography';
 import Label from './Label';
 import StyledInputBase from './StyledInputBase';
-import { useEffect, useState } from 'react';
-import { H2 } from '../Typography';
-import PrimaryButton from '../PrimaryButton';
 
 interface IEditModalProps {
   handleClose: (value: any) => void;
@@ -57,7 +59,7 @@ const EditModalText: React.FC<IEditModalProps> = ({
     try {
       handleClose(value);
     } catch (e) {
-      console.log('error');
+      console.log('error', e);
     } finally {
       setLoading(false);
       setIsOpen(false);
@@ -73,7 +75,12 @@ const EditModalText: React.FC<IEditModalProps> = ({
       <StyledButton type={'button'} onClick={() => setIsOpen(true)}>
         Edit
       </StyledButton>
-      <Modal isOpen={isOpen} onRequestClose={() => setIsOpen(false)}>
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        labelledby={''}
+        describedby={''}
+      >
         <StyledContainer>
           <>
             <H2>Edit {valueName}</H2>

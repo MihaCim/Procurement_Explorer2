@@ -1,12 +1,17 @@
-import React from "react";
-import styled, { keyframes } from "styled-components";
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
 
 export interface IButtonProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onClick?: (event: any) => void;
   children: React.ReactNode;
   loading?: boolean;
-  variant?: "contained" | "outlined" | "reject" | "neutral";
+  variant?:
+    | 'contained'
+    | 'outlined'
+    | 'reject'
+    | 'neutral'
+    | 'neutralWithoutBorder';
   startEndorment?: React.ReactNode;
   endEndorment?: React.ReactNode;
   btnProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
@@ -37,17 +42,21 @@ const PrimaryContainedButton = styled.button`
   & > svg > path {
     fill: var(--color-white, #ffffff);
   }
+
+  cursor: pointer;
 `;
 
 const PrimaryRejectButton = styled(PrimaryContainedButton)`
-  background: var(--color-text-primary, #292c3d);
+  border-radius: var(--radius-radius-small, 4px);
+  background: #890101;
   color: var(--color-white, #ffffff);
   &:hover {
-    background: var(--color-text-secondary, #121213);
+    background: var(--color-text-secondary, #490101);
   }
   & > svg > path {
     fill: var(--color-white, #ffffff);
   }
+  cursor: pointer;
 `;
 
 const PrimaryOutlinedButton = styled(PrimaryContainedButton)`
@@ -61,6 +70,7 @@ const PrimaryOutlinedButton = styled(PrimaryContainedButton)`
   & > svg > path {
     fill: var(--color-primary, #014289);
   }
+  cursor: pointer;
 `;
 
 const NeutralButton = styled(PrimaryOutlinedButton)`
@@ -75,6 +85,35 @@ const NeutralButton = styled(PrimaryOutlinedButton)`
   & > svg > path {
     fill: var(--grey-1, #44444a);
   }
+  cursor: pointer;
+`;
+
+const NeutralButtonWithoutBorder = styled(NeutralButton)`
+  border: none;
+  background: transparent;
+
+  color: var(--color-text-primary, #292c3d);
+  font-family: Poppins;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 19px; /* 146.154% */
+  letter-spacing: -0.13px;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+
+  box-shadow: none;
+  &:hover {
+    background: hsla(0, 0%, 80%);
+  }
+  & > svg > path {
+    fill: var(--grey-1, #292c3d);
+  }
+  cursor: pointer;
 `;
 
 const LoadingSpinnerAnimation = keyframes`
@@ -87,7 +126,7 @@ to {
 }`;
 
 const Spinner = styled.div`
-  content: "";
+  content: '';
   width: 16px;
   height: 16px;
   border: 2px solid transparent;
@@ -96,7 +135,12 @@ const Spinner = styled.div`
   animation: ${LoadingSpinnerAnimation} 1s ease infinite;
 `;
 
-const ButtonContent = ({ children, startEndorment, endEndorment, loading = false }: IButtonProps) => (
+const ButtonContent = ({
+  children,
+  startEndorment,
+  endEndorment,
+  loading = false,
+}: IButtonProps) => (
   <>
     {loading ? <Spinner></Spinner> : startEndorment}
     <div className="px-2">{children}</div>
@@ -104,8 +148,12 @@ const ButtonContent = ({ children, startEndorment, endEndorment, loading = false
   </>
 );
 
-const PrimaryButton = ({ variant = "contained", btnProps, ...props }: IButtonProps) => {
-  return variant === "contained" ? (
+const PrimaryButton = ({
+  variant = 'contained',
+  btnProps,
+  ...props
+}: IButtonProps) => {
+  return variant === 'contained' ? (
     <PrimaryContainedButton
       onClick={props.onClick}
       type="button"
@@ -114,18 +162,32 @@ const PrimaryButton = ({ variant = "contained", btnProps, ...props }: IButtonPro
     >
       <ButtonContent {...props} />
     </PrimaryContainedButton>
-  ) : variant === "outlined" ? (
+  ) : variant === 'outlined' ? (
     <PrimaryOutlinedButton onClick={props.onClick} type="button" {...btnProps}>
       <ButtonContent {...props} />
     </PrimaryOutlinedButton>
-  ) : variant === "reject" ? (
+  ) : variant === 'reject' ? (
     <PrimaryRejectButton onClick={props.onClick} type="button" {...btnProps}>
       <ButtonContent {...props} />
     </PrimaryRejectButton>
-  ) : variant === "neutral" ? (
-    <NeutralButton onClick={props.onClick} type="button" {...btnProps} disabled={!!props.loading || btnProps?.disabled}>
+  ) : variant === 'neutral' ? (
+    <NeutralButton
+      onClick={props.onClick}
+      type="button"
+      {...btnProps}
+      disabled={!!props.loading || btnProps?.disabled}
+    >
       <ButtonContent {...props} />
     </NeutralButton>
+  ) : variant === 'neutralWithoutBorder' ? (
+    <NeutralButtonWithoutBorder
+      onClick={props.onClick}
+      type="button"
+      {...btnProps}
+      disabled={!!props.loading || btnProps?.disabled}
+    >
+      <ButtonContent {...props} />
+    </NeutralButtonWithoutBorder>
   ) : null;
 };
 

@@ -1,53 +1,84 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
-import DueDiligenceSidePanel from '../components/dueDiligence/DueDiligenceSidePanel';
-import FinancialRisks from '../components/dueDiligence/FinancialRisks';
-import GeneralInformation from '../components/dueDiligence/GeneralInformation';
+import { ActionButtonsBar } from '../components/dueDiligence/ActionButtonsBar';
+import AgenticFeedback from '../components/dueDiligence/AgenticFeedback';
+import RiskProfile from '../components/dueDiligence/RiskProfile';
+import StartNewAnalysisCard from '../components/dueDiligence/StartNewAnalysisCard';
+import StatusChip from '../components/dueDiligence/StatusChip';
 import LoadingCard from '../components/LoadingCard';
 import PageContainer from '../components/PageContainer';
 import TitleWithBack from '../components/TitleWithBack';
 import { useDueDiligenceContext } from '../context/DueDiligenceProvider';
+import {
+  isStatusGenerated,
+  NOT_AVAILABLE_STATUS,
+} from '../models/DueDiligenceProfile';
+
 const PageLayout = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 16px;
   flex: 1 0 0;
   align-self: stretch;
-`;
+  height: 100%;
+  width: 100%;
 
-const DetailLayout = styled.div`
-  display: flex;
-  flex: 1 0 0;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+  padding-bottom: 80px; /* Adjusted for sticky footer */
 `;
 
 const DueDiligencePage: React.FC = () => {
   const {
-    state: { loading },
-    export: { targetRef },
+    state: { loadingCompany, profile, company },
+    startDueDiligence,
   } = useDueDiligenceContext();
 
-  return (
-    <PageContainer id="due-diligence-page">
-      <TitleWithBack label="Due Diligence" />
+  console.log('DueDiligencePage profile', profile);
 
-      {loading ? (
+  useEffect(() => {
+    if (company && company.status && company.status !== NOT_AVAILABLE_STATUS) {
+      startDueDiligence(company.website);
+    }
+  }, [company, company?.status, startDueDiligence]);
+
+  const [searchParams] = useSearchParams();
+
+  const profileUrl = searchParams.get('url');
+
+  useEffect(() => {
+    if (profileUrl) {
+      startDueDiligence(profileUrl);
+    }
+  }, [profileUrl, startDueDiligence]);
+
+  return (
+    <PageContainer id="due-diligence-page" className="h-full">
+      {loadingCompany ? (
         <div className="w-full top-1/2 left-1/2">
           <LoadingCard text="Retrieving document structure" />
         </div>
       ) : (
-        <PageLayout ref={targetRef}>
-          <div id="sidepanel" className="z-50 sticky top-4">
-            <DueDiligenceSidePanel />
+        <div className="flex flex-col gap-4 h-full w-full">
+          <div className="flex gap-2">
+            <TitleWithBack label={profile?.name ?? 'Risk Profile'} />
+            <StatusChip
+              status={profile?.status ?? company?.status ?? 'not available'}
+            />
           </div>
-          <DetailLayout>
-            <GeneralInformation />
-            <FinancialRisks />
-          </DetailLayout>
-        </PageLayout>
+
+          <PageLayout>
+            {profile?.status && profile?.status !== NOT_AVAILABLE_STATUS ? (
+              <div className="flex flex-col w-full">
+                <AgenticFeedback />
+                <RiskProfile />
+                {isStatusGenerated(profile?.status) && <ActionButtonsBar />}
+              </div>
+            ) : (
+              <StartNewAnalysisCard />
+            )}
+          </PageLayout>
+        </div>
       )}
     </PageContainer>
   );

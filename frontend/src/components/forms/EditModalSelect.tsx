@@ -1,9 +1,11 @@
-import styled from 'styled-components';
-import Modal, { ModalActions } from '../modals/Modal';
-import Label from './Label';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { H2 } from '../Typography';
+import styled from 'styled-components';
+
+import Modal, { ModalActions } from '../modals/BaseModal';
 import PrimaryButton from '../PrimaryButton';
+import { H2 } from '../Typography';
+import Label from './Label';
 import Select from './Select';
 
 interface IEditModalProps {
@@ -57,7 +59,7 @@ const EditModalSelect: React.FC<IEditModalProps> = ({
     try {
       handleClose(value);
     } catch (e) {
-      console.log('error');
+      console.log('error', e);
     } finally {
       setLoading(false);
       setIsOpen(false);
@@ -71,7 +73,12 @@ const EditModalSelect: React.FC<IEditModalProps> = ({
   return (
     <>
       <StyledButton onClick={() => setIsOpen(true)}>Edit</StyledButton>
-      <Modal isOpen={isOpen} onRequestClose={() => setIsOpen(false)}>
+      <Modal
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        labelledby={''}
+        describedby={''}
+      >
         <StyledContainer>
           <>
             <H2>Edit {valueName}</H2>

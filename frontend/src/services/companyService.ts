@@ -1,4 +1,9 @@
-import { Company, DetailedCompany } from '../models/Company';
+import {
+  Company,
+  DetailedCompany,
+  PaginatedCompanies,
+  SearchByDocResponse,
+} from '../models/Company';
 import { CompanyProcessing } from '../models/CompanyProcessing';
 import { CompanyProcessingStatus } from '../models/CompanyProcessingStatus';
 import { CompanyResult } from '../models/CompanyResult';
@@ -11,14 +16,22 @@ const useCompanyService = () => {
 export default useCompanyService;
 
 class CompanyService {
-  public async getCompanies(): Promise<Company[]> {
+  public async getCompanies(): Promise<PaginatedCompanies> {
     return new APIService().get('/companies');
   }
   public async getCompanyById(id: number): Promise<DetailedCompany> {
     return new APIService().get(`/companies/id/${id}`);
   }
-  public async getCompaniesByText(text: string): Promise<Company[]> {
-    return new APIService().get('/companies?query=' + encodeURI(text));
+  public async getCompaniesByText(
+    text: string,
+    offset: number,
+  ): Promise<PaginatedCompanies> {
+    return new APIService().get(
+      '/companies?query=' +
+        encodeURI(text) +
+        '&offset=' +
+        encodeURI(String(offset)),
+    );
   }
   public async getCompaniesByDescription(
     description: string,
@@ -27,7 +40,7 @@ class CompanyService {
       `/companies/similar?text=${encodeURI(description)}&n=10`,
     );
   }
-  public async getCompaniesByFile(file: File): Promise<Company[]> {
+  public async getCompaniesByFile(file: File): Promise<SearchByDocResponse> {
     const formData = new FormData();
     formData.append('file', file);
     return new APIService().postMultipart(

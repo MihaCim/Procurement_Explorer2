@@ -1,7 +1,8 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren } from 'react';
 
-import { Modal, ModalActions, PrimaryButton } from "..";
-import { H1 } from "../Typography";
+import { ModalActions, PrimaryButton } from '../';
+import { H1 } from '../Typography';
+import BaseModal from './BaseModal';
 
 export interface ConfirmationModalProps extends PropsWithChildren {
   isOpen: boolean;
@@ -24,7 +25,12 @@ const ConfirmationModal = ({
   children,
 }: ConfirmationModalProps) => {
   return (
-    <Modal isOpen={isOpen} onRequestClose={onRequestClose}>
+    <BaseModal
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      labelledby={''}
+      describedby={''}
+    >
       <div className="w-full">
         <div className="mb-20">
           <H1 className="mb-10">{title}</H1>
@@ -48,7 +54,7 @@ const ConfirmationModal = ({
           </PrimaryButton>
         </ModalActions>
       </div>
-    </Modal>
+    </BaseModal>
   );
 };
 

@@ -138,7 +138,8 @@ class FunctionalAgent:
             raise ValueError(f"Function not found in the registry {func_name}")
 
     async def map_function_call(self, ai_output_raw: str, funct_registry: str) -> str:
-        prompt = dedent(f"""
+        prompt = dedent(
+            f"""
                         You are tasked with: mapping the existing function to one of the registry functions available.
                         Here is the existing definition:
                                 ----------------
@@ -155,7 +156,8 @@ class FunctionalAgent:
                     "reasoning": "explain why you are calling this function eg. I need to update the user's value.", 
                     "parameters": "a dictionary with parameters to call the function. if no parameters, make empty dict."
                     Do not call function is_finished unless the function is explicitly mentioned.
-                        """)
+                        """
+        )
         function_mapped = await call_llm(prompt)
         return function_mapped
 
@@ -307,7 +309,7 @@ class FunctionalAgent:
                     calls_made.append(func_name)
                 else:
                     self.buffer.append("Strictly follow the output format.")
-                
+
             except Exception:
                 traceback.print_exc()
 
@@ -607,14 +609,16 @@ class TaskThread:
                 )
 
                 # Now construct the agent_input as a multiline string
-                agent_input = dedent(f"""\
+                agent_input = dedent(
+                    f"""\
                 You are working on the following task:
                 <Task>{self.task}</Task>
                 You are in a conversation with the following colleagues:
                 {self.get_agent_names()}
                 If you are not sure about your response, ask for feedback.                
                 {conversation_part}                
-                """)
+                """
+                )
                 agent_response = await agent.run(input_string=agent_input)
                 if agent_response and len(agent_response) > 0:
                     self.buffer.append(
@@ -626,8 +630,8 @@ class TaskThread:
                     )
                     log_data = {
                         "agent name": agent_name,
-                        "agent response": agent_response
-                        }
+                        "agent response": agent_response,
+                    }
 
                     self.logger.add_log(json.dumps(log_data))
                     self.logger.update_profile(self.result)
@@ -640,7 +644,8 @@ class TaskThread:
                 else "\n"
             )
 
-            agent_input = dedent(f"""\
+            agent_input = dedent(
+                f"""\
             You are working on the following task:
             <Task>{self.task}</Task>
             You are in a conversation with the following colleagues:
@@ -649,7 +654,8 @@ class TaskThread:
             Do not finish to early.
             If you see your colleagues are finalizing their report, this might be an indication to finish the task.
             {conversation_part}
-            """)
+            """
+            )
             await self.agents.get(self.task_manager_name).run(input_string=agent_input)
 
             logger.info(
@@ -663,7 +669,8 @@ class TaskThread:
             f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n" if buffer_str else ""
         )
 
-        agent_input = dedent(f"""\
+        agent_input = dedent(
+            f"""\
         You are working on the following task:
         <Task>{self.task}</Task>
         You were in a conversation with the following colleagues:
@@ -671,8 +678,9 @@ class TaskThread:
         Write a detailed report for the task.
         You are finishing the task, so remember to update the final report.
         {conversation_part}
-        """)
-       
+        """
+        )
+
         await self.agents.get(self.task_manager_name).run(input_string=agent_input)
         self.logger.update_profile(self.result)
 

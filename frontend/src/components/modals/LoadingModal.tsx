@@ -1,7 +1,7 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
-import { CircularProgress } from "../CircularProgress";
+import { CircularProgress } from '../CircularProgress';
 
 export interface ILoadingModalProps {
   isOpen: boolean;

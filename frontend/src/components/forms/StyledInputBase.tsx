@@ -5,23 +5,29 @@ import CalendarIcon from '../../assets/icons/calendar.svg?react';
 
 const StyledInputBase = styled.input<{
   $fullWidth?: boolean;
+  $width?: number;
   $error?: boolean;
 }>`
   max-width: ${(props) =>
-    props.$fullWidth ? '100%' : 'var(--m-field-width, 308px)'};
+    props.$fullWidth
+      ? '100%'
+      : props.$width
+        ? `${props.$width}px`
+        : 'var(--m-field-width, 384px)'};
   height: 40px;
   padding: 6px 16px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: ${(props) =>
     props.$error
       ? '1px solid rgb(239 68 68)'
-      : '1px solid var(--gris2, #999aa1)'};
-  background: rgba(247, 252, 255, 0.45);
+      : '1px solid var(--stroke, #EBEBF1)'};
+
+  background: var(--color-white, #fff);
   &:disabled {
     color: #434346;
-    border-radius: 5px;
-    border: 1px solid #999aa1;
-    background: rgba(193, 193, 193, 0.45);
+    border-radius: 2px;
+    border: 1px solid var(--stroke, #ebebf1);
+    background: var(--color-white, #fff);
   }
 `;
 
@@ -36,40 +42,46 @@ const StyledDivBase = styled.div<{
     props.$fullWidth ? '100%' : 'var(--m-field-width, 308px)'};
   height: 40px;
   padding: 6px 16px;
-  border-radius: 5px;
+
+  border-radius: 2px;
   border: ${(props) =>
     props.$error
       ? '1px solid rgb(239 68 68)'
-      : '1px solid var(--gris2, #999aa1)'};
-  background: rgba(247, 252, 255, 0.45);
+      : '1px solid var(--stroke, #EBEBF1)'};
+  background: var(--color-white, #fff);
   &:disabled {
     color: #434346;
-    border-radius: 5px;
-    border: 1px solid #999aa1;
-    background: rgba(193, 193, 193, 0.45);
+    border-radius: 2px;
+    border: 1px solid var(--stroke, #ebebf1);
+    background: var(--color-white, #fff);
   }
 `;
 
 export const StyledTextAreaBase = styled.textarea<{
   $fullWidth?: boolean;
+  $width?: number;
   $error?: boolean;
 }>`
   max-width: ${(props) =>
-    props.$fullWidth ? '100%' : 'var(--m-field-width, 308px)'};
+    props.$fullWidth
+      ? '100%'
+      : props.$width
+        ? `${props.$width}px`
+        : 'var(--m-field-width, 384px)'};
   min-height: 40px;
   resize: none;
   padding: 6px 16px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: ${(props) =>
     props.$error
       ? '1px solid rgb(239 68 68)'
-      : '1px solid var(--gris2, #999aa1)'};
-  background: rgba(247, 252, 255, 0.45);
+      : '1px solid var(--stroke, #EBEBF1)'};
+  background: var(--color-white, #fff);
   &:disabled {
     color: #434346;
-    border-radius: 5px;
-    border: 1px solid #999aa1;
-    background: rgba(193, 193, 193, 0.45);
+    border-radius: 2px;
+    border: 1px solid var(--stroke, #ebebf1);
+    background: var(--color-white, #fff);
   }
 `;
 

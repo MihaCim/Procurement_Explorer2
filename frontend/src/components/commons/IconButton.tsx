@@ -1,5 +1,5 @@
-import React, { CSSProperties, PropsWithChildren } from "react";
-import styled from "styled-components";
+import React, { CSSProperties, PropsWithChildren } from 'react';
+import styled from 'styled-components';
 
 interface IconButtonProps extends PropsWithChildren {
   onClick: () => void;
@@ -9,14 +9,20 @@ interface IconButtonProps extends PropsWithChildren {
 }
 
 const Button = styled.button`
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
   &:hover {
-    background: var(--Color-color-hover-primary, #a4a5a6ff);
+    background: #f3f3f8;
+  }
+  &:disabled {
+    cursor: not-allowed;
   }
 `;
 
-const ContainedButton = styled.button`
+const PrimaryButton = styled.button`
   display: flex;
-  padding: 8px 18px 8px 10px;
+  cursor: pointer;
   justify-content: flex-end;
   align-items: center;
   border-radius: var(--radius-radius-small, 4px);
@@ -25,22 +31,21 @@ const ContainedButton = styled.button`
   color: #fff;
   gap: 8px;
   &:hover {
-    background: var(--Color-color-hover-primary, #003064);
+    background: var(--color-hover-primary, #003064);
   }
 `;
 
-const OutlinedButton = styled.button`
+const DefaultButton = styled.button`
   display: flex;
-  padding: 8px 18px 8px 10px;
+  cursor: pointer;
+
   justify-content: flex-end;
   align-items: center;
-  border-radius: var(--radius-radius-small, 4px);
-  border: 1px solid var(--Color-color-primary, #014289);
   background: #fff;
-  color: var(--Color-color-primary, #014289);
+  color: var(--color-primary, #014289);
   gap: 8px;
   &:hover {
-    background: var(--Color-color-hover-secondary, #f3f3f8);
+    background: var(--color-hover-secondary, #f3f3f8);
   }
 `;
 
@@ -52,23 +57,23 @@ const IconButton: React.FC<IconButtonProps> = ({
   style = undefined,
 }) => {
   return variant === 'contained' ? (
-    <ContainedButton
+    <PrimaryButton
       type="button"
       onClick={onClick}
       disabled={disabled}
       style={style}
     >
       {children}
-    </ContainedButton>
+    </PrimaryButton>
   ) : variant === 'outlined' ? (
-    <OutlinedButton
+    <DefaultButton
       type="button"
       onClick={onClick}
       disabled={disabled}
       style={style}
     >
       {children}
-    </OutlinedButton>
+    </DefaultButton>
   ) : (
     <Button type="button" onClick={onClick} disabled={disabled} style={style}>
       {children}

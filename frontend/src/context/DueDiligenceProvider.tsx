@@ -1,133 +1,229 @@
-import React, { createContext, ReactNode, Ref, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { DetailedCompany } from '../models/Company';
-import { DueDiligenceProfile } from '../models/DueDiligenceProfile';
+import {
+  DueDiligenceLog,
+  DueDiligenceProfile,
+  isStatusGenerated,
+} from '../models/DueDiligenceProfile';
 import useCompanyService from '../services/companyService';
 import useDueDiligenceService from '../services/dueDiligenceService';
-import generatePDF from 'react-to-pdf';
 
-interface DueDiligenceContextProps {
+interface DueDiligenceContext {
   state: IDueDiligenceState;
-  export: {
-    exportToPDF: () => void;
-    targetRef: Ref<any>;
-  };
+  startDueDiligence: (url: string) => Promise<void>;
+  deleteProfile: () => Promise<void>;
 }
 export interface IDueDiligenceState {
   updating: boolean;
-  loading: boolean;
+  loadingCompany: boolean;
+  loadingProfile: boolean;
   profile: DueDiligenceProfile | null;
+  logs: DueDiligenceLog[];
   company: DetailedCompany | null;
-  risk_level: number;
-  setRiskLevel: (value: number) => void;
-  updateProfile: (data: any) => void;
+  profile_generated: boolean;
+  profile_started: boolean;
+  profile_initiating: boolean;
 }
-const DueDiligenceContext = createContext({} as DueDiligenceContextProps);
+
+const DueDiligenceContext = createContext({} as DueDiligenceContext);
 
 export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { getDueDiligenceProfile, updateDueDiligenceProfile } =
-    useDueDiligenceService();
+  const {
+    getDueDiligenceProfile,
+    startDueDiligenceProfile,
+    deleteDueDiligenceProfile,
+  } = useDueDiligenceService();
   const { getCompanyById } = useCompanyService();
   const { id } = useParams();
+  const navigate = useNavigate();
 
-  const [risk_level, setRiskLevel] = React.useState<number>(0);
+  const [profile_generated, set_profile_generated] = React.useState(false);
+  const [profile_started, set_profile_started] = React.useState(false);
+  const [profile_initiating, set_profile_initiating] = React.useState(false);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['profile', id],
-    queryFn: () =>
-      Promise.all([
-        getDueDiligenceProfile(Number(id)),
-        getCompanyById(Number(id)),
-      ]),
-    enabled:
-      !!getCompanyById &&
-      !!getDueDiligenceProfile &&
-      id !== undefined &&
-      !isNaN(Number(id)),
+  const [profile_url, set_profile_url] = React.useState<string | null>(null);
+
+  const { data: company, isLoading: loadingCompany } = useQuery({
+    queryKey: ['company', id],
+    queryFn: () => getCompanyById(Number(id)),
+    enabled: !!getCompanyById && id !== undefined && !isNaN(Number(id)),
   });
 
-  const updateQuery = useMutation({
-    mutationKey: ['updateProfile'],
-    mutationFn: async (data: any) => {
-      console.log(data);
-      const res = await updateDueDiligenceProfile(Number(id), data);
-      if (res) await refetch();
-      return data;
+  const pathId = useMemo(() => {
+    return id && !isNaN(Number(id)) ? Number(id) : null;
+  }, [id]);
+
+  const refreshEnabled = useMemo(() => {
+    if (pathId)
+      return (
+        !!getDueDiligenceProfile &&
+        !!company &&
+        !profile_generated &&
+        !!profile_url &&
+        profile_started
+      );
+    else
+      return (
+        !!getDueDiligenceProfile &&
+        !profile_generated &&
+        !!profile_url &&
+        profile_started
+      );
+  }, [
+    company,
+    getDueDiligenceProfile,
+    pathId,
+    profile_generated,
+    profile_url,
+    profile_started,
+  ]);
+
+  const {
+    data: profile,
+    isLoading: loadingProfile,
+    // refetch,
+  } = useQuery({
+    queryKey: ['profile', profile_url],
+    queryFn: ({ queryKey }) => getDueDiligenceProfile(queryKey[1]!, true, true),
+    enabled: refreshEnabled,
+    refetchInterval: 2000,
+  });
+
+  // const updateQuery = useMutation({
+  //   mutationKey: ['updateProfile'],
+  //   mutationFn: async (data: any) => {
+  //     console.log(data);
+  //     const res = await updateDueDiligenceProfile(Number(id), data);
+  //     if (res) await refetch();
+  //     return data;
+  //   },
+  // });
+  // const updateProfile = async (data: any) => {
+  //   updateQuery.mutate(data);
+  // };
+
+  const deleteMutation = useMutation({
+    mutationKey: ['deleteProfile'],
+    mutationFn: async () => {
+      if (profile_url) {
+        const res = await deleteDueDiligenceProfile(profile_url, true, true);
+        return res;
+      }
+      throw new Error('Profile URL is not defined');
+    },
+    onSuccess: () => {
+      set_profile_generated(false);
+      set_profile_started(false);
+      set_profile_url(null);
     },
   });
-  const updateProfile = async (data: any) => {
-    updateQuery.mutate(data);
-  };
 
-  const [profile, company] = data ?? [null, null];
+  const deleteProfile = useCallback(async () => {
+    if (profile_url) {
+      try {
+        await deleteMutation.mutateAsync();
+        navigate('/'); // Redirect to home or another page after deletion
+      } catch (error) {
+        console.error('Error deleting profile:', error);
+      }
+    }
+  }, [deleteMutation, navigate, profile_url]);
 
   useEffect(() => {
-    if (profile) {
-      setRiskLevel(profile.risk_level);
-    }
-    console.log(profile);
-  }, [profile]);
+    if (isStatusGenerated(profile?.status) && !profile_generated)
+      set_profile_generated(true);
+  }, [profile?.status, profile_generated]);
+
+  const startDueDiligence = useCallback(
+    async (url: string) => {
+      if (url) {
+        try {
+          set_profile_initiating(true);
+          await startDueDiligenceProfile(url);
+          set_profile_url(url);
+          set_profile_started(true);
+        } catch (error) {
+          console.log(error); //TODO
+        } finally {
+          set_profile_initiating(false);
+        }
+      }
+    },
+    [startDueDiligenceProfile],
+  );
 
   //Export to PDF
 
-  const targetRef = React.useRef<HTMLDivElement>(null);
+  // const targetRef = React.useRef<HTMLDivElement>(null);
 
-  const exportToPDF = () => {
-    {
-      if (
-        targetRef == null ||
-        !('current' in targetRef) ||
-        targetRef.current == null
-      )
-        throw new Error('Ref is null');
-      //get items to hide or change for the export
-      const buttons = targetRef.current?.getElementsByTagName('button') ?? [];
-      const sidePanel =
-        targetRef.current?.querySelector<HTMLDivElement>('#sidepanel');
-      try {
-        for (let i = 0; i < buttons.length; i++) {
-          buttons[0].style.display = 'none';
-          console.log(buttons[0]);
-        }
+  // const exportToPDF = () => {
+  //   {
+  //     if (
+  //       targetRef == null ||
+  //       !('current' in targetRef) ||
+  //       targetRef.current == null
+  //     )
+  //       throw new Error('Ref is null');
+  //     //get items to hide or change for the export
+  //     const buttons = targetRef.current?.getElementsByTagName('button') ?? [];
+  //     const sidePanel =
+  //       targetRef.current?.querySelector<HTMLDivElement>('#sidepanel');
+  //     try {
+  //       for (let i = 0; i < buttons.length; i++) {
+  //         buttons[0].style.display = 'none';
+  //         console.log(buttons[0]);
+  //       }
 
-        sidePanel!.style.position = 'static';
+  //       sidePanel!.style.position = 'static';
 
-        generatePDF(targetRef, {
-          filename: `${profile?.name.replace(/\ +/g, '_') ?? 'UNKNOW'}_DueDiligence.pdf`,
-          page: { margin: 5 },
-          overrides: {
-            canvas: { windowWidth: 1400 },
-          },
-        });
-      } catch (e) {
-        console.error(e);
-      } finally {
-        for (let i = 0; i < buttons.length; i++) {
-          buttons[0].style.display = 'block';
-          console.log(buttons[0]);
-        }
-        sidePanel!.style.position = 'sticky';
-      }
-    }
-  };
+  //       generatePDF(targetRef, {
+  //         filename: `${profile?.company_name.replace(/ +/g, '_') ?? 'UNKNOW'}_DueDiligence.pdf`,
+  //         page: { margin: 5 },
+  //         overrides: {
+  //           canvas: { windowWidth: 1400 },
+  //         },
+  //       });
+  //     } catch (e) {
+  //       console.error(e);
+  //     } finally {
+  //       for (let i = 0; i < buttons.length; i++) {
+  //         buttons[0].style.display = 'block';
+  //         console.log(buttons[0]);
+  //       }
+  //       sidePanel!.style.position = 'sticky';
+  //     }
+  //   }
+  // };
+
   return (
     <DueDiligenceContext.Provider
       value={{
-        export: { exportToPDF, targetRef },
+        // export: { exportToPDF, targetRef },
         state: {
-          profile,
-          company,
-          loading: isLoading ?? false,
+          profile: profile ?? null,
+          logs: profile?.logs ?? [],
+          company: company ?? null,
+          loadingCompany: loadingCompany ?? false,
+          loadingProfile: loadingProfile ?? false,
           updating: false,
-          risk_level,
-          setRiskLevel,
-          updateProfile,
+          profile_initiating,
+          profile_generated,
+          profile_started,
         },
+        startDueDiligence,
+        deleteProfile,
       }}
     >
       {children}

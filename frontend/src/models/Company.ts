@@ -8,6 +8,18 @@ export interface Company {
   industry: string;
 }
 
+export interface PaginatedCompanies {
+  total: number;
+  offset: number;
+  limit: number;
+  companies: Company[];
+}
+
+export interface SearchByDocResponse {
+  companies_list: Company[];
+  document_profile: unknown;
+}
+
 export interface DetailedCompany {
   id: number;
   name: string;
