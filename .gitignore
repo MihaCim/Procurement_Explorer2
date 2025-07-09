@@ -9,4 +9,3 @@ data/sanctions_data_us.csv
 .venv
 **/*.txt
 **/*.json
-**/*.sh

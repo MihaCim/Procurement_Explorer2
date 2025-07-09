@@ -148,6 +148,8 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
         # only set status if we actually have one
         if dd_profile and dd_profile.status is not None:
             kwargs["status"] = dd_profile.status
+        else:
+            kwargs["status"] = "not available"
         return CompanyWrapper(**kwargs)
     
     except Exception as e:
