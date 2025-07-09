@@ -28,12 +28,12 @@ async def run_dd_process(company_name: str) -> None:
         profile={"metadata": {"task": system_prompt}},
         url = company_name,
         started=datetime.now(),
-        last_updated=datetime.now(),
+        last_updated=datetime.now()
         )
     
     redis.set_json(key, dd_result.model_dump_json())
     logger = DDLogger(company_name=company_name, max_log_len=10, RedisStore=redis)
-    logger.add_log("Started new DueDiligence Profile")
+    logger.add_log('{"system": "Started generating new Profile"}')
 
     taskThread = TaskThread(
         task=system_prompt,

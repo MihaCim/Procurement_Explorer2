@@ -86,7 +86,7 @@ def map_company_data_to_profile(data: DueDiligenceResult | None) -> DueDiligence
 
         kwargs = dict(
             name=profile.get("company_name", ""),
-            status=profile.get("status", "Not Available"),
+            status=profile.get("status", "not available"),
             url=data.url or "",
             founded=empty_str_to_none(str(profile.get("founded"))),
             founder=profile.get("founder") or "",

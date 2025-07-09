@@ -68,7 +68,7 @@ class DDLogger:
 
     def add_log(self, log: dict[str, str]) -> None:
         dd_result = self._get_cache()
-        log_data = dict[str, Any]({"log": log, "timestamp": datetime.now()})
+        log_data = {"log": log, "timestamp": datetime.now()}
         dd_result.logs.append(log_data)
         if len(dd_result.logs) > self.max_log_len:
             dd_result.logs.pop(0)
