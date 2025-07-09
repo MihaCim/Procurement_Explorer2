@@ -303,7 +303,7 @@ async def save_due_diligence_profile_(
         raise HTTPException(status_code=400, detail="Error: Profile url is not defined")
     
     dd_profile = map_wrapper_to_due_diligence(updated_profile)
-    dd_profile.status = "Approved"
+    dd_profile.status = "approved"
 
     result = await update_due_diligence_profile(dd_profile)
     if result["status"] == "failed":
