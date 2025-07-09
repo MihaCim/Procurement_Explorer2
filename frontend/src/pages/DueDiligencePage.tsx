@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 
 import { ActionButtonsBar } from '../components/dueDiligence/ActionButtonsBar';
@@ -25,10 +25,21 @@ const PageLayout = styled.div`
 
 const DueDiligencePage: React.FC = () => {
   const {
-    state: { loadingCompany, profile },
+    state: { loadingCompany, profile, company },
+    startDueDiligence,
   } = useDueDiligenceContext();
 
   console.log('DueDiligencePage profile', profile);
+
+  useEffect(() => {
+    if (
+      company &&
+      company.status &&
+      ['running', 'generated', 'Approved', 'finished'].includes(company.status)
+    ) {
+      startDueDiligence(company.website);
+    }
+  }, [company, company?.status, startDueDiligence]);
 
   return (
     <PageContainer id="due-diligence-page" className="h-full">
@@ -39,13 +50,15 @@ const DueDiligencePage: React.FC = () => {
       ) : (
         <div className="flex flex-col gap-4 h-full w-full">
           <div className="flex gap-2">
-            <TitleWithBack label={profile?.company_name ?? 'Risk Profile'} />
+            <TitleWithBack label={profile?.name ?? 'Risk Profile'} />
             <StatusChip status={profile?.status ?? 'Not Available'} />
           </div>
 
           <PageLayout>
             {profile?.status &&
-            ['running', 'finished'].includes(profile?.status) ? (
+            ['running', 'generated', 'Approved', 'finished'].includes(
+              profile?.status,
+            ) ? (
               <div className="flex flex-col w-full">
                 <AgenticFeedback />
                 <RiskProfile />

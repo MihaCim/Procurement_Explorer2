@@ -71,10 +71,8 @@ const RiskProfile: React.FC = () => {
             <OneColDiv>
               <Label
                 textTitle="Name"
-                textContent={profile?.company_name ?? '-'}
-                loading={
-                  !profile?.company_name && profile?.status === 'running'
-                }
+                textContent={profile?.name ?? '-'}
+                loading={!profile?.name && profile?.status === 'running'}
               />
               <Label
                 textTitle="Industry"

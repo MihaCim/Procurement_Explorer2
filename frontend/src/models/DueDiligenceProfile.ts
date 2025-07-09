@@ -1,5 +1,5 @@
 export interface DueDiligenceProfile {
-  company_name: string;
+  name: string;
   url: string;
   founded: string;
   founder: string;

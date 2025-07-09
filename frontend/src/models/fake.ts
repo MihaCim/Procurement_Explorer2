@@ -1,7 +1,7 @@
 import { DueDiligenceLog, DueDiligenceProfile } from './DueDiligenceProfile';
 
 export const EDDA_PROFILE = {
-  company_name: 'Edda Luxembourg',
+  name: 'Edda Luxembourg',
   url: 'www.edda.lu',
   founded: '2008',
   founder: 'Christophe Cypers (CEO)',

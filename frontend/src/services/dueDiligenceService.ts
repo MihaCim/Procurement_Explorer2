@@ -1,5 +1,6 @@
 import {
   DueDiligenceCreationResult,
+  DueDiligenceProfile,
   DueDiligenceResult,
 } from '../models/DueDiligenceProfile';
 import { EDDA_LOGS, EDDA_PROFILE } from '../models/fake';
@@ -32,6 +33,22 @@ class DueDiligenceService {
       {},
     );
   }
+
+  public async deleteDueDiligenceProfile(
+    id: string,
+    cached: boolean,
+    saved: boolean,
+  ): Promise<DueDiligenceCreationResult> {
+    return new APIService().delete(
+      `/due-diligence/profile?company_url=${id}&cached=${cached}&saved=${saved}`,
+    );
+  }
+
+  public async updateDueDiligenceProfile(
+    profile: DueDiligenceProfile,
+  ): Promise<DueDiligenceCreationResult> {
+    return new APIService().put(`/due-diligence`, profile);
+  }
 }
 
 class FakeDDService {
@@ -50,10 +67,27 @@ class FakeDDService {
     });
   }
 
+  public async deleteDueDiligenceProfile(
+    id: string,
+    cached: boolean,
+    saved: boolean,
+  ): Promise<DueDiligenceCreationResult> {
+    console.log('FAKE deleteDueDiligenceProfile CALLED', id, cached, saved);
+    return Promise.resolve({ msg: 'done', status: 'ok' });
+  }
+
   public async startDueDiligenceProfile(
     company_url: string,
   ): Promise<DueDiligenceCreationResult> {
     console.log('FAKE startDueDiligenceProfile CALLED', company_url);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    return Promise.resolve({ msg: 'done', status: 'ok' });
+  }
+
+  public async updateDueDiligenceProfile(
+    company_url: string,
+  ): Promise<DueDiligenceCreationResult> {
+    console.log('FAKE updateDueDiligenceProfile CALLED', company_url);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     return Promise.resolve({ msg: 'done', status: 'ok' });
   }

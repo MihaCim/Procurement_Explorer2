@@ -111,7 +111,7 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
       }
     }
 
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    setFiles([...newFiles]);
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -139,7 +139,7 @@ const DragAndDropUpload: React.FC<DragAndDropUploadProps> = ({
           }
         }
       }
-      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      setFiles([...newFiles]);
     });
     fileInput.click();
   };

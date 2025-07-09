@@ -47,10 +47,11 @@ const PrimaryContainedButton = styled.button`
 `;
 
 const PrimaryRejectButton = styled(PrimaryContainedButton)`
-  background: var(--color-text-primary, #292c3d);
+  border-radius: var(--radius-radius-small, 4px);
+  background: #890101;
   color: var(--color-white, #ffffff);
   &:hover {
-    background: var(--color-text-secondary, #121213);
+    background: var(--color-text-secondary, #490101);
   }
   & > svg > path {
     fill: var(--color-white, #ffffff);

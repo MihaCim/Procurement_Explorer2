@@ -77,7 +77,7 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
   maxDepth = MAX_DEPTH_DEFAULT,
 }) => {
   const renderContent = () => {
-    if (pending) {
+    if (pending && !value) {
       return <LoadingState />;
     }
 
