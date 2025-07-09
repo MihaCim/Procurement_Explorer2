@@ -64,6 +64,7 @@ const StartGatheringInfoModal: React.FC<IStartGatheringInfoModalProps> = ({
             }}
             name="url"
             error={error ?? undefined}
+            onEnter={() => onConfirm(url)}
           />
         </div>
 

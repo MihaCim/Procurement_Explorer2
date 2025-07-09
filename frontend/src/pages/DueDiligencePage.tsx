@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { ActionButtonsBar } from '../components/dueDiligence/ActionButtonsBar';
@@ -41,6 +42,16 @@ const DueDiligencePage: React.FC = () => {
     }
   }, [company, company?.status, startDueDiligence]);
 
+  const [searchParams] = useSearchParams();
+
+  const profileUrl = searchParams.get('url');
+
+  useEffect(() => {
+    if (profileUrl) {
+      startDueDiligence(profileUrl);
+    }
+  }, [profileUrl, startDueDiligence]);
+
   return (
     <PageContainer id="due-diligence-page" className="h-full">
       {loadingCompany ? (
@@ -51,7 +62,9 @@ const DueDiligencePage: React.FC = () => {
         <div className="flex flex-col gap-4 h-full w-full">
           <div className="flex gap-2">
             <TitleWithBack label={profile?.name ?? 'Risk Profile'} />
-            <StatusChip status={profile?.status ?? 'Not Available'} />
+            <StatusChip
+              status={profile?.status ?? company?.status ?? 'not available'}
+            />
           </div>
 
           <PageLayout>

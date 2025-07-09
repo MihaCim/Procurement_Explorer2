@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   createContext,
   ReactNode,
@@ -6,9 +5,9 @@ import React, {
   useEffect,
   useMemo,
 } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { DetailedCompany } from '../models/Company';
 import {
@@ -22,6 +21,7 @@ import useDueDiligenceService from '../services/dueDiligenceService';
 interface DueDiligenceContext {
   state: IDueDiligenceState;
   startDueDiligence: (url: string) => Promise<void>;
+  deleteProfile: () => Promise<void>;
 }
 export interface IDueDiligenceState {
   updating: boolean;
@@ -40,10 +40,14 @@ const DueDiligenceContext = createContext({} as DueDiligenceContext);
 export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { getDueDiligenceProfile, startDueDiligenceProfile } =
-    useDueDiligenceService();
+  const {
+    getDueDiligenceProfile,
+    startDueDiligenceProfile,
+    deleteDueDiligenceProfile,
+  } = useDueDiligenceService();
   const { getCompanyById } = useCompanyService();
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [profile_generated, set_profile_generated] = React.useState(false);
   const [profile_started, set_profile_started] = React.useState(false);
@@ -87,7 +91,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   ]);
 
   const {
-    data,
+    data: profile,
     isLoading: loadingProfile,
     // refetch,
   } = useQuery({
@@ -110,7 +114,32 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   //   updateQuery.mutate(data);
   // };
 
-  const profile = data;
+  const deleteMutation = useMutation({
+    mutationKey: ['deleteProfile'],
+    mutationFn: async () => {
+      if (profile_url) {
+        const res = await deleteDueDiligenceProfile(profile_url, true, true);
+        return res;
+      }
+      throw new Error('Profile URL is not defined');
+    },
+    onSuccess: () => {
+      set_profile_generated(false);
+      set_profile_started(false);
+      set_profile_url(null);
+    },
+  });
+
+  const deleteProfile = useCallback(async () => {
+    if (profile_url) {
+      try {
+        await deleteMutation.mutateAsync();
+        navigate('/'); // Redirect to home or another page after deletion
+      } catch (error) {
+        console.error('Error deleting profile:', error);
+      }
+    }
+  }, [deleteMutation, navigate, profile_url]);
 
   useEffect(() => {
     if (isStatusGenerated(profile?.status) && !profile_generated)
@@ -134,13 +163,6 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     },
     [startDueDiligenceProfile],
   );
-
-  // useEffect(() => {
-  //   if (profile) {
-  //     setRiskLevel(profile.risk_level_int ?? 0);
-  //   }
-  //   console.log(profile);
-  // }, [profile]);
 
   //Export to PDF
 
@@ -184,6 +206,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   //     }
   //   }
   // };
+
   return (
     <DueDiligenceContext.Provider
       value={{
@@ -200,6 +223,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
           profile_started,
         },
         startDueDiligence,
+        deleteProfile,
       }}
     >
       {children}

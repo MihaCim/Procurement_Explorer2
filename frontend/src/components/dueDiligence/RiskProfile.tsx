@@ -20,16 +20,6 @@ const Container = styled.div`
   background: rgba(255, 255, 255, 0.5);
 `;
 
-const TwoColDiv = styled.div`
-  display: flex;
-  align-items: flex-start;
-  align-content: flex-start;
-  column-gap: 80px;
-  row-gap: 12px;
-  align-self: stretch;
-  flex-wrap: wrap;
-`;
-
 const OneColDiv = styled.div`
   display: flex;
   flex-direction: column;
@@ -64,16 +54,40 @@ const RiskProfile: React.FC = () => {
   return (
     <Container>
       <Title>Risk Profile : {profile?.url}</Title>
-      {company && (
-        <SubContent>
-          <H2>Company information</H2>
-          <TwoColDiv>
-            <OneColDiv>
-              <Label
-                textTitle="Name"
-                textContent={profile?.name ?? '-'}
-                loading={!profile?.name && profile?.status === 'running'}
-              />
+      <SubContent>
+        <H2>Company information</H2>
+
+        <OneColDiv>
+          <Label
+            textTitle="Name"
+            textContent={profile?.name ?? '-'}
+            loading={!profile?.name && profile?.status === 'running'}
+          />
+          <Label
+            textTitle="Founder"
+            textContent={profile?.founder ?? '-'}
+            loading={!profile?.founder && profile?.status === 'running'}
+          />
+          <Label
+            textTitle="Founded"
+            textContent={profile?.founded ?? '-'}
+            loading={!profile?.founded && profile?.status === 'running'}
+          />
+          <Label
+            textTitle="Address"
+            textContent={
+              profile?.address
+                ? typeof profile.address === 'string'
+                  ? profile.address
+                  : Object.values(profile.address).join(' ').trim() !== ''
+                    ? Object.values(profile.address).join(' ')
+                    : '-'
+                : '-'
+            }
+            loading={!profile?.address && profile?.status === 'running'}
+          />
+          {company && (
+            <>
               <Label
                 textTitle="Industry"
                 textContent={company?.industry ?? '-'}
@@ -96,19 +110,7 @@ const RiskProfile: React.FC = () => {
                 }
                 loading={loadingCompany}
               />
-            </OneColDiv>
-            <OneColDiv>
-              <Label
-                textTitle="Adress"
-                textContent={
-                  profile?.address
-                    ? typeof profile.address === 'string'
-                      ? profile.address
-                      : Object.values(profile.address).join(' ')
-                    : '-'
-                }
-                loading={!profile?.address && profile?.status === 'running'}
-              />
+
               <Label
                 textTitle="Product portfolio"
                 textContent={
@@ -137,10 +139,10 @@ const RiskProfile: React.FC = () => {
                 }
                 loading={loadingCompany}
               />
-            </OneColDiv>
-          </TwoColDiv>
-        </SubContent>
-      )}
+            </>
+          )}
+        </OneColDiv>
+      </SubContent>
       <SubContent>
         <H2>Description</H2>
         {!profile?.description && profile?.status === 'running' ? (

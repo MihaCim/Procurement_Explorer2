@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import ConfirmedIcon from '../../assets/icons/check.svg?react';
 import DeleteIcon from '../../assets/icons/delete.svg?react';
-import EditIcon from '../../assets/icons/edit.svg?react';
+import { useDueDiligenceContext } from '../../context/DueDiligenceProvider';
 import DeleteModal from '../modals/DeleteModal';
 import PrimaryButton from '../PrimaryButton';
 
@@ -33,10 +33,15 @@ const ActionBarContainer = styled.div`
 
 export const ActionButtonsBar: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const handleDelete = () => {};
-
-  const handleEdit = () => {
-    alert('Edit action!');
+  const { deleteProfile } = useDueDiligenceContext();
+  const handleDelete = () => {
+    deleteProfile()
+      .then(() => {
+        setDeleteModalOpen(false);
+      })
+      .catch((error) => {
+        console.error('Error deleting profile:', error);
+      });
   };
 
   const handleConfirm = () => {
@@ -58,13 +63,7 @@ export const ActionButtonsBar: React.FC = () => {
           </div>
           <div className="flex gap-2">
             <PrimaryButton
-              startEndorment={<EditIcon />}
-              variant="outlined"
-              onClick={handleEdit}
-            >
-              Edit
-            </PrimaryButton>
-            <PrimaryButton
+              btnProps={{ type: 'button', disabled: true }}
               startEndorment={<ConfirmedIcon />}
               onClick={handleConfirm}
             >
@@ -74,12 +73,15 @@ export const ActionButtonsBar: React.FC = () => {
         </div>
       </ActionBarContainer>
       <DeleteModal
+        title="Are you sure you want to delete ?"
         isOpen={deleteModalOpen}
         onRequestClose={() => {
           setDeleteModalOpen(false);
         }}
         onConfirm={handleDelete}
-      />
+      >
+        If you confirm, you won't be able to find this report.
+      </DeleteModal>
     </>
   );
 };

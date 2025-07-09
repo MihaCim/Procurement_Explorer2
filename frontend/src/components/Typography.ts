@@ -61,7 +61,7 @@ export const P = styled.p`
 export const H4 = styled.h4`
   color: #121213;
   font-family: Poppins;
-  font-size: 14px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 600;
   line-height: normal;

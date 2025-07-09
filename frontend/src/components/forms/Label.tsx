@@ -9,11 +9,11 @@ interface ILabelProps {
 }
 
 const StyledTitle = styled.div`
-  color: var(--Color-color-text-primary, #292c3d);
+  color: var(--Color-color-text-secondary, #121213);
   font-family: Poppins;
   font-size: 12px;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 600;
   line-height: normal;
   word-break: break-word;
 `;
@@ -23,7 +23,7 @@ const StyledContent = styled.div`
   font-family: Poppins;
   font-size: 13px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 400;
   line-height: normal;
   word-break: break-word;
 `;

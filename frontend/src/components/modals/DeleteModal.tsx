@@ -35,7 +35,7 @@ const DeleteModal = ({
 
         <ModalActions>
           <PrimaryButton
-            variant="outlined"
+            variant="neutral"
             btnProps={{ type: 'button' }}
             onClick={onRequestClose}
           >
