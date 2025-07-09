@@ -1,16 +1,14 @@
-import asyncio
 import os
 from datetime import datetime
 from typing import Annotated, Any, List, Optional, Union
 import logging
-import httpx
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from langchain_core.documents import Document
 from pydantic import BaseModel, ValidationError
 
-from ..models.models import Company, CompanyInput, DueDiligenceProfile
+from ..models.models import Company, CompanyInput, DueDiligenceProfile, DueDiligenceProfileInvalidError
 from ..services.database_initialization import (
     get_initialization_data,
     load_dd_profiles,
@@ -302,10 +300,19 @@ async def save_due_diligence_profile_(
     if not updated_profile.url or updated_profile.url.strip() == "":
         raise HTTPException(status_code=400, detail="Error: Profile url is not defined")
     
-    dd_profile = map_wrapper_to_due_diligence(updated_profile)
-    dd_profile.status = "approved"
+    try:
+        dd_profile = map_wrapper_to_due_diligence(updated_profile)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Validation error on profile schema: {e.errors()}"
+        )
 
-    result = await update_due_diligence_profile(dd_profile)
+    try:
+        result = await update_due_diligence_profile(dd_profile)
+    except DueDiligenceProfileInvalidError as e:
+        raise HTTPException(status_code=422, detail={"validation_error": e.errors})
+    
     if result["status"] == "failed":
         raise HTTPException(status_code=400, detail=result["msg"])
     

@@ -3,11 +3,10 @@ import io
 import json
 import logging
 import os
-import sys
 from datetime import datetime
 from typing import List, Optional, Union
 from urllib.parse import urlparse
-from psycopg2.extras import Json
+from pydantic import ValidationError
 import aiohttp
 import docx2txt
 from fastapi import HTTPException
@@ -16,7 +15,7 @@ from langchain_community.document_transformers.html2text import Html2TextTransfo
 from langchain_core.documents import Document
 from pypdf import PdfReader
 from src.connectors.postgres_conector import PostgresConnector
-from src.models.models import Company, CompanyProfile, DueDiligenceProfile
+from src.models.models import Company, CompanyProfile, DueDiligenceProfile, DueDiligenceProfileInvalidError
 from ..services.vector_store_service import VectorStoreService
 from ..services.dd_service import get_dd_profile_from_cache
 
@@ -446,7 +445,13 @@ async def get_due_diligence_by_website_db(
     dd_data = source.execute_query(query, (url,), fetchone=True)
     if not dd_data:
         return None 
-    return DueDiligenceProfile(**dd_data)
+    
+    try:
+        profile = DueDiligenceProfile(**dd_data)
+    except ValidationError as e:
+        raise DueDiligenceProfileInvalidError(e.errors())
+
+    return profile
 
 
 async def get_due_diligence_status(

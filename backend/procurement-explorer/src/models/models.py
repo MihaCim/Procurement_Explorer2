@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
+from enum import Enum
 
 
 class CompanyProfile(BaseModel):
@@ -82,6 +83,13 @@ class Company(CompanyProfile):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class StatusEnum(str, Enum):
+    NOT_AVAILABLE = "not available"
+    RUNNING = "running"
+    GENERATED = "generated"
+    APPROVED = "approved"
+
+
 class DueDiligenceProfile(BaseModel):
     id: Optional[int] = Field(default=None, alias="id")
     name: str = Field(default="", alias="name")
@@ -104,11 +112,16 @@ class DueDiligenceProfile(BaseModel):
     financial_risk: Optional[dict] = Field(default=None, alias="financial_risk")
     operational_risk: Optional[dict] = Field(default=None, alias="operational_risk")
     key_relationships: Optional[dict] = Field(default=None, alias="key_relationships")
-    status: Optional[str] = Field(default=None, alias="status")
+    status: Optional[StatusEnum] = Field(default=None, alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
     logs: List[dict] = Field(default=None, alias="logs")
 
     model_config = ConfigDict(populate_by_name=True)
+
+
+class DueDiligenceProfileInvalidError(Exception):
+    def __init__(self, errors: list[dict]):
+        self.errors = errors
 
 
 class DocumentProfile(BaseModel):
