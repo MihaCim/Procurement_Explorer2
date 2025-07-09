@@ -67,7 +67,6 @@ class LLMClient:
                 ) as response:
 
                     response_json = await response.json()
-                    print("response from llm", response_json)
                     return response_json["choices"][0]["message"]["content"]
 
         except Exception as e:

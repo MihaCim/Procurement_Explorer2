@@ -30,9 +30,7 @@ async def call_llm(prompt: str) -> str:
     if LLM_TYPE == "gemini":
         return await llm_client.generate_gemini_response(prompt)
     elif LLM_TYPE == "azure":
-        response = await llm_client.generate_azure_response(prompt)
-        print("llm response:", response)
-        return response
+        return await llm_client.generate_azure_response(prompt)
     else:
         return await llm_client.generate_openai_response(prompt)
 
