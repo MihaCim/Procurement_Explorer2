@@ -21,7 +21,7 @@ class DueDiligenceCompanyProfile(BaseModel):
     due_diligence_timestamp: Optional[str] = Field(
         default_factory=lambda: datetime.now().isoformat(), alias="start")
     summary: Optional[str] = Field(default=None, alias="summary")
-    status: Optional[str] = Field(default="not available", alias="status")
+    status: Optional[str] = Field(default=None, alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
     logs: Optional[List[dict]] = Field(default=None, alias="logs")    
     model_config = ConfigDict(populate_by_name=True)

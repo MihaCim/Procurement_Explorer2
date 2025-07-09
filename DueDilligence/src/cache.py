@@ -58,7 +58,7 @@ class AsyncInFlightCache:
 
 class Cache:
     def __init__(
-        self, cache: dict[str, dict[str, Any]] = dict(), expiration_s: int = 1800
+        self, cache: dict[str, dict[str, Any]] = dict(), expiration_s: int = 1000
     ) -> None:
         self.cache = cache
         self.expiration_s = expiration_s

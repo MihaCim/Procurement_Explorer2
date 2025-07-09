@@ -12,10 +12,10 @@ RUN pip install -r requirements.txt && \
     pip install --upgrade streamlit
 
 COPY ./src .
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Expose Streamlit port
 EXPOSE 8501
 
-# Entry point
-#ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-ENTRYPOINT ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "8501", "--workers", "4"]
+ENTRYPOINT ["/entrypoint.sh"]

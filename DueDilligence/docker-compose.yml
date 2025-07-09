@@ -24,7 +24,7 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
-    # volumes:
+    # volumes:  # enable if permanent memory for cache needed
     #   - redis-data:/data    
     command: ["sh", "-c", "redis-server --appendonly yes & sleep 1 && redis-cli FLUSHALL && wait"]
 
