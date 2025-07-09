@@ -33,7 +33,7 @@ async def run_dd_process(company_name: str) -> None:
     
     redis.set_json(key, dd_result.model_dump_json())
     logger = DDLogger(company_name=company_name, max_log_len=10, RedisStore=redis)
-    logger.add_log('{"system": "Started generating new Profile"}')
+    logger.add_log('{"agent name":"system","agent response": "Started generating new profile"}')
 
     taskThread = TaskThread(
         task=system_prompt,
