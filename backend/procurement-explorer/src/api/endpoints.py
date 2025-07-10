@@ -245,12 +245,11 @@ async def find_companies_by_document(
     companies = await get_companies_similarity_profiles(response)
     companies.append(None)
     
-    # companies_wrapped = [
-    #      await map_company_to_wrapper(company) for company in companies if company is not None
-    #  ]
-    # companies_wrapped = jsonable_encoder(companies_wrapped)
-    # return {"companies_list": companies_wrapped, "document_profile": doc_profile}
-    return companies
+    companies_wrapped = [
+         await map_company_to_wrapper(company) for company in companies if company is not None
+     ]
+    companies_wrapped = jsonable_encoder(companies_wrapped)
+    return {"companies_list": companies_wrapped, "document_profile": doc_profile}
     
 
 @router.get("/get/allAddedCompanies")
