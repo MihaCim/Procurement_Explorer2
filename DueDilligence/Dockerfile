@@ -11,9 +11,10 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt && \
     pip install --upgrade streamlit
 
-COPY ./src .
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+COPY ./src .
 
 # Expose Streamlit port
 EXPOSE 8501

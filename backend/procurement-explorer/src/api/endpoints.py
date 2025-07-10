@@ -236,18 +236,22 @@ async def find_companies_by_document(
     document_text = get_text(file, content_type)
     # create document profile for similarity search
     doc_profile = generate_document_profile(document_text)
-    # Based on the document profile search vector store for suitable companies
+    
+    print ("DOCUMET PROFILE DATA: ", doc_profile)
+
     response = vs.query_vector_collection(
-        doc_profile, collection_name="company_profile_nomic", k=k
+         doc_profile, collection_name="company_profile_nomic", k=k
     )
     companies = await get_companies_similarity_profiles(response)
-
-    companies_wrapped = [
-        await map_company_to_wrapper(company) for company in companies if company is not None
-    ]
-    companies_wrapped = jsonable_encoder(companies_wrapped)
-    return {"companies_list": companies_wrapped, "document_profile": doc_profile}
-
+    companies.append(None)
+    
+    # companies_wrapped = [
+    #      await map_company_to_wrapper(company) for company in companies if company is not None
+    #  ]
+    # companies_wrapped = jsonable_encoder(companies_wrapped)
+    # return {"companies_list": companies_wrapped, "document_profile": doc_profile}
+    return companies
+    
 
 @router.get("/get/allAddedCompanies")
 async def get_all_added_companies():
