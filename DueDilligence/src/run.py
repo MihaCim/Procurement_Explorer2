@@ -83,6 +83,7 @@ async def get_profile(
 @app.post("/profile")
 async def generate_profile(
     company_name: str | None,
+    background_tasks: BackgroundTasks
 ) -> dict[str, str]:
     if company_name is None or company_name == "":
         raise HTTPException(
@@ -92,7 +93,8 @@ async def generate_profile(
     key = f"generate_profile:{company_name}"
     redis_client = redis.get_client()
     if not redis_client.exists(key):
-        create_task(to_thread(asyncio.run, run_dd_process(company_name)))
+        background_tasks.add_task(run_dd_process, company_name)
+        #create_task(to_thread(asyncio.run, run_dd_process(company_name)))
         return {
             "status": "ok",
             "msg": f"started DueDiligence process for {company_name}",

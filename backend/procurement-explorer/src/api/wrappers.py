@@ -268,5 +268,6 @@ def map_wrapper_to_due_diligence(
         key_relationships=wrapper.key_relationships,
         due_diligence_timestamp=wrapper.due_diligence_timestamp,
         metadata=wrapper.metadata,
-        logs=wrapper.logs or []
+        logs=wrapper.logs or [],
+        status=wrapper.status
     )
