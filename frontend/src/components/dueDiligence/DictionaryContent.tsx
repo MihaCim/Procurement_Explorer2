@@ -1,3 +1,4 @@
+import { linkifyText } from '../../utils/linkyfy';
 import Skeleton from '../Skeleton';
 import { H4 } from '../Typography';
 
@@ -62,7 +63,7 @@ const RenderSubDictionary: React.FC<{
               maxDepth={maxDepth}
             />
           ) : (
-            String(value)
+            linkifyText(String(value))
           )}
         </li>
       ))}
@@ -82,14 +83,14 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
     }
 
     if (typeof value === 'string') {
-      return value ? <span>{value}</span> : <EmptyState />;
+      return value ? <span>{linkifyText(value)}</span> : <EmptyState />;
     }
 
     if (Array.isArray(value)) {
       return value.length > 0 ? (
         <ul>
           {value.map((item, index) => (
-            <li key={index}>{String(item)}</li>
+            <li key={index}>{linkifyText(String(item))}</li>
           ))}
         </ul>
       ) : (

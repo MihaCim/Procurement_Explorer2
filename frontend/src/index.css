@@ -14,3 +14,21 @@ ul {
   list-style: disc;
   padding-left: 25px;
 }
+
+a.linkify {
+  color: blue;
+  text-decoration: underline;
+}
+
+a.linkify:visited {
+  color: purple; /* Default for visited links */
+}
+
+a.linkify:hover {
+  color: darkblue; /* A darker blue on hover */
+  text-decoration: none; /* Or keep it, depending on your design */
+}
+
+a.linkify:active {
+  color: red; /* A common default for active links */
+}
