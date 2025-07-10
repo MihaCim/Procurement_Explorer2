@@ -20,9 +20,9 @@ export const EDDA_PROFILE = {
       'other relevant details': 'Managing Partner at Edda Luxembourg',
     },
   },
-  security_risks: {},
-  financial_risks: {},
-  operational_risks: {
+  security_risk: {},
+  financial_risk: {},
+  operational_risk: {
     'Operational risks associated with software development, data intelligence, infrastructure & cloud, enterprise content management, and experience design, including potential delays or quality issues.':
       'Company description',
   },
