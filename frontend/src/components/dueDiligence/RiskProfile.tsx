@@ -157,19 +157,19 @@ const RiskProfile: React.FC = () => {
         <div className="flex flex-1 flex-col gap-2 self-stretch">
           <DictionaryContent
             title={'Security risks'}
-            value={profile?.security_risks}
+            value={profile?.security_risk}
             pending={profile?.status === 'running'}
           />
 
           <DictionaryContent
             title={'Operational risks'}
-            value={profile?.operational_risks}
+            value={profile?.operational_risk}
             pending={profile?.status === 'running'}
           />
 
           <DictionaryContent
             title={'Financial risks'}
-            value={profile?.financial_risks}
+            value={profile?.financial_risk}
             pending={profile?.status === 'running'}
           />
 

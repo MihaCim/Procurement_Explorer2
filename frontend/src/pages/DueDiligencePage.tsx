@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { ActionButtonsBar } from '../components/dueDiligence/ActionButtonsBar';
@@ -41,16 +40,6 @@ const DueDiligencePage: React.FC = () => {
       startDueDiligence(company.website);
     }
   }, [company, company?.status, startDueDiligence]);
-
-  const [searchParams] = useSearchParams();
-
-  const profileUrl = searchParams.get('url');
-
-  useEffect(() => {
-    if (profileUrl) {
-      startDueDiligence(profileUrl);
-    }
-  }, [profileUrl, startDueDiligence]);
 
   return (
     <PageContainer id="due-diligence-page" className="h-full">

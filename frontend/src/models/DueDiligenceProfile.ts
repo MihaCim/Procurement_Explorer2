@@ -14,13 +14,13 @@ export interface DueDiligenceProfile {
 
   key_individuals: unknown;
 
-  security_risks: unknown;
+  security_risk: unknown;
 
-  financial_risks: unknown;
+  financial_risk: unknown;
 
   key_relationships: unknown;
 
-  operational_risks: unknown;
+  operational_risk: unknown;
 
   risk_level: unknown;
 

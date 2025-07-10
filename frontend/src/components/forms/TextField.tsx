@@ -62,6 +62,7 @@ const TextField = ({
           readOnly={readonly}
           onKeyDown={(ev) => {
             if (ev.key === 'Enter' && onEnter) {
+              ev.preventDefault();
               onEnter();
             }
           }}
