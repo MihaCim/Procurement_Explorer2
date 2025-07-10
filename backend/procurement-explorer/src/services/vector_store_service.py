@@ -234,24 +234,26 @@ class VectorStoreService:
         collection_name: str,
         k: int = 5,
         embedding_model: OllamaEmbeddings = DEFAULT_EMBEDDING_MODEL,
+        multiplier: int = 10,
         distance_metric: Literal["cosine", "l2", "ip"] = "l2",
     ) -> List[dict]:
         """
         Query a vector store collection.
         """
-
+ 
         collection = self.persistent_client.get_collection(collection_name)
         if collection is None:
             return []
-
-        embeddings = embedding_model.embed_query(query)
+  
+        embeddings = embedding_model.embed_query(query) 
         result = collection.query(
-            query_embeddings=embeddings, n_results=k, include=["distances", "metadatas"]
+            query_embeddings=embeddings, n_results=k * multiplier, include=["distances", "metadatas"]
         )
         # Filter out duplicate metadata
         unique_metadata = self._filter_unique_metadata_scores(result)
-
-        return unique_metadata
+    
+        #return unique_metadata
+        return unique_metadata[:k]
 
     def _store_old_collection(self, collection_name: str):
         """

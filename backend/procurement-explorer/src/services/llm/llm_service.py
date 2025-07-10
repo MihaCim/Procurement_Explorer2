@@ -33,7 +33,6 @@ def generate_document_profile(
     )
     docs = text_splitter.split_text(document)
     num_of_chunks = len(docs)
-    print(f"Number of chunks: {num_of_chunks}")
 
     try:
         response = ""
