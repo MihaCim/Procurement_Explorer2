@@ -16,7 +16,6 @@ from ..models.models import Company
 class VectorStoreService:
     OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost")
     OLLAMA_PORT = os.getenv("OLLAMA_PORT", "11434")
-    print(f"http://{OLLAMA_URL}:{OLLAMA_PORT}")
     PERSISTENT_DIR_PATH = Path(__file__).parent.parent.parent / "data"
     DEFAULT_EMBEDDING_MODEL = OllamaEmbeddings(
         model=os.getenv("EMBEDDING_MODEL", "mxbai-embed-large"),
@@ -72,7 +71,6 @@ class VectorStoreService:
         metadata, texts_to_embed = self._process_json_blob(blob, profile)
         # Split to chunks of 512 tokens
         chunks = embedding_splitter.create_documents(texts_to_embed)
-        print(f"Processing {len(chunks)} chunks")
         # Get the embeddings
         embeddings = embedding_model.embed_documents(
             [str(chunk.page_content) for chunk in chunks]
@@ -115,7 +113,6 @@ class VectorStoreService:
         id: str,
         company: Company,
     ):
-        print(f"add_document_to_vector_store({id=}, {company=})")
         cache_data = self._read_cache()
         collection = self.get_collection("company_profile_nomic")
         embedding_splitter = RecursiveCharacterTextSplitter(

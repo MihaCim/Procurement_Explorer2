@@ -30,7 +30,7 @@ async def get_dd_profile_from_cache(company_url: str) -> Union['DueDiligenceProf
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=10) as response:
-                logger.info(f"Due Diligence API call for {company_url}: Received response status {response.status}")
+                logger.info(f"Failed Due Diligence API call for {company_url}")
 
                 if response.status != 200:
                     #error_detail = await response.text()
@@ -43,15 +43,15 @@ async def get_dd_profile_from_cache(company_url: str) -> Union['DueDiligenceProf
                 return DueDiligenceProfile(**data)
     
     except aiohttp.ClientConnectorError as e:
-        logger.error(f"Could not connect to the Due Diligence API: {e}", exc_info=True)
+        logger.error(f"Could not connect to the Due Diligence API", exc_info=True)
         return None
 
     except aiohttp.ClientError as e:
-        logger.error(f"An aiohttp client error occurred in due diligence API call: {e}", exc_info=True)
+        logger.error(f"An aiohttp client error occurred in due diligence API call", exc_info=True)
         return None
     
     except Exception as e:
-        logger.exception(f"An unexpected error occurred for {company_url}: {e}")
+        logger.exception(f"An unexpected error occurred calling DD API.")
         return None
 
 
