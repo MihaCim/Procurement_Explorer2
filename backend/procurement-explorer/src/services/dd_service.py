@@ -37,7 +37,6 @@ async def get_dd_profile_from_cache(company_url: str) -> Union['DueDiligenceProf
                     #logger.error(f"Due Diligence API returned non-200 status for {company_url}: {response.status}, Details: {error_detail}")
                     return None
                 
-                #return the existing profile 
                 data = await response.json()
                 logger.info(f"Successfully retrieved DueDiligenceProfile for {company_url}")
                 return DueDiligenceProfile(**data)
