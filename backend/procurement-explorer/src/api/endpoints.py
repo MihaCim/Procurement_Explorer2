@@ -78,15 +78,12 @@ async def insert_company(id: int, url: str):
     company = build_company_model_from_company_profile(
         url, response, status="Waiting for Review"
     )
-    # Step 3: Add source to the company object
+
     company.Verdict = "NOT CONFIRMED"
     company.id = id
     company.Status = "Waiting for Review"
-    # Step 4: Store the company object in the database
     company = await update_company(id, company)
-    # Step 5: Generate the embeddings for the company profile
-    # vs.add_document_to_vector_store(id, company)
-    # return company
+   
     return {"id": id, "status": company.Status}
 
 
@@ -113,10 +110,10 @@ async def get_company_info(
     id: str,
 ):
     company: Optional[Company] = await get_company(id)
-    dd_profile: Optional[DueDiligenceProfile] = await get_company(id)
+    
     if company is None:
         raise HTTPException(status_code=404, detail="Company not found")
-    # Map the company model to the CompanyWrapper
+   
     return await map_company_to_wrapper(company)
 
 
@@ -188,7 +185,7 @@ async def get_companies(
         status=status,
         industry=industry,
         country=country,
-        #verdict="CONFIRMED",
+        verdict="CONFIRMED",
         limit=limit,
         offset=offset,
     )
@@ -198,8 +195,9 @@ async def get_companies(
         status=status,
         industry=industry,
         country=country,
+        verdict="CONFIRMED"
     )
-    # Map each company to the wrapper
+
     companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
     companies_wrapped = jsonable_encoder(companies_wrapped)
 
