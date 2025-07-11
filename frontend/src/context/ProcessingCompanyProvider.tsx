@@ -3,10 +3,10 @@ import { Outlet, useParams } from 'react-router-dom';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { CompanyProcessing } from '../models/CompanyProcessing';
-import useCompanyService from '../services/companyService';
 import Toaster from '../components/Toaster';
+import { CompanyProcessing } from '../models/CompanyProcessing';
 import { CompanyResult } from '../models/CompanyResult';
+import useCompanyService from '../services/companyService';
 
 interface ProcessingCompanyContextProps {
   state: IProcessingCompanyState;
@@ -19,6 +19,7 @@ export interface IProcessingCompanyState {
   processingCompanies: CompanyProcessing[];
   selectedProcessingCompany?: CompanyProcessing;
   loading: boolean;
+  updating: boolean;
 }
 const ProcessingCompanyContext = createContext(
   {} as ProcessingCompanyContextProps,
@@ -100,6 +101,9 @@ export const ProcessingCompanyProvider: React.FC = () => {
             processingCompanies: processingCompanies ?? [],
             selectedProcessingCompany: selectedProcessingCompany,
             loading: isLoading ?? false,
+            updating:
+              acceptCompanyMutation.isPending ||
+              rejectCompanyMutation.isPending,
           },
           setProcessingCompanies,
           addNewCompany,

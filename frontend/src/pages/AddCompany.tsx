@@ -1,19 +1,20 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { ColumnDef, createColumnHelper } from '@tanstack/react-table';
 
+import { PrimaryButton } from '../components';
 import BtnLink from '../components/BtnLink';
-import IconButton from '../components/commons/IconButton';
 import { TextField } from '../components/forms';
 import PageContainer from '../components/PageContainer';
 import ProcessingStatus from '../components/ProcessingStatus';
 import Table from '../components/tables/Table';
 import TitleWithBack from '../components/TitleWithBack';
 import { H2 } from '../components/Typography';
+import { useProcessingCompanyContext } from '../context/ProcessingCompanyProvider';
 import { Company } from '../models/Company';
 import { CompanyProcessing } from '../models/CompanyProcessing';
-import { useProcessingCompanyContext } from '../context/ProcessingCompanyProvider';
 
 const PageLayout = styled.div`
   display: flex;
@@ -22,8 +23,6 @@ const PageLayout = styled.div`
   align-items: flex-start;
   gap: 40px;
   flex: 1 0 0;
-  background: #fff;
-  box-shadow: 0px 1px 10px 0px rgba(72, 71, 86, 0.09);
   width: 100%;
 `;
 
@@ -31,6 +30,7 @@ const HeaderContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+  justify-content: center;
 `;
 
 const Container = styled.div`
@@ -38,13 +38,12 @@ const Container = styled.div`
   width: 100%;
   padding: 16px 24px;
   flex-direction: column;
-  gap: 24px;
-  background: #fff;
+  gap: 12px;
 `;
 
 const ProcessContainer = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   width: 400px;
 `;
@@ -121,18 +120,11 @@ const AddCompany: React.FC = () => {
   }, [navigate]);
   return (
     <PageContainer>
-      <TitleWithBack label="Scraping" onClick={goBack} />
-      {/* 
-      {loading ? (
-        <div className="w-full top-1/2 left-1/2">
-          <LoadingCard text="Retrieving document structure" />
-        </div>
-      ) : ( */}
+      <TitleWithBack label="Add company" onClick={goBack} />
       <PageLayout>
         <Container>
-          <H2>Start scraping</H2>
           <HeaderContainer>
-            To start the website scraping, type site URL. and run
+            To start type a company site URL. and run
             <ProcessContainer>
               <TextField
                 fullWidth
@@ -142,19 +134,17 @@ const AddCompany: React.FC = () => {
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 error={websiteError}
               />
-              <IconButton
-                variant="contained"
+              <PrimaryButton
                 onClick={handleProcessClick}
-                disabled={!websiteUrl}
-                style={{ height: '40px' }}
+                btnProps={{ disabled: !websiteUrl }}
               >
                 Process
-              </IconButton>
+              </PrimaryButton>
             </ProcessContainer>
           </HeaderContainer>
         </Container>
         <Container>
-          <H2>Scraping list</H2>
+          <H2>Added company list</H2>
           <Table
             columns={columns}
             height={650}

@@ -3,7 +3,6 @@ import styled from 'styled-components';
 
 import { useDueDiligenceContext } from '../../context/DueDiligenceProvider';
 import { isStatusGenerated } from '../../models/DueDiligenceProfile';
-import EditableDictionary from '../forms/editableLabeledValue/EditableDictionnary';
 import EditableParagraph from '../forms/editableLabeledValue/EditableParagraph';
 import LabeledValue from '../forms/editableLabeledValue/LabeledValue';
 import Skeleton from '../Skeleton';
@@ -187,10 +186,6 @@ const RiskProfile: React.FC = () => {
             title={'Security risks'}
             value={profile?.security_risk}
             pending={profile?.status === 'running'}
-          />
-          <EditableDictionary
-            data={profile?.key_individuals as Record<string, unknown>}
-            onSave={() => {}}
           />
           <DictionaryContent
             title={'Operational risks'}

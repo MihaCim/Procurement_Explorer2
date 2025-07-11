@@ -29,8 +29,6 @@ const CompaniesGrid: React.FC = () => {
 
   const navigate = useNavigate();
 
-  console.log('CompaniesGrid rendered with companies:', companies, loading);
-
   return (
     <>
       <div className="w-full flex flex-col gap-4">

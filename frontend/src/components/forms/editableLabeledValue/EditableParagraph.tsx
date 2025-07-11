@@ -17,6 +17,10 @@ const EditableParagraph: React.FC<EditableParagraphProps> = ({
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    setCurrentText(initialText);
+  }, [initialText]);
+
+  useEffect(() => {
     if (isEditing && textAreaRef.current) {
       textAreaRef.current.focus();
       textAreaRef.current.select();

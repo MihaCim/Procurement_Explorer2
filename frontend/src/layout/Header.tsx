@@ -51,7 +51,7 @@ const Header = () => {
   const location = useLocation();
   const isSearchActive =
     location.pathname === '/' ||
-    (/^\/[^/]+$/.test(location.pathname) && location.pathname !== '/scraping');
+    (/^\/[^/]+$/.test(location.pathname) && location.pathname !== '/add');
 
   return (
     <StyledHeader>
@@ -71,14 +71,8 @@ const Header = () => {
       </HeaderButton>
 
       <HeaderButton>
-        <NavLink
-          to="/scraping"
-          onClick={(e) => {
-            e.preventDefault();
-          }}
-          className="h-full w-full px-5 py-3 text-gray-500 cursor-not-allowed"
-        >
-          Scraping
+        <NavLink to="/add" className="h-full w-full px-5 py-3">
+          Add company
         </NavLink>
       </HeaderButton>
 

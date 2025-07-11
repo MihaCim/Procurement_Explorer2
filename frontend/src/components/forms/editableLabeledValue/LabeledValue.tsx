@@ -7,6 +7,7 @@ interface ILabelProps {
   textContent: string;
   loading?: boolean;
   editable?: boolean;
+  onSave?: (newText: string) => void;
 }
 
 const LabeledValue = ({
@@ -14,14 +15,15 @@ const LabeledValue = ({
   textContent,
   loading,
   editable,
+  onSave,
 }: ILabelProps) => {
   return (
-    <div className="flex-col">
+    <div className="flex-col w-full">
       <StyledTitle> {textTitle}</StyledTitle>
       {loading ? (
         <Skeleton />
       ) : editable ? (
-        <EditableParagraph initialText={textContent} />
+        <EditableParagraph initialText={textContent} onSave={onSave} />
       ) : (
         <StyledContent> {textContent}</StyledContent>
       )}

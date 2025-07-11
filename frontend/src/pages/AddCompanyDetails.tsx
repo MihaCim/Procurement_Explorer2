@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import AcceptIcon from '../assets/icons/accept.svg?react';
-import CrossIcon from '../assets/icons/cross.svg?react';
+import AcceptIcon from '../assets/icons/blueaccept.svg?react';
+import CrossIcon from '../assets/icons/redcross.svg?react';
+import { PrimaryButton } from '../components';
 import IconButton from '../components/commons/IconButton';
+import LabeledValue from '../components/forms/editableLabeledValue/LabeledValue';
 import { FormState } from '../components/FormState';
 import { ConfirmationModal } from '../components/modals';
 import PageContainer from '../components/PageContainer';
@@ -13,35 +15,6 @@ import TitleWithBack from '../components/TitleWithBack';
 import { H2 } from '../components/Typography';
 import { useProcessingCompanyContext } from '../context/ProcessingCompanyProvider';
 
-const SLabeledText_Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-const SLabeledText_Label = styled.div`
-  font-size: 14px;
-  color: #9e9e9e;
-`;
-
-const SLabeledText = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-interface ILabeledTextProps {
-  label: string;
-  value: string;
-}
-const LabeledText: React.FC<ILabeledTextProps> = ({ label, value }) => {
-  return (
-    <SLabeledText_Container>
-      <SLabeledText_Label>{label}</SLabeledText_Label>
-      <SLabeledText>{value}</SLabeledText>
-    </SLabeledText_Container>
-  );
-};
-
 const PageLayout = styled.div`
   display: flex;
   padding: 16px 24px;
@@ -49,7 +22,9 @@ const PageLayout = styled.div`
   align-items: flex-start;
   gap: 40px;
   flex: 1 0 0;
-  background: #fff;
+  background: var(--Color-new-bg-card, rgba(255, 255, 255, 0.58));
+
+  /* shadow card */
   box-shadow: 0px 1px 10px 0px rgba(72, 71, 86, 0.09);
   width: 100%;
 `;
@@ -83,7 +58,7 @@ const ColumnContainer = styled.div`
 const ActionsContainer = styled.div`
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   gap: 32px;
   align-self: stretch;
 `;
@@ -106,7 +81,7 @@ interface CompanyUpdate {
 }
 const AddCompanyDetails: React.FC = () => {
   const {
-    state: { selectedProcessingCompany },
+    state: { selectedProcessingCompany, updating },
     rejectCompany,
     acceptCompany,
   } = useProcessingCompanyContext();
@@ -127,6 +102,7 @@ const AddCompanyDetails: React.FC = () => {
     if (selectedAction === ActionType.Accept) {
       await acceptCompany(selectedProcessingCompany?.id ?? 0);
     } else if (selectedAction === ActionType.Reject) {
+      console.log('form state', formState);
       // TODO: Call update company status service in place of reject to keep the company in the list of history
       await rejectCompany(selectedProcessingCompany?.id ?? 0);
     }
@@ -138,56 +114,39 @@ const AddCompanyDetails: React.FC = () => {
     setSelectedAction(undefined);
   };
 
-  // TODO: Update the company details, This is not yet implemented due to the lack of an endpoint for updating company information in the backend.
-  const [formState, setFormState] = useState<FormState<CompanyUpdate>>({
-    company_name: selectedProcessingCompany?.Company_name ?? '',
-    industry: selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
-    sub_industry:
-      selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
-    company_size: selectedProcessingCompany?.details?.Company_size ?? '',
-    specializations:
-      selectedProcessingCompany?.details?.Specializations?.join(', ') ?? '',
-    product_portfolio:
-      selectedProcessingCompany?.details?.Products_portfolio?.join(', ') ?? '',
-    services_portfolio:
-      selectedProcessingCompany?.details?.Service_portfolio?.join(' ') ?? '',
-    tools_technologies:
-      selectedProcessingCompany?.details?.Specific_tools_and_technologies?.join(
-        ', ',
-      ) ?? '',
-    quality_standards:
-      selectedProcessingCompany?.details?.Quality_standards?.join(', ') ?? '',
-    company_profile: selectedProcessingCompany?.details?.Company_profile ?? '',
-  });
+  const initialData = useMemo(
+    () => ({
+      company_name: selectedProcessingCompany?.Company_name ?? '',
+      industry:
+        selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
+      sub_industry:
+        selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
+      company_size: selectedProcessingCompany?.details?.Company_size ?? '',
+      specializations:
+        selectedProcessingCompany?.details?.Specializations?.join(', ') ?? '',
+      product_portfolio:
+        selectedProcessingCompany?.details?.Products_portfolio?.join(', ') ??
+        '',
+      services_portfolio:
+        selectedProcessingCompany?.details?.Service_portfolio?.join(' ') ?? '',
+      tools_technologies:
+        selectedProcessingCompany?.details?.Specific_tools_and_technologies?.join(
+          ', ',
+        ) ?? '',
+      quality_standards:
+        selectedProcessingCompany?.details?.Quality_standards?.join(', ') ?? '',
+      company_profile:
+        selectedProcessingCompany?.details?.Company_profile ?? '',
+    }),
+    [selectedProcessingCompany],
+  );
+
+  const [formState, setFormState] =
+    useState<FormState<CompanyUpdate>>(initialData);
+
   useEffect(() => {
-    if (selectedProcessingCompany) {
-      setFormState({
-        company_name: selectedProcessingCompany?.Company_name ?? '',
-        industry:
-          selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
-        sub_industry:
-          selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
-        company_size: selectedProcessingCompany?.details?.Company_size ?? '',
-        specializations:
-          selectedProcessingCompany?.details?.Specializations?.join(', ') ?? '',
-        product_portfolio:
-          selectedProcessingCompany?.details?.Products_portfolio?.join(', ') ??
-          '',
-        services_portfolio:
-          selectedProcessingCompany?.details?.Service_portfolio?.join(' ') ??
-          '',
-        tools_technologies:
-          selectedProcessingCompany?.details?.Specific_tools_and_technologies?.join(
-            ', ',
-          ) ?? '',
-        quality_standards:
-          selectedProcessingCompany?.details?.Quality_standards?.join(', ') ??
-          '',
-        company_profile:
-          selectedProcessingCompany?.details?.Company_profile ?? '',
-      });
-    }
-  }, [selectedProcessingCompany]);
+    setFormState(initialData);
+  }, [initialData]);
 
   return (
     <PageContainer>
@@ -203,48 +162,121 @@ const AddCompanyDetails: React.FC = () => {
           </div>
           <DetailsContainer>
             <ColumnContainer>
-              <LabeledText
-                label="Company name"
-                value={formState?.company_name ?? ''}
+              <LabeledValue
+                textTitle="Company name"
+                textContent={initialData?.company_name ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    company_name: newText,
+                  }));
+                }}
               />
-              <LabeledText label="Industry" value={formState?.industry ?? ''} />
-              <LabeledText
-                label="SubIndustry"
-                value={formState?.sub_industry ?? ''}
+              <LabeledValue
+                textTitle="Industry"
+                textContent={initialData?.industry ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    industry: newText,
+                  }));
+                }}
+              />
+              <LabeledValue
+                textTitle="SubIndustry"
+                textContent={initialData?.sub_industry ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    sub_industry: newText,
+                  }));
+                }}
               />
             </ColumnContainer>
             <ColumnContainer>
-              <LabeledText
-                label="Company size"
-                value={formState?.company_size ?? ''}
+              <LabeledValue
+                textTitle="Company size"
+                textContent={initialData?.company_size ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    company_size: newText,
+                  }));
+                }}
               />
-              <LabeledText
-                label="Specializations"
-                value={formState?.specializations ?? ''}
+              <LabeledValue
+                textTitle="Specializations"
+                textContent={initialData?.specializations ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    specializations: newText,
+                  }));
+                }}
               />
-              <LabeledText
-                label="Product portfolio"
-                value={formState?.product_portfolio ?? ''}
+              <LabeledValue
+                textTitle="Product portfolio"
+                textContent={initialData?.product_portfolio ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    product_portfolio: newText,
+                  }));
+                }}
               />
             </ColumnContainer>
             <ColumnContainer>
-              <LabeledText
-                label="Services portfolio"
-                value={formState?.services_portfolio ?? ''}
+              <LabeledValue
+                textTitle="Services portfolio"
+                textContent={initialData?.services_portfolio ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    services_portfolio: newText,
+                  }));
+                }}
               />
-              <LabeledText
-                label="Specif tools and technologies"
-                value={formState?.tools_technologies ?? ''}
+              <LabeledValue
+                textTitle="Specif tools and technologies"
+                textContent={initialData?.tools_technologies ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    tools_technologies: newText,
+                  }));
+                }}
               />
-              <LabeledText
-                label="Quality standards"
-                value={formState?.quality_standards ?? ''}
+              <LabeledValue
+                textTitle="Quality standards"
+                textContent={initialData?.quality_standards ?? ''}
+                editable={true}
+                onSave={(newText) => {
+                  setFormState((prev) => ({
+                    ...prev,
+                    quality_standards: newText,
+                  }));
+                }}
               />
             </ColumnContainer>
           </DetailsContainer>
-          <LabeledText
-            label="Company profile"
-            value={formState?.company_profile ?? ''}
+          <LabeledValue
+            textTitle="Company profile"
+            textContent={initialData?.company_profile ?? ''}
+            editable={true}
+            onSave={(newText) => {
+              setFormState((prev) => ({
+                ...prev,
+                company_profile: newText,
+              }));
+            }}
           />
           <ActionsContainer>
             {readOnly ? (
@@ -258,26 +290,26 @@ const AddCompanyDetails: React.FC = () => {
               </IconButton>
             ) : (
               <>
-                <IconButton
-                  variant="outlined"
+                <PrimaryButton
+                  variant="outlinedreject"
+                  startEndorment={<CrossIcon />}
                   onClick={() => {
                     setSelectedAction(ActionType.Reject);
                     setOpenModal(true);
                   }}
                 >
-                  <CrossIcon />
                   Reject
-                </IconButton>
-                <IconButton
-                  variant="contained"
+                </PrimaryButton>
+                <PrimaryButton
+                  startEndorment={<AcceptIcon />}
+                  variant="outlined"
                   onClick={() => {
                     setSelectedAction(ActionType.Accept);
                     setOpenModal(true);
                   }}
                 >
-                  <AcceptIcon />
-                  Accept
-                </IconButton>
+                  Accept and close
+                </PrimaryButton>
               </>
             )}
           </ActionsContainer>
@@ -287,6 +319,7 @@ const AddCompanyDetails: React.FC = () => {
           onConfirm={handleConfirm}
           onRequestClose={handleClose}
           title="Confirmation"
+          loading={updating}
         >
           Are you sure you want to{' '}
           <b> {selectedAction == ActionType.Reject ? 'Reject' : 'Accept'} </b>{' '}
