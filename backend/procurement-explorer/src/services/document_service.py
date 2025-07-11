@@ -250,12 +250,12 @@ async def update_company_status(
 
 
 async def update_company(
-    company_id: int, response: Company, source: PostgresConnector = PostgresConnector()
+    company_id: int, profile: Company, source: PostgresConnector = PostgresConnector()
 ) -> Company | None:
-    response.Profile_Last_Updated = datetime.now()
-    dump = response.model_dump()
-    dump["Contact_Information"] = json.dumps(dump["Contact_Information"])
-    source.update_document("companies", company_id, dump)
+    profile.Profile_Last_Updated = datetime.now()
+    data = profile.model_dump()
+    data["Contact_Information"] = json.dumps(data["Contact_Information"])
+    source.update_document("companies", company_id, data)
     company = await get_company(str(company_id))
     vs.update_document_in_vector_store(str(company_id), company)
     return company

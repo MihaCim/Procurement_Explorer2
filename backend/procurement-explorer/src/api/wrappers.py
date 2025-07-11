@@ -16,14 +16,14 @@ from ..models.models import (
 logger = logging.getLogger(__name__)
 
 
-# for testing proposes added by Marcio  #
-class DetailsWrapper(BaseModel):  # TODO: needs to be mapped to mockupAPI model
+class DetailsWrapper(BaseModel):  
     subindustry: str
     productPortfolio: List[str]
     servicePortfolio: List[str]
     specializations: List[str]
     companySize: str
     qualityStandards: List[str]
+    #specific_tools_and_technologies: List[str]
 
 
 class CompanyWrapper(BaseModel):
@@ -143,11 +143,12 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
                 specializations=company.Specializations,
                 companySize=company.Company_Size,
                 qualityStandards=company.Quality_Standards,
+                #Specific_Tools_and_Technologies=company.Specific_Tools_and_Technologies
             ),
         )
-        # only set status if we actually have one
         if dd_profile and dd_profile.status is not None:
             kwargs["status"] = dd_profile.status
+            kwargs["risk_level"] = dd_profile.risk_level
         else:
             kwargs["status"] = "not available"
         return CompanyWrapper(**kwargs)
@@ -156,7 +157,54 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
         logger.info(f"company status: {company.Status}")
         logger.error(f"Error mapping company to wrapper: {e}", exc_info=True)
         return None
+    
 
+async def map_companywrapper_to_company(wrapper: CompanyWrapper) -> Optional[Company]:
+    try:
+        def maybe(key, value):
+            return {key: value} if value is not None else {}
+
+        kwargs = {
+            "id": wrapper.id,
+            "website": wrapper.website,
+            **maybe("name", wrapper.name),
+            **maybe("status", wrapper.status),
+            **maybe("industry", wrapper.industry),
+            **maybe("country", wrapper.country),
+            **maybe("products_portfolio", wrapper.products),
+            **maybe("contact_information", wrapper.contact_information),
+            **maybe("risk_level", wrapper.risk_level),
+            **maybe("added_timestamp", wrapper.added_timestamp),
+        }
+
+        if wrapper.review_date:
+            kwargs["review_date"] = datetime.fromisoformat(wrapper.review_date)
+
+        details = wrapper.details
+        if details:
+            kwargs.update(
+                maybe("service_portfolio", details.servicePortfolio)
+            )
+            kwargs.update(
+                maybe("specializations", details.specializations)
+            )
+            kwargs.update(
+                maybe("company_size", details.companySize)
+            )
+            kwargs.update(
+                maybe("quality_standards", details.qualityStandards)
+            )
+            # kwargs.update(
+            #     maybe("specific_tools_and_technologies", details.specific_tools_and_technologies)
+            # )
+            if details.subindustry:
+                kwargs["subindustries"] = [s.strip() for s in details.subindustry.split(",")]
+
+        return Company(**kwargs)
+
+    except Exception as e:
+        logger.error(f"Error mapping CompanyWrapper to Company: {e}", exc_info=True)
+        return None
 
 def map_company_profile_to_details(
     company_profile: CompanyProfile,
@@ -165,7 +213,7 @@ def map_company_profile_to_details(
         Subindustry=company_profile.SubIndustries,
         Products_portfolio=company_profile.Products_Portfolio,
         Service_portfolio=company_profile.Service_Portfolio,
-        Specific_tools_and_technologies=company_profile.Specific_Tools_and_Technologies,
+        #Specific_tools_and_technologies=company_profile.Specific_Tools_and_Technologies,
         Specializations=company_profile.Specializations,
         Quality_standards=company_profile.Quality_Standards,
         Company_size=company_profile.Company_Size,
