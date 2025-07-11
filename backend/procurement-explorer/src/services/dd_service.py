@@ -30,11 +30,11 @@ async def get_dd_profile_from_cache(company_url: str) -> Union['DueDiligenceProf
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, timeout=10) as response:
-                logger.info(f"API call for {company_url}: Received response status {response.status}")
+                logger.info(f"Due Diligence API call for {company_url}: Received response status {response.status}")
 
                 if response.status != 200:
-                    error_detail = await response.text()
-                    logger.error(f"Due Diligence API returned non-200 status for {company_url}: {response.status}, Details: {error_detail}")
+                    #error_detail = await response.text()
+                    #logger.error(f"Due Diligence API returned non-200 status for {company_url}: {response.status}, Details: {error_detail}")
                     return None
                 
                 #return the existing profile 
