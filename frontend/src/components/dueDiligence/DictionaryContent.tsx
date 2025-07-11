@@ -86,6 +86,10 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
       return value ? <span>{linkifyText(value)}</span> : <EmptyState />;
     }
 
+    if (typeof value === 'number' && !isNaN(value)) {
+      return <span>{value}</span>;
+    }
+
     if (Array.isArray(value)) {
       return value.length > 0 ? (
         <ul>
