@@ -23,7 +23,7 @@ class DetailsWrapper(BaseModel):
     specializations: List[str]
     companySize: str
     qualityStandards: List[str]
-    #specific_tools_and_technologies: List[str]
+    specific_tools_and_technologies: List[str]
 
 
 class CompanyWrapper(BaseModel):
@@ -38,9 +38,7 @@ class CompanyWrapper(BaseModel):
     contact_information: Optional[Dict[str, str]] = None
     risk_level: Optional[int] = None
     added_timestamp: Optional[datetime] = None
-    # for testing proposes added by Marcio  #
     details: Optional[DetailsWrapper] = None
-    # end added by Marcio  #
 
 
 class DueDiligenceProfileWrapper(BaseModel):
@@ -143,7 +141,7 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
                 specializations=company.Specializations,
                 companySize=company.Company_Size,
                 qualityStandards=company.Quality_Standards,
-                #Specific_Tools_and_Technologies=company.Specific_Tools_and_Technologies
+                specific_tools_and_technologies=company.Specific_Tools_and_Technologies
             ),
         )
         if dd_profile and dd_profile.status is not None:
@@ -194,9 +192,9 @@ async def map_companywrapper_to_company(wrapper: CompanyWrapper) -> Optional[Com
             kwargs.update(
                 maybe("quality_standards", details.qualityStandards)
             )
-            # kwargs.update(
-            #     maybe("specific_tools_and_technologies", details.specific_tools_and_technologies)
-            # )
+            kwargs.update(
+                maybe("specific_tools_and_technologies", details.specific_tools_and_technologies)
+            )
             if details.subindustry:
                 kwargs["subindustries"] = [s.strip() for s in details.subindustry.split(",")]
 
@@ -213,7 +211,7 @@ def map_company_profile_to_details(
         Subindustry=company_profile.SubIndustries,
         Products_portfolio=company_profile.Products_Portfolio,
         Service_portfolio=company_profile.Service_Portfolio,
-        #Specific_tools_and_technologies=company_profile.Specific_Tools_and_Technologies,
+        Specific_tools_and_technologies=company_profile.Specific_Tools_and_Technologies,
         Specializations=company_profile.Specializations,
         Quality_standards=company_profile.Quality_Standards,
         Company_size=company_profile.Company_Size,
