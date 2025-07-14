@@ -2,13 +2,14 @@ import asyncio
 import time
 from collections import OrderedDict
 from typing import Any, Awaitable, Callable
+from threading import Lock
 
 
 class AsyncInFlightCache:
     def __init__(self, max_size: int = 1000):
         self.cache = OrderedDict[str, Any]()
         self.in_flight = dict[str, asyncio.Future[Any]]()
-        self.lock = asyncio.Lock()
+        self.lock = Lock()
         self.max_size = max_size
 
     def check_if_exists(self, key: str) -> bool:
@@ -25,7 +26,7 @@ class AsyncInFlightCache:
         key: str,
         compute_coroutine: Callable[[], Awaitable[Any]],
     ) -> Any:
-        async with self.lock:
+        with self.lock:
             if key in self.cache:
                 return self.cache[key]
 
@@ -39,7 +40,7 @@ class AsyncInFlightCache:
             try:
                 result = await compute_coroutine()
 
-                async with self.lock:
+                with self.lock:
                     self.cache[key] = result
                     self.cache.move_to_end(key)
                     if len(self.cache) > self.max_size:
@@ -48,7 +49,7 @@ class AsyncInFlightCache:
                     fut.set_result(result)
                     del self.in_flight[key]
             except Exception as e:
-                async with self.lock:
+                with self.lock:
                     fut.set_exception(e)
                     del self.in_flight[key]
                 raise
