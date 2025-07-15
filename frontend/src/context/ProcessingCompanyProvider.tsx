@@ -37,7 +37,7 @@ export const ProcessingCompanyProvider: React.FC = () => {
     CompanyDetails[]
   >([]);
   const { getProcessingCompanies } = useCompanyService();
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['processingCompanies'],
     queryFn: async () => await getProcessingCompanies(),
     refetchInterval: 5000,
@@ -59,6 +59,10 @@ export const ProcessingCompanyProvider: React.FC = () => {
   const addCompanyMutation = useMutation({
     mutationKey: ['addCompany'],
     mutationFn: (website: string) => addCompany(website),
+    onSuccess: () => {
+      refetch();
+      setSelectedProcessingCompany(undefined);
+    },
   });
 
   const addNewCompany = (website: string) => {

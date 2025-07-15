@@ -39,27 +39,21 @@ const Container = styled.div`
 `;
 
 const DetailsContainer = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 48px;
-  align-self: stretch;
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(300px, 1fr)
+  ); /* Adjust minmax for desired column width */
+  gap: 24px 48px; /* Row gap, Column gap */
+  align-items: start; /* Align items to the start of their grid area */
   width: 100%;
-`;
-
-const ColumnContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 16px;
-  justify-content: space-between;
-  width: 100%;
-  height: 100%;
 `;
 
 const ActionsContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 24px;
   gap: 32px;
   align-self: stretch;
 `;
@@ -110,6 +104,7 @@ const AddCompanyDetails: React.FC = () => {
         ...selectedProcessingCompany,
         name: formState.company_name,
         industry: formState.industry,
+        company_profile: formState.company_profile,
         details: {
           ...selectedProcessingCompany.details,
           subindustry: formState.sub_industry,
@@ -129,7 +124,6 @@ const AddCompanyDetails: React.FC = () => {
           qualityStandards: formState.quality_standards
             .split(',')
             .map((q) => q.trim()),
-          companyProfile: formState.company_profile,
         } as CompanyDetails['details'],
       } as CompanyDetails;
       await acceptCompany(companyProcessing);
@@ -165,7 +159,7 @@ const AddCompanyDetails: React.FC = () => {
         ) ?? '',
       quality_standards:
         selectedProcessingCompany?.details?.qualityStandards?.join(', ') ?? '',
-      company_profile: selectedProcessingCompany?.details?.companyProfile ?? '',
+      company_profile: selectedProcessingCompany?.company_profile ?? '',
     }),
     [selectedProcessingCompany],
   );
@@ -190,111 +184,105 @@ const AddCompanyDetails: React.FC = () => {
             You can edit the information before accepting or refusing.
           </div>
           <DetailsContainer>
-            <ColumnContainer>
-              <LabeledValue
-                textTitle="Company name"
-                textContent={initialData?.company_name ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    company_name: newText,
-                  }));
-                }}
-              />
-              <LabeledValue
-                textTitle="Industry"
-                textContent={initialData?.industry ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    industry: newText,
-                  }));
-                }}
-              />
-              <LabeledValue
-                textTitle="SubIndustry"
-                textContent={initialData?.sub_industry ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    sub_industry: newText,
-                  }));
-                }}
-              />
-            </ColumnContainer>
-            <ColumnContainer>
-              <LabeledValue
-                textTitle="Company size"
-                textContent={initialData?.company_size ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    company_size: newText,
-                  }));
-                }}
-              />
-              <LabeledValue
-                textTitle="Specializations"
-                textContent={initialData?.specializations ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    specializations: newText,
-                  }));
-                }}
-              />
-              <LabeledValue
-                textTitle="Product portfolio"
-                textContent={initialData?.product_portfolio ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    product_portfolio: newText,
-                  }));
-                }}
-              />
-            </ColumnContainer>
-            <ColumnContainer>
-              <LabeledValue
-                textTitle="Services portfolio"
-                textContent={initialData?.services_portfolio ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    services_portfolio: newText,
-                  }));
-                }}
-              />
-              <LabeledValue
-                textTitle="Specif tools and technologies"
-                textContent={initialData?.tools_technologies ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    tools_technologies: newText,
-                  }));
-                }}
-              />
-              <LabeledValue
-                textTitle="Quality standards"
-                textContent={initialData?.quality_standards ?? ''}
-                editable={true}
-                onSave={(newText) => {
-                  setFormState((prev) => ({
-                    ...prev,
-                    quality_standards: newText,
-                  }));
-                }}
-              />
-            </ColumnContainer>
+            <LabeledValue
+              textTitle="Company name"
+              textContent={initialData?.company_name ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  company_name: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="Industry"
+              textContent={initialData?.industry ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  industry: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="SubIndustry"
+              textContent={initialData?.sub_industry ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  sub_industry: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="Company size"
+              textContent={initialData?.company_size ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  company_size: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="Specializations"
+              textContent={initialData?.specializations ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  specializations: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="Product portfolio"
+              textContent={initialData?.product_portfolio ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  product_portfolio: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="Services portfolio"
+              textContent={initialData?.services_portfolio ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  services_portfolio: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="Specif tools and technologies"
+              textContent={initialData?.tools_technologies ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  tools_technologies: newText,
+                }));
+              }}
+            />
+            <LabeledValue
+              textTitle="Quality standards"
+              textContent={initialData?.quality_standards ?? ''}
+              editable={true}
+              onSave={(newText) => {
+                setFormState((prev) => ({
+                  ...prev,
+                  quality_standards: newText,
+                }));
+              }}
+            />
           </DetailsContainer>
           <LabeledValue
             textTitle="Company profile"

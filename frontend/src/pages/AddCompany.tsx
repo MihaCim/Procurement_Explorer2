@@ -132,6 +132,7 @@ const AddCompany: React.FC = () => {
                 value={websiteUrl ?? ''}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 error={websiteError}
+                onEnter={handleProcessClick}
               />
               <PrimaryButton
                 onClick={handleProcessClick}

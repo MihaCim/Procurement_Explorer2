@@ -3,6 +3,7 @@ export interface Company {
   name: string;
   progress: string;
   status: string;
+  dd_status: string;
   review_date: Date;
   country: string;
   industry: string;
@@ -25,6 +26,7 @@ export interface CompanyDetails {
   name: string;
   website: string;
   status: string;
+  dd_status: string;
   industry: string;
   country: string;
   review_date: string;
@@ -33,6 +35,7 @@ export interface CompanyDetails {
   risk_level: number;
   added_timestamp: string;
   details: Details;
+  company_profile: string;
 }
 
 export interface Details {
@@ -42,6 +45,5 @@ export interface Details {
   specializations: string[];
   companySize: string;
   qualityStandards: string[];
-  companyProfile: string;
   specific_tools_and_technologies: string[];
 }

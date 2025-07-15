@@ -65,6 +65,6 @@ class CompanyService {
   public async deleteProcessingCompany(
     companyId: number,
   ): Promise<CompanyResult> {
-    return new APIService().delete(`/companies/${companyId}?verdict=reject`);
+    return new APIService().delete(`/companies/${companyId}`);
   }
 }

@@ -36,10 +36,14 @@ const DueDiligencePage: React.FC = () => {
   console.log('DueDiligencePage profile', profile);
 
   useEffect(() => {
-    if (company && company.status && company.status !== NOT_AVAILABLE_STATUS) {
+    if (
+      company &&
+      company.dd_status &&
+      company.dd_status !== NOT_AVAILABLE_STATUS
+    ) {
       startDueDiligence(company.website);
     }
-  }, [company, company?.status, startDueDiligence]);
+  }, [company, company?.dd_status, startDueDiligence]);
 
   return (
     <PageContainer id="due-diligence-page" className="h-full">
@@ -52,7 +56,7 @@ const DueDiligencePage: React.FC = () => {
           <div className="flex gap-2">
             <TitleWithBack label={profile?.name ?? 'Risk Profile'} />
             <StatusChip
-              status={profile?.status ?? company?.status ?? 'not available'}
+              status={profile?.status ?? company?.dd_status ?? 'not available'}
             />
           </div>
 
