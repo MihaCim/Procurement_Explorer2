@@ -14,6 +14,7 @@ import ProcessingStatus from '../components/ProcessingStatus';
 import TitleWithBack from '../components/TitleWithBack';
 import { H2 } from '../components/Typography';
 import { useProcessingCompanyContext } from '../context/ProcessingCompanyProvider';
+import { CompanyDetails } from '../models/Company';
 
 const PageLayout = styled.div`
   display: flex;
@@ -107,7 +108,30 @@ const AddCompanyDetails: React.FC = () => {
       if (!selectedProcessingCompany) throw new Error('No company selected');
       const companyProcessing = {
         ...selectedProcessingCompany,
-      };
+        name: formState.company_name,
+        industry: formState.industry,
+        details: {
+          ...selectedProcessingCompany.details,
+          subindustry: formState.sub_industry,
+          companySize: formState.company_size,
+          specializations: formState.specializations
+            .split(',')
+            .map((s) => s.trim()),
+          productPortfolio: formState.product_portfolio
+            .split(',')
+            .map((p) => p.trim()),
+          servicePortfolio: formState.services_portfolio
+            .split(',')
+            .map((s) => s.trim()),
+          specific_tools_and_technologies: formState.tools_technologies
+            .split(',')
+            .map((t) => t.trim()),
+          qualityStandards: formState.quality_standards
+            .split(',')
+            .map((q) => q.trim()),
+          companyProfile: formState.company_profile,
+        } as CompanyDetails['details'],
+      } as CompanyDetails;
       await acceptCompany(companyProcessing);
       if (selectedAction === ActionType.AcceptAndStartDD) {
         navigate(`/diligence/${selectedProcessingCompany.id}}`);
@@ -125,27 +149,23 @@ const AddCompanyDetails: React.FC = () => {
 
   const initialData = useMemo(
     () => ({
-      company_name: selectedProcessingCompany?.Company_name ?? '',
-      industry:
-        selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
-      sub_industry:
-        selectedProcessingCompany?.details?.Subindustry?.join(', ') ?? '',
-      company_size: selectedProcessingCompany?.details?.Company_size ?? '',
+      company_name: selectedProcessingCompany?.name ?? '',
+      industry: selectedProcessingCompany?.industry ?? '',
+      sub_industry: selectedProcessingCompany?.details?.subindustry ?? '',
+      company_size: selectedProcessingCompany?.details?.companySize ?? '',
       specializations:
-        selectedProcessingCompany?.details?.Specializations?.join(', ') ?? '',
+        selectedProcessingCompany?.details?.specializations?.join(', ') ?? '',
       product_portfolio:
-        selectedProcessingCompany?.details?.Products_portfolio?.join(', ') ??
-        '',
+        selectedProcessingCompany?.details?.productPortfolio?.join(', ') ?? '',
       services_portfolio:
-        selectedProcessingCompany?.details?.Service_portfolio?.join(' ') ?? '',
+        selectedProcessingCompany?.details?.servicePortfolio?.join(' ') ?? '',
       tools_technologies:
-        selectedProcessingCompany?.details?.Specific_tools_and_technologies?.join(
+        selectedProcessingCompany?.details?.specific_tools_and_technologies?.join(
           ', ',
         ) ?? '',
       quality_standards:
-        selectedProcessingCompany?.details?.Quality_standards?.join(', ') ?? '',
-      company_profile:
-        selectedProcessingCompany?.details?.Company_profile ?? '',
+        selectedProcessingCompany?.details?.qualityStandards?.join(', ') ?? '',
+      company_profile: selectedProcessingCompany?.details?.companyProfile ?? '',
     }),
     [selectedProcessingCompany],
   );

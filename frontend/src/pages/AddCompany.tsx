@@ -13,7 +13,7 @@ import Table from '../components/tables/Table';
 import TitleWithBack from '../components/TitleWithBack';
 import { H2 } from '../components/Typography';
 import { useProcessingCompanyContext } from '../context/ProcessingCompanyProvider';
-import { CompanyDetails } from '../models/CompanyProcessing';
+import { CompanyDetails } from '../models/Company';
 
 const PageLayout = styled.div`
   display: flex;

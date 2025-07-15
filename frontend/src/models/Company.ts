@@ -20,7 +20,7 @@ export interface SearchByDocResponse {
   document_profile: unknown;
 }
 
-export interface DetailedCompany {
+export interface CompanyDetails {
   id: number;
   name: string;
   website: string;
@@ -42,4 +42,6 @@ export interface Details {
   specializations: string[];
   companySize: string;
   qualityStandards: string[];
+  companyProfile: string;
+  specific_tools_and_technologies: string[];
 }

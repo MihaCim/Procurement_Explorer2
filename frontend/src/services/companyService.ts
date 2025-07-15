@@ -1,10 +1,9 @@
 import {
   Company,
-  DetailedCompany,
+  CompanyDetails,
   PaginatedCompanies,
   SearchByDocResponse,
 } from '../models/Company';
-import { CompanyDetails } from '../models/CompanyProcessing';
 import { CompanyProcessingStatus } from '../models/CompanyProcessingStatus';
 import { CompanyResult } from '../models/CompanyResult';
 import APIService from './apiService';
@@ -19,7 +18,7 @@ class CompanyService {
   public async getCompanies(): Promise<PaginatedCompanies> {
     return new APIService().get('/companies');
   }
-  public async getCompanyById(id: number): Promise<DetailedCompany> {
+  public async getCompanyById(id: number): Promise<CompanyDetails> {
     return new APIService().get(`/companies/id/${id}`);
   }
   public async getCompaniesByText(

@@ -4,7 +4,7 @@ import { Outlet, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import Toaster from '../components/Toaster';
-import { CompanyDetails } from '../models/CompanyProcessing';
+import { CompanyDetails } from '../models/Company';
 import { CompanyResult } from '../models/CompanyResult';
 import useCompanyService from '../services/companyService';
 
@@ -70,7 +70,6 @@ export const ProcessingCompanyProvider: React.FC = () => {
     mutationFn: (processingCompany: CompanyDetails): Promise<CompanyResult> =>
       updateProcessingCompany(processingCompany.id, {
         ...processingCompany,
-        // progress: 'Accepted',
         status: 'accepted',
       }),
   });
