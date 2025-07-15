@@ -124,7 +124,7 @@ async def get_companies(
         offset=offset,
     )
 
-    companies_all_results = await query_companies(
+    companies_all = await query_companies(
         query=query,
         status=status,
         industry=industry,
@@ -136,7 +136,7 @@ async def get_companies(
     companies_wrapped = jsonable_encoder(companies_wrapped)
 
     return {
-        "total": len(companies_all_results),
+        "total": len(companies_all),
         "offset": offset,
         "limit": limit,
         "companies": companies_wrapped,
@@ -144,12 +144,27 @@ async def get_companies(
 
 
 @router.get("/get/allAddedCompanies")
-async def get_all_added_companies():
-    companies = await query_companies(exclude_status=["CONFIRMED"], limit=100)
+async def get_all_added_companies(
+    limit: int = 20,
+    offset: int = 0,
+) -> dict[str, list[Any] | int]:
+    companies = await query_companies(
+        exclude_status=["CONFIRMED"], 
+        limit=limit,
+        offset=offset,
+        )
+    companies_all = await query_companies(
+        exclude_status=["CONFIRMED"],
+        )
     companies_wrapped = [
         await map_company_to_wrapper(company) for company in companies
     ]
-    return companies_wrapped
+    return{
+        "total": len(companies_all),
+        "offset": offset,
+        "limit": limit,
+        "companies": companies_wrapped,
+    }
 
 
 @router.get("/companies/similar")
@@ -188,14 +203,6 @@ async def find_company_by_name(name: str):
     companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
 
     return companies_wrapped
-
-
-@router.get("/companies/{id}/status")
-async def get_company_status(id: int):
-    company: Optional[Company] = await get_company(id)
-    if company is None:
-        raise HTTPException(status_code=404, detail="Company not found")
-    return {"id": id, "status": company.Due_Diligence_Status}
 
 
 @router.get("/companies/count")
@@ -256,19 +263,22 @@ async def save_company_profile(companyWrapped: CompanyWrapper):
             )
 
         existing_company = await get_company_by_website(company.Website)
+        saved_company = None
 
         if existing_company:
             company.id = existing_company.id
-            company = await update_company(existing_company.id, company)
+            saved_company = await update_company(existing_company.id, company)
         else:
-            company = await set_company(company)
+            new_company_id = await set_company(company)
+            if new_company_id:
+                saved_company = await get_company(new_company_id)
 
-        if isinstance(company, str):
-             raise HTTPException(status_code=500, detail=f"Failed to save company: {company}")
+        if not isinstance(saved_company, Company):
+             raise HTTPException(status_code=500, detail=f"Failed to save company to database.")
 
         return {
             "status": "ok",
-            "msg": f"Company {company.Website} updated on {company.Added_Timestamp}",
+            "msg": f"Company {saved_company.Website} updated on {saved_company.Added_Timestamp}",
         }
     
     except Exception as e:
@@ -441,9 +451,9 @@ async def initial_db_loading(
 
         # Step 3: Build company object out of the company profile
         company = build_company_model_from_company_profile(
-            website, company_profile, status="Accepted"
+            website, company_profile, status="CONFIRMED"
         )
-        company.Status = "CONFIRMED"
+        #company.Status = "CONFIRMED"
         company.Verdict = "CONFIRMED"
         # Step 3: Store the company object in the database
         id = await set_company(company)
