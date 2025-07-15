@@ -23,13 +23,13 @@ class PostgresConnector:
     def connect(self):
         """
         Establishes a connection to the PostgreSQL database.
+        :raises psycopg2.Error: If the connection fails.
         """
         if self.connection is None or self.connection.closed:
             try:
                 self.connection = psycopg2.connect(**self.conn_params)
             except psycopg2.Error as e:
-                print(f"Error connecting to PostgreSQL: {e}")
-                self.connection = None
+                raise e
         return self.connection
 
     def execute_query(self, query, params=None, fetch=False, fetchone=False):
@@ -39,12 +39,10 @@ class PostgresConnector:
         :param params: Parameters for the SQL query.
         :param fetch: If True, fetch all results. Default is False.
         :param fetchone: If True, fetch a single result. Default is False.
-        :return: Query results or None in case of failure.
+        :return: Query results or None if not fetching.
+        :raises psycopg2.Error: If the query fails.
         """
         conn = self.connect()
-        if conn is None:
-            return None
-
         try:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query, params)
@@ -61,10 +59,9 @@ class PostgresConnector:
                 conn.commit()  # Commit if it's an insert, update, or delete query
                 return None  # No result needed if not fetching
         except psycopg2.Error as e:
-            print(f"Error executing query: {e}")
             if conn:
                 conn.rollback()  # Rollback the transaction if there's an error
-            return None
+            raise e
         finally:
             if conn:
                 conn.close()  # Always close the connection after executing the query
@@ -181,20 +178,6 @@ class PostgresConnector:
         """
         query = f"DELETE FROM {collection_name} WHERE id = %s;"
         self.execute_query(query, (document_id,))
-
-    def update_document(
-        self, collection_name: str, document_id: str, update_data: dict
-    ) -> None:
-        """
-        Updates a document in a table by ID.
-        :param collection_name: The name of the table in PostgreSQL.
-        :param document_id: The ID of the document to update.
-        :param update_data: The dictionary of fields to update.
-        """
-        set_clause = ", ".join([f"{k} = %({k})s" for k in update_data.keys()])
-        query = f"UPDATE {collection_name} SET {set_clause} WHERE id = %(document_id)s;"
-        update_data["document_id"] = document_id
-        self.execute_query(query, update_data)
 
     def close_connection(self) -> None:
         """
