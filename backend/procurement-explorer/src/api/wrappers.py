@@ -144,7 +144,7 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
             kwargs["dd_status"] = dd_profile.status
             kwargs["risk_level"] = dd_profile.risk_level
         else:
-            kwargs["status"] = "not available"
+            kwargs["dd_status"] = "not available"
         return CompanyWrapper(**kwargs)
     
     except Exception as e:
