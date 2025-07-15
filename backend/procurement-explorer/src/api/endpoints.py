@@ -79,7 +79,7 @@ async def insert_company(id: int, url: str):
         url, response, status="Waiting for Review"
     )
 
-    company.Verdict = "NOT CONFIRMED"
+   #company.Verdict = "NOT CONFIRMED"
     company.id = id
     company.Status = "Waiting for Review"
     company = await update_company(id, company)
@@ -108,7 +108,7 @@ async def add_company(
 @router.get("/companies")
 async def get_companies(
     query: Optional[str] = None,
-    status: Optional[Union[str, List[str]]] = None,
+    status: Optional[Union[str, List[str]]] = ["CONFIRMED"],
     industry: Optional[Union[str, List[str]]] = None,
     country: Optional[Union[str, List[str]]] = None,
     limit: int = 20,
@@ -119,24 +119,24 @@ async def get_companies(
         status=status,
         industry=industry,
         country=country,
-        verdict="CONFIRMED",
+        #verdict="CONFIRMED",
         limit=limit,
         offset=offset,
     )
 
-    companies_all_results = await query_companies(
+    companies_all = await query_companies(
         query=query,
         status=status,
         industry=industry,
         country=country,
-        verdict="CONFIRMED"
+        #verdict="CONFIRMED"
     )
 
     companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
     companies_wrapped = jsonable_encoder(companies_wrapped)
 
     return {
-        "total": len(companies_all_results),
+        "total": len(companies_all),
         "offset": offset,
         "limit": limit,
         "companies": companies_wrapped,
@@ -144,12 +144,27 @@ async def get_companies(
 
 
 @router.get("/get/allAddedCompanies")
-async def get_all_added_companies():
-    companies = await query_companies(verdict="NOT CONFIRMED", limit=100)
+async def get_all_added_companies(
+    limit: int = 20,
+    offset: int = 0,
+) -> dict[str, list[Any] | int]:
+    companies = await query_companies(
+        exclude_status=["CONFIRMED"], 
+        limit=limit,
+        offset=offset,
+        )
+    companies_all = await query_companies(
+        exclude_status=["CONFIRMED"],
+        )
     companies_wrapped = [
         await map_company_to_wrapper(company) for company in companies
     ]
-    return companies_wrapped
+    return{
+        "total": len(companies_all),
+        "offset": offset,
+        "limit": limit,
+        "companies": companies_wrapped,
+    }
 
 
 @router.get("/companies/similar")
@@ -188,14 +203,6 @@ async def find_company_by_name(name: str):
     companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
 
     return companies_wrapped
-
-
-@router.get("/companies/{id}/status")
-async def get_company_status(id: int):
-    company: Optional[Company] = await get_company(id)
-    if company is None:
-        raise HTTPException(status_code=404, detail="Company not found")
-    return {"id": id, "status": company.Due_Diligence_Status}
 
 
 @router.get("/companies/count")
@@ -241,7 +248,7 @@ async def update_status(website: str, status: str):
         raise HTTPException(status_code=500, detail="Failed to update company status")
 
 
-@router.put("/companies/{id}")
+@router.put("/companies")
 async def save_company_profile(companyWrapped: CompanyWrapper):
     
     if not companyWrapped.website:
@@ -249,18 +256,37 @@ async def save_company_profile(companyWrapped: CompanyWrapper):
     
     try:
         company = await map_companywrapper_to_company(companyWrapped)
-        company = await update_company(company.id, company)
+        if company is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Error: Could not process company data.",
+            )
+
+        existing_company = await get_company_by_website(company.Website)
+        saved_company = None
+
+        if existing_company:
+            company.id = existing_company.id
+            saved_company = await update_company(existing_company.id, company)
+        else:
+            new_company_id = await set_company(company)
+            if new_company_id:
+                saved_company = await get_company(new_company_id)
+
+        if not isinstance(saved_company, Company):
+             raise HTTPException(status_code=500, detail=f"Failed to save company to database.")
+
         return {
             "status": "ok",
-            "msg": f"Company {company.Website} updated on {company.Added_Timestamp}",
-            }
+            "msg": f"Company {saved_company.Website} updated on {saved_company.Added_Timestamp}",
+        }
+    
     except Exception as e:
         logger.error(f"Error saving company: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail="Internal server error while saving the company",
+            detail="Error while saving the company",
         )
-
 
 @router.delete("/companies/{id}")
 async def delete_company_by_id(id: str):
@@ -297,14 +323,6 @@ async def get_due_diligence_profile(
             "status": "failed",
             "msg": f"No DueDiligence for {company_url} found in system",
             }
-
-
-@router.get("/due_diligence/{id}/risklevel") 
-# get status of risk level for the company: 1-5
-async def due_diligence_status(url: str) -> int | None:
-    if profile := await get_due_diligence_status(url):
-        return str(profile.risk_level)
-    return None
 
 
 @router.post("/due-diligence/start")
@@ -425,8 +443,9 @@ async def initial_db_loading(
 
         # Step 3: Build company object out of the company profile
         company = build_company_model_from_company_profile(
-            website, company_profile, status="Accepted"
+            website, company_profile, status="CONFIRMED"
         )
+        #company.Status = "CONFIRMED"
         company.Verdict = "CONFIRMED"
         # Step 3: Store the company object in the database
         id = await set_company(company)
@@ -456,7 +475,7 @@ async def initial_dd_loading_dd_profiles(
         print("insert: ", num_inserts)
         profile = DueDiligenceProfileWrapper(**profile_data) 
         dd_profile = map_wrapper_to_due_diligence(profile)
-        dd_profile.status = "Approved"
+        dd_profile.status = "approved"
         result = await update_due_diligence_profile(dd_profile)
         if result["status"] == "ok":  
             num_inserts += 1

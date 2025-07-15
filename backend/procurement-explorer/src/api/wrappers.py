@@ -58,11 +58,7 @@ class DueDiligenceProfileWrapper(BaseModel):
     Last_revision: Optional[str] = None  # Add last revision field
     risk_level: Optional[int] = None
     status: Optional[str] = None  # Add URL field
-
-    # Upper card
     description: Optional[str] = None
-
-    # Lower card
     key_individuals: Optional[Dict] = None  # Dictionary for key individuals
     security_risk: Optional[Dict] = None  # Dictionary for security risk
     financial_risk: Optional[Dict] = None  # Dictionary for financial risk
