@@ -585,106 +585,111 @@ class TaskThread:
         return self.get_buffer_str_raw()
 
     async def run(self) -> str:
-        for agent in self.agents.values():
-            agent.clear_buffer()
+        
+        for i in range (0, self.max_calls_thred):
 
-        self.buffer = list[str]()
-        self.is_finished = False
-        self.logger.update_profile(self.result)
+            self.logger.  info(f"Starting thread cycle {i + 1} (out of max {self.max_calls_thred})")
 
-        for i in range(0, self.max_calls_agent):
-            if self.is_finished:
-                break
+            for agent in self.agents.values():
+                agent.clear_buffer()
 
-            for agent_name, agent in self.agents.items():
+            self.buffer = list[str]()
+            self.is_finished = False
+            self.logger.update_profile(self.result)
+
+            for i in range(0, self.max_calls_agent):
                 if self.is_finished:
                     break
 
+                for agent_name, agent in self.agents.items():
+                    if self.is_finished:
+                        break
+
+                    buffer_str = await self.get_buffer_str()
+                    # Calculate the conversation part first
+                    conversation_part = (
+                        f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n"
+                        if buffer_str
+                        else "\n"
+                    )
+
+                    # Now construct the agent_input as a multiline string
+                    agent_input = dedent(
+                        f"""\
+                    You are working on the following task:
+                    <Task>{self.task}</Task>
+                    You are in a conversation with the following colleagues:
+                    {self.get_agent_names()}
+                    If you are not sure about your response, ask for feedback.                
+                    {conversation_part}                
+                    """
+                    )
+                    agent_response = await agent.run(input_string=agent_input)
+                    if agent_response and len(agent_response) > 0:
+                        self.buffer.append(
+                            f"""
+                                <AgentMessage>
+                                    <AgentName>{agent_name}</AgentName>
+                                    <AgentMessageContent>{agent_response}</AgentMessageContent>
+                                </AgentMessage>"""
+                        )
+                        log_data = {
+                            "agent name": agent_name,
+                            "agent response": agent_response,
+                        }
+
+                        self.logger.add_log(json.dumps(log_data))
+                        self.logger.update_profile(self.result)
+
                 buffer_str = await self.get_buffer_str()
-                # Calculate the conversation part first
+
                 conversation_part = (
                     f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n"
                     if buffer_str
                     else "\n"
                 )
 
-                # Now construct the agent_input as a multiline string
                 agent_input = dedent(
                     f"""\
                 You are working on the following task:
                 <Task>{self.task}</Task>
                 You are in a conversation with the following colleagues:
-                {self.get_agent_names()}
-                If you are not sure about your response, ask for feedback.                
-                {conversation_part}                
+                {self.get_agent_names()}                
+                Consider if it is time to finish the task. 
+                Do not finish to early.
+                If you see your colleagues are finalizing their report, this might be an indication to finish the task.
+                {conversation_part}
                 """
                 )
-                agent_response = await agent.run(input_string=agent_input)
-                if agent_response and len(agent_response) > 0:
-                    self.buffer.append(
-                        f"""
-                            <AgentMessage>
-                                <AgentName>{agent_name}</AgentName>
-                                <AgentMessageContent>{agent_response}</AgentMessageContent>
-                            </AgentMessage>"""
-                    )
-                    log_data = {
-                        "agent name": agent_name,
-                        "agent response": agent_response,
-                    }
+                await self.agents.get(self.task_manager_name).run(input_string=agent_input)
 
-                    self.logger.add_log(json.dumps(log_data))
-                    self.logger.update_profile(self.result)
+                logger.info(
+                    f"Made {i + 1} cycles so far (out of max {MAXIMUM_CALLS_AGENT})"
+                )
 
             buffer_str = await self.get_buffer_str()
+            self.logger.update_profile(self.result)
 
             conversation_part = (
-                f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n"
-                if buffer_str
-                else "\n"
+                f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n" if buffer_str else ""
             )
 
             agent_input = dedent(
                 f"""\
             You are working on the following task:
             <Task>{self.task}</Task>
-            You are in a conversation with the following colleagues:
+            You were in a conversation with the following colleagues:
             {self.get_agent_names()}                
-            Consider if it is time to finish the task. 
-            Do not finish to early.
-            If you see your colleagues are finalizing their report, this might be an indication to finish the task.
+            Write a detailed report for the task.
+            You are finishing the task, so remember to update the final report.
             {conversation_part}
             """
             )
+
             await self.agents.get(self.task_manager_name).run(input_string=agent_input)
+            self.logger.update_profile(self.result)
 
-            logger.info(
-                f"Made {i + 1} cycles so far (out of max {MAXIMUM_CALLS_AGENT})"
-            )
-
-        buffer_str = await self.get_buffer_str()
-        self.logger.update_profile(self.result)
-
-        conversation_part = (
-            f"\n\n<Conversation>\n{buffer_str}\n</Conversation>\n" if buffer_str else ""
-        )
-
-        agent_input = dedent(
-            f"""\
-        You are working on the following task:
-        <Task>{self.task}</Task>
-        You were in a conversation with the following colleagues:
-        {self.get_agent_names()}                
-        Write a detailed report for the task.
-        You are finishing the task, so remember to update the final report.
-        {conversation_part}
-        """
-        )
-
-        await self.agents.get(self.task_manager_name).run(input_string=agent_input)
-        self.logger.update_profile(self.result)
-
-        return self.result
+            return self.result
 
 
 if __name__ == "__main__":
