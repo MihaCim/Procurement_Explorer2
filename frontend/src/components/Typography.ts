@@ -23,7 +23,7 @@ export const H2 = styled.h2`
   font-family: Poppins;
   font-size: 18px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
   line-height: normal;
   overflow: hidden;
   display: -webkit-box;

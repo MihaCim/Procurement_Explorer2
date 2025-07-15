@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { linkifyText } from '../../utils/linkyfy';
+import EditableDictionary from '../forms/editableLabeledValue/EditableDictionnary';
+import EditableParagraph from '../forms/editableLabeledValue/EditableParagraph';
 import Skeleton from '../Skeleton';
 import { H4 } from '../Typography';
 
@@ -5,10 +9,13 @@ interface IDictionaryContentProps {
   title: string;
   value: unknown;
   pending: boolean;
+  renderingStyle?: 'readonlylist' | 'tab';
+  editable?: boolean;
+  onSave?: (newData: any) => void;
   maxDepth?: number;
 }
 
-const EmptyState: React.FC = () => <span>-</span>;
+const EmptyState: React.FC = () => <span>None</span>;
 const LoadingState: React.FC = () => <Skeleton height={100} />;
 
 const MAX_DEPTH_DEFAULT = 5;
@@ -62,7 +69,7 @@ const RenderSubDictionary: React.FC<{
               maxDepth={maxDepth}
             />
           ) : (
-            String(value)
+            linkifyText(String(value))
           )}
         </li>
       ))}
@@ -74,7 +81,10 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
   title,
   value,
   pending,
+  editable = false,
+  renderingStyle = 'tab',
   maxDepth = MAX_DEPTH_DEFAULT,
+  onSave,
 }) => {
   const renderContent = () => {
     if (pending && (!value || Object.keys(value).length === 0)) {
@@ -82,14 +92,26 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
     }
 
     if (typeof value === 'string') {
-      return value ? <span>{value}</span> : <EmptyState />;
+      return value ? (
+        <EditableParagraph initialText={value} isEditable={editable} />
+      ) : (
+        <EmptyState />
+      );
+    }
+
+    if (typeof value === 'number' && !isNaN(value)) {
+      return (
+        <EditableParagraph initialText={String(value)} isEditable={editable} />
+      );
     }
 
     if (Array.isArray(value)) {
       return value.length > 0 ? (
         <ul>
           {value.map((item, index) => (
-            <li key={index}>{String(item)}</li>
+            <li key={index}>
+              <EditableParagraph initialText={item} isEditable={editable} />
+            </li>
           ))}
         </ul>
       ) : (
@@ -99,7 +121,15 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
 
     if (isPlainObject(value)) {
       return Object.keys(value).length > 0 ? (
-        <RenderSubDictionary content={value} depth={0} maxDepth={maxDepth} />
+        renderingStyle === 'readonlylist' ? (
+          <RenderSubDictionary content={value} depth={0} maxDepth={maxDepth} />
+        ) : (
+          <EditableDictionary
+            data={value}
+            onSave={onSave}
+            editable={editable}
+          />
+        )
       ) : (
         <EmptyState />
       );

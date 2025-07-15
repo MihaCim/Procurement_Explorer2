@@ -10,7 +10,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { DetailedCompany } from '../models/Company';
+import { CompanyDetails } from '../models/Company';
 import {
   DueDiligenceLog,
   DueDiligenceProfile,
@@ -30,7 +30,7 @@ export interface IDueDiligenceState {
   loadingProfile: boolean;
   profile: DueDiligenceProfile | null;
   logs: DueDiligenceLog[];
-  company: DetailedCompany | null;
+  company: CompanyDetails | null;
   profile_generated: boolean;
   profile_started: boolean;
   profile_initiating: boolean;

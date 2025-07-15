@@ -64,7 +64,7 @@ const InfoLight = styled.p`
 const CompanyCard: React.FC<ICompanyCardProps> = ({
   id,
   name,
-  status,
+  dd_status,
   country,
   industry,
   review_date,
@@ -74,7 +74,7 @@ const CompanyCard: React.FC<ICompanyCardProps> = ({
       <div className="flex flex-1 flex-col gap-1 self-stretch">
         <div className="flex justify-between gap-1">
           <H2>{name}</H2>
-          <StatusChip status={status} />
+          <StatusChip status={dd_status} />
         </div>
 
         <Info>{countries.getName(country, 'en') ?? '-'}</Info>

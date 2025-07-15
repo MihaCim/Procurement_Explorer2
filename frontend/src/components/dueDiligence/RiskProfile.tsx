@@ -2,10 +2,13 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { useDueDiligenceContext } from '../../context/DueDiligenceProvider';
-import Label from '../forms/Label';
+import { isStatusGenerated } from '../../models/DueDiligenceProfile';
+import EditableParagraph from '../forms/editableLabeledValue/EditableParagraph';
+import LabeledValue from '../forms/editableLabeledValue/LabeledValue';
 import Skeleton from '../Skeleton';
 import { H2 } from '../Typography';
 import DictionaryContent from './DictionaryContent';
+import RiskLevel from './RiskLevel';
 
 const Container = styled.div`
   display: flex;
@@ -53,27 +56,40 @@ const RiskProfile: React.FC = () => {
 
   return (
     <Container>
-      <Title>Risk Profile : {profile?.url}</Title>
+      <div className="flex flex-col gap-4 w-full">
+        <Title>Risk Profile : {profile?.url}</Title>
+        {profile?.risk_level &&
+        typeof profile.risk_level === 'number' &&
+        !isNaN(profile.risk_level) ? (
+          <div className="">
+            <RiskLevel level={profile.risk_level} />{' '}
+          </div>
+        ) : null}
+      </div>
+
       <SubContent>
         <H2>Company information</H2>
 
         <OneColDiv>
-          <Label
+          <LabeledValue
             textTitle="Name"
             textContent={profile?.name ?? '-'}
             loading={!profile?.name && profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
-          <Label
+          <LabeledValue
             textTitle="Founder"
             textContent={profile?.founder ?? '-'}
             loading={!profile?.founder && profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
-          <Label
+          <LabeledValue
             textTitle="Founded"
             textContent={profile?.founded ?? '-'}
             loading={!profile?.founded && profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
-          <Label
+          <LabeledValue
             textTitle="Address"
             textContent={
               profile?.address
@@ -85,59 +101,68 @@ const RiskProfile: React.FC = () => {
                 : '-'
             }
             loading={!profile?.address && profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
           {company && (
             <>
-              <Label
+              <LabeledValue
                 textTitle="Industry"
                 textContent={company?.industry ?? '-'}
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
-              <Label
+              <LabeledValue
                 textTitle="SubIndustry"
                 textContent={company?.details?.subindustry ?? '-'}
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
-              <Label
+              <LabeledValue
                 textTitle="Company size"
                 textContent={company?.details?.companySize ?? '-'}
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
-              <Label
+              <LabeledValue
                 textTitle="Specializations"
                 textContent={
                   company?.details?.specializations?.join(', ') ?? '-'
                 }
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
 
-              <Label
+              <LabeledValue
                 textTitle="Product portfolio"
                 textContent={
                   company?.details?.productPortfolio?.join(', ') ?? '-'
                 }
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
-              <Label
+              <LabeledValue
                 textTitle="Services portfolio"
                 textContent={
                   company?.details?.servicePortfolio?.join(', ') ?? '-'
                 }
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
-              <Label
+              <LabeledValue
                 textTitle="Specific tools and technologies"
                 textContent={
                   company?.details?.specializations?.join(', ') ?? '-'
                 }
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
-              <Label
+              <LabeledValue
                 textTitle="Quality standards"
                 textContent={
                   company?.details?.qualityStandards?.join(', ') ?? '-'
                 }
                 loading={loadingCompany}
+                editable={isStatusGenerated(profile?.status)}
               />
             </>
           )}
@@ -147,6 +172,8 @@ const RiskProfile: React.FC = () => {
         <H2>Description</H2>
         {!profile?.description && profile?.status === 'running' ? (
           <Skeleton height={150} />
+        ) : isStatusGenerated(profile?.status) ? (
+          <EditableParagraph initialText={profile?.description ?? '-'} />
         ) : (
           <p className="w-full">{profile?.description ?? '-'}</p>
         )}
@@ -159,36 +186,35 @@ const RiskProfile: React.FC = () => {
             title={'Security risks'}
             value={profile?.security_risk}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
 
           <DictionaryContent
             title={'Operational risks'}
             value={profile?.operational_risk}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
 
           <DictionaryContent
             title={'Financial risks'}
             value={profile?.financial_risk}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
 
           <DictionaryContent
             title={'Key individuals'}
             value={profile?.key_individuals}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
 
           <DictionaryContent
             title={'Key relationships'}
             value={profile?.key_relationships}
             pending={profile?.status === 'running'}
-          />
-
-          <DictionaryContent
-            title={'Risk level'}
-            value={profile?.risk_level}
-            pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
         </div>
       </SubContent>

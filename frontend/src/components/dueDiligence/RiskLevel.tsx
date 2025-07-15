@@ -1,10 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import RiskLevelIcon from '../../assets/icons/risk-level.svg?react';
-
 export interface IRiskLevelProps {
-  level: 1 | 2 | 3 | 4 | 5;
+  level: number;
 }
 
 const Bullet = styled.div<{ level: number }>`
@@ -24,18 +22,39 @@ const Bullet = styled.div<{ level: number }>`
   height: 12px;
 `;
 
+const LabelInfo = styled.label`
+  color: var(--Color-color-text-primary, #292c3d);
+  font-family: Poppins;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 300;
+  line-height: normal;
+`;
+
 const RiskLevel: React.FC<IRiskLevelProps> = ({ level }) => {
   return (
     <div className="flex gap-1 items-center">
-      <RiskLevelIcon />
-      <div className="flex flex-col gap-0.5">
-        <label>Risk Level</label>
-        <div className="flex flex-row gap-[6px]">
-          {Array.from({ length: 5 }, (_, index) => (
-            <Bullet key={index} level={level > index ? level : 0} />
-          ))}
-        </div>
+      <label>Risk Level:</label>
+
+      <div className="flex flex-row gap-[5px]">
+        {Array.from({ length: 5 }, (_, index) => (
+          <Bullet key={index} level={level > index ? level : 0} />
+        ))}
       </div>
+
+      <LabelInfo>
+        {level === 0
+          ? '(None)'
+          : level === 1
+            ? '(Low)'
+            : level === 2
+              ? '(Medium)'
+              : level === 3
+                ? '(High)'
+                : level === 4
+                  ? '(Very high)'
+                  : '(Critical)'}
+      </LabelInfo>
     </div>
   );
 };
