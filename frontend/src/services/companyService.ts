@@ -4,10 +4,7 @@ import {
   PaginatedCompanies,
   SearchByDocResponse,
 } from '../models/Company';
-import {
-  CompanyProcessing,
-  CompanyProcessingUpdate,
-} from '../models/CompanyProcessing';
+import { CompanyDetails } from '../models/CompanyProcessing';
 import { CompanyProcessingStatus } from '../models/CompanyProcessingStatus';
 import { CompanyResult } from '../models/CompanyResult';
 import APIService from './apiService';
@@ -51,7 +48,7 @@ class CompanyService {
       formData,
     );
   }
-  public async getProcessingCompanies(): Promise<CompanyProcessing[]> {
+  public async getProcessingCompanies(): Promise<CompanyDetails[]> {
     return new APIService().get('/get/allAddedCompanies');
   }
   public async addCompany(
@@ -62,7 +59,7 @@ class CompanyService {
 
   public async updateProcessingCompany(
     companyId: number,
-    company: CompanyProcessingUpdate,
+    company: CompanyDetails,
   ): Promise<CompanyResult> {
     return new APIService().put(`/companies/${companyId}`, company);
   }

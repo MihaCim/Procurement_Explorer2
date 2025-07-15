@@ -13,8 +13,7 @@ import Table from '../components/tables/Table';
 import TitleWithBack from '../components/TitleWithBack';
 import { H2 } from '../components/Typography';
 import { useProcessingCompanyContext } from '../context/ProcessingCompanyProvider';
-import { Company } from '../models/Company';
-import { CompanyProcessing } from '../models/CompanyProcessing';
+import { CompanyDetails } from '../models/CompanyProcessing';
 
 const PageLayout = styled.div`
   display: flex;
@@ -83,19 +82,19 @@ const AddCompany: React.FC = () => {
   };
 
   const columns = useMemo(() => {
-    const colHelper = createColumnHelper<Company>();
+    const colHelper = createColumnHelper<CompanyDetails>();
     return [
       {
         id: 'name',
         header: 'Company',
-        accessorFn: (row) => row.Company_name,
+        accessorFn: (row) => row.name,
         sortingFn: 'text',
         enableColumnFilter: false,
         size: 250,
       },
       {
         header: 'Status',
-        cell: ({ row }) => <ProcessingStatus status={row.original.progress} />,
+        cell: ({ row }) => <ProcessingStatus status={row.original.status} />,
         sortingFn: 'text',
         enableColumnFilter: false,
       },
@@ -103,7 +102,7 @@ const AddCompany: React.FC = () => {
         id: 'actions',
         enableGlobalFilter: false,
         cell: ({ row }) =>
-          row.original.progress?.toLowerCase() !== 'in progress' && (
+          row.original.status?.toLowerCase() !== 'in progress' && (
             <div className="flex items-center justify-center gap-6 self-stretch">
               <BtnLink
                 onClick={() => {
@@ -116,7 +115,7 @@ const AddCompany: React.FC = () => {
           ),
         size: 200,
       }),
-    ] as ColumnDef<CompanyProcessing>[];
+    ] as ColumnDef<CompanyDetails>[];
   }, [navigate]);
   return (
     <PageContainer>
