@@ -85,7 +85,6 @@ const Cell = styled.td`
   padding: 13px 16px;
   white-space: nowrap;
   align-items: center;
-  background: rgba(255, 255, 255, 0.6);
 `;
 
 const TableHeader = styled('thead')<{ height?: number }>`
@@ -103,6 +102,7 @@ const TableContainer = styled('div')<{ height?: number; minHeight?: number }>`
   min-height: ${(p) => p.minHeight ?? 'auto'}px;
   position: relative;
   width: 100%;
+  background: rgba(255, 255, 255, 0.6);
 `;
 
 const FloatingCard = styled.div`

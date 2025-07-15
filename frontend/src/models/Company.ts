@@ -29,16 +29,10 @@ export interface DetailedCompany {
   country: string;
   review_date: string;
   products: string[];
-  contact_information: ContactInformation;
+  contact_information: Record<string, string>;
   risk_level: number;
   added_timestamp: string;
   details: Details;
-}
-
-export interface ContactInformation {
-  additionalProp1: string;
-  additionalProp2: string;
-  additionalProp3: string;
 }
 
 export interface Details {

@@ -186,26 +186,35 @@ const RiskProfile: React.FC = () => {
             title={'Security risks'}
             value={profile?.security_risk}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
+
           <DictionaryContent
             title={'Operational risks'}
             value={profile?.operational_risk}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
+
           <DictionaryContent
             title={'Financial risks'}
             value={profile?.financial_risk}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
+
           <DictionaryContent
             title={'Key individuals'}
             value={profile?.key_individuals}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
+
           <DictionaryContent
             title={'Key relationships'}
             value={profile?.key_relationships}
             pending={profile?.status === 'running'}
+            editable={isStatusGenerated(profile?.status)}
           />
         </div>
       </SubContent>

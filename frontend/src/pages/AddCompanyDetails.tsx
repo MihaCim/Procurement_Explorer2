@@ -66,6 +66,7 @@ const ActionsContainer = styled.div`
 enum ActionType {
   Accept,
   Reject,
+  AcceptAndStartDD,
 }
 interface CompanyUpdate {
   company_name: string;
@@ -99,11 +100,51 @@ const AddCompanyDetails: React.FC = () => {
   >();
 
   const handleConfirm = async () => {
-    if (selectedAction === ActionType.Accept) {
-      await acceptCompany(selectedProcessingCompany?.id ?? 0);
+    if (
+      selectedAction === ActionType.Accept ||
+      selectedAction === ActionType.AcceptAndStartDD
+    ) {
+      if (!selectedProcessingCompany) throw new Error('No company selected');
+      const companyProcessing = {
+        ...selectedProcessingCompany,
+        Company_name:
+          formState.company_name || selectedProcessingCompany?.Company_name,
+        details: {
+          ...selectedProcessingCompany?.details,
+          Subindustry: formState.sub_industry
+            ? formState.sub_industry.split(',').map((s) => s.trim())
+            : (selectedProcessingCompany?.details?.Subindustry ?? []),
+          Company_size:
+            formState.company_size ||
+            selectedProcessingCompany?.details?.Company_size ||
+            '',
+          Specializations: formState.specializations
+            ? formState.specializations.split(',').map((s) => s.trim())
+            : (selectedProcessingCompany?.details?.Specializations ?? []),
+          Products_portfolio: formState.product_portfolio
+            ? formState.product_portfolio.split(',').map((s) => s.trim())
+            : (selectedProcessingCompany?.details?.Products_portfolio ?? []),
+          Service_portfolio: formState.services_portfolio
+            ? formState.services_portfolio.split(',').map((s) => s.trim())
+            : (selectedProcessingCompany?.details?.Service_portfolio ?? []),
+          Specific_tools_and_technologies: formState.tools_technologies
+            ? formState.tools_technologies.split(',').map((s) => s.trim())
+            : (selectedProcessingCompany?.details
+                ?.Specific_tools_and_technologies ?? []),
+          Quality_standards: formState.quality_standards
+            ? formState.quality_standards.split(',').map((s) => s.trim())
+            : (selectedProcessingCompany?.details?.Quality_standards ?? []),
+          Company_profile:
+            formState.company_profile ||
+            selectedProcessingCompany?.details?.Company_profile ||
+            '',
+        },
+      };
+      await acceptCompany(companyProcessing);
+      if (selectedAction === ActionType.AcceptAndStartDD) {
+        navigate(`/diligence/${selectedProcessingCompany.id}}`);
+      }
     } else if (selectedAction === ActionType.Reject) {
-      console.log('form state', formState);
-      // TODO: Call update company status service in place of reject to keep the company in the list of history
       await rejectCompany(selectedProcessingCompany?.id ?? 0);
     }
     handleClose();
@@ -309,6 +350,16 @@ const AddCompanyDetails: React.FC = () => {
                   }}
                 >
                   Accept and close
+                </PrimaryButton>
+                <PrimaryButton
+                  startEndorment={<AcceptIcon />}
+                  variant="contained"
+                  onClick={() => {
+                    setSelectedAction(ActionType.AcceptAndStartDD);
+                    setOpenModal(true);
+                  }}
+                >
+                  Accept start due diligence
                 </PrimaryButton>
               </>
             )}

@@ -4,7 +4,10 @@ import { Outlet, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import Toaster from '../components/Toaster';
-import { CompanyProcessing } from '../models/CompanyProcessing';
+import {
+  CompanyProcessing,
+  CompanyProcessingUpdate,
+} from '../models/CompanyProcessing';
 import { CompanyResult } from '../models/CompanyResult';
 import useCompanyService from '../services/companyService';
 
@@ -12,7 +15,9 @@ interface ProcessingCompanyContextProps {
   state: IProcessingCompanyState;
   setProcessingCompanies: (companies: CompanyProcessing[]) => void;
   addNewCompany: (website: string) => void;
-  acceptCompany: (companyId: number) => Promise<CompanyResult>;
+  acceptCompany: (
+    processingCompany: CompanyProcessing,
+  ) => Promise<CompanyResult>;
   rejectCompany: (companyId: number) => Promise<CompanyResult>;
 }
 export interface IProcessingCompanyState {
@@ -29,11 +34,8 @@ export const ProcessingCompanyProvider: React.FC = () => {
   const [selectedProcessingCompany, setSelectedProcessingCompany] = useState<
     CompanyProcessing | undefined
   >();
-  const {
-    addCompany,
-    acceptCompany: acceptCompanyService,
-    rejectCompany: rejectCompanyService,
-  } = useCompanyService();
+  const { addCompany, updateProcessingCompany, deleteProcessingCompany } =
+    useCompanyService();
   const { id } = useParams();
 
   const [processingCompanies, setProcessingCompanies] = useState<
@@ -70,18 +72,48 @@ export const ProcessingCompanyProvider: React.FC = () => {
 
   const acceptCompanyMutation = useMutation({
     mutationKey: ['acceptCompany'],
-    mutationFn: (companyId: number): Promise<CompanyResult> =>
-      acceptCompanyService(companyId),
+    mutationFn: (
+      processingCompany: CompanyProcessing,
+    ): Promise<CompanyResult> =>
+      updateProcessingCompany(processingCompany.id, {
+        id: processingCompany.id,
+        progress: 'Accepted',
+        status: 'accepted',
+        website: 'test.url',
+        details: {
+          subindustry: processingCompany.details?.Subindustry.join('') || '',
+          productPortfolio: processingCompany.details?.Products_portfolio || [],
+          servicePortfolio: processingCompany.details?.Service_portfolio || [],
+          specializations: processingCompany.details?.Specializations || [],
+          companySize: processingCompany.details?.Company_size || '',
+          qualityStandards: processingCompany.details?.Quality_standards || [],
+          specific_tools_and_technologies:
+            processingCompany.details?.Specific_tools_and_technologies || [],
+        },
+        contact_information: {
+          data_contact: '',
+          short_profile_contact: '',
+        },
+        products: [],
+        added_timestamp: new Date().toISOString(),
+        name: processingCompany.Company_name,
+        industry: '',
+        country: '',
+        review_date: new Date().toISOString(),
+        risk_level: 5,
+      } as CompanyProcessingUpdate),
   });
 
-  const acceptCompany = (companyId: number): Promise<CompanyResult> => {
-    return acceptCompanyMutation.mutateAsync(companyId);
+  const acceptCompany = (
+    processingCompany: CompanyProcessing,
+  ): Promise<CompanyResult> => {
+    return acceptCompanyMutation.mutateAsync(processingCompany);
   };
 
   const rejectCompanyMutation = useMutation({
     mutationKey: ['rejectCompany'],
     mutationFn: (companyId: number): Promise<CompanyResult> =>
-      rejectCompanyService(companyId),
+      deleteProcessingCompany(companyId),
   });
 
   const rejectCompany = (companyId: number): Promise<CompanyResult> => {

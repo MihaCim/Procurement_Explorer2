@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 
+import { linkifyText } from '../../../utils/linkyfy';
 import { StyledContent, StyledTextArea } from './StyledComponents';
 
 interface EditableParagraphProps {
   initialText: string;
+  isEditable?: boolean;
   onSave?: (newText: string) => void;
 }
 
 const EditableParagraph: React.FC<EditableParagraphProps> = ({
   initialText,
   onSave,
+  isEditable = true,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentText, setCurrentText] = useState(initialText);
@@ -61,7 +64,7 @@ const EditableParagraph: React.FC<EditableParagraphProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       className="w-full"
     >
-      {isEditing ? (
+      {isEditing && isEditable ? (
         <StyledTextArea
           ref={textAreaRef}
           value={currentText}
@@ -71,7 +74,7 @@ const EditableParagraph: React.FC<EditableParagraphProps> = ({
         />
       ) : (
         <StyledContent onClick={handleParagraphClick} $isHovered={isHovered}>
-          {currentText}
+          {linkifyText(currentText)}
         </StyledContent>
       )}
     </div>

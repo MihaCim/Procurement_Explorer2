@@ -148,6 +148,7 @@ const AddCompany: React.FC = () => {
           <Table
             columns={columns}
             height={650}
+            // minHeight={480}
             data={processingCompanies ?? []}
           />
         </Container>

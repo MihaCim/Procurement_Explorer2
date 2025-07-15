@@ -4,7 +4,10 @@ import {
   PaginatedCompanies,
   SearchByDocResponse,
 } from '../models/Company';
-import { CompanyProcessing } from '../models/CompanyProcessing';
+import {
+  CompanyProcessing,
+  CompanyProcessingUpdate,
+} from '../models/CompanyProcessing';
 import { CompanyProcessingStatus } from '../models/CompanyProcessingStatus';
 import { CompanyResult } from '../models/CompanyResult';
 import APIService from './apiService';
@@ -56,26 +59,16 @@ class CompanyService {
   ): Promise<CompanyProcessingStatus> {
     return new APIService().post('/companies/add', { website: websiteUrl });
   }
-  public async acceptCompany(companyId: number): Promise<CompanyResult> {
-    return new APIService().put(
-      `/companies/${companyId}/verdict?verdict=true`,
-      null,
-    );
-  }
-  public async rejectCompany(companyId: number): Promise<CompanyResult> {
-    return new APIService().put(
-      `/companies/${companyId}/verdict?verdict=false`,
-      null,
-    );
-  }
-  public async updateCompanyStatus(
+
+  public async updateProcessingCompany(
     companyId: number,
-    websiteUrl: string,
-    status: string,
+    company: CompanyProcessingUpdate,
   ): Promise<CompanyResult> {
-    return new APIService().put(`/companies/${companyId}/status`, {
-      website: websiteUrl,
-      status: status,
-    });
+    return new APIService().put(`/companies/${companyId}`, company);
+  }
+  public async deleteProcessingCompany(
+    companyId: number,
+  ): Promise<CompanyResult> {
+    return new APIService().delete(`/companies/${companyId}?verdict=reject`);
   }
 }

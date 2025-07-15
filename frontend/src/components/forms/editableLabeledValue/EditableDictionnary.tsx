@@ -5,13 +5,15 @@ import EditableParagraph from './EditableParagraph';
 
 interface EditableDictionaryProps {
   data: any;
-  onSave: (newData: any) => void;
+  onSave?: (newData: any) => void;
+  editable?: boolean;
   depth?: number;
 }
 
 const EditableDictionary: React.FC<EditableDictionaryProps> = ({
   data,
   onSave,
+  editable = false,
   depth = 0,
 }) => {
   const [editableData, setEditableData] = useState<any>(data);
@@ -19,7 +21,7 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
   const handleStringSave = (key: string, newValue: string) => {
     const updatedData = { ...editableData, [key]: newValue };
     setEditableData(updatedData);
-    onSave(updatedData); // Propagate change up to the parent
+    if (onSave) onSave(updatedData);
   };
 
   const handleNestedDictionarySave = (
@@ -28,7 +30,7 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
   ) => {
     const updatedData = { ...editableData, [key]: newNestedData };
     setEditableData(updatedData);
-    onSave(updatedData); // Propagate change up to the parent
+    if (onSave) onSave(updatedData);
   };
 
   const indentation = depth * 4;
@@ -41,14 +43,9 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
             {key}
           </span>
           <div className="flex-grow">
-            {typeof value === 'string' ? (
-              <EditableParagraph
-                initialText={value}
-                onSave={(newValue) => handleStringSave(key, newValue)}
-              />
-            ) : typeof value === 'object' &&
-              value !== null &&
-              !Array.isArray(value) ? (
+            {typeof value === 'object' &&
+            value !== null &&
+            !Array.isArray(value) ? (
               <EditableDictionary
                 data={value as Record<string, unknown>}
                 onSave={(newNestedData) =>
@@ -57,10 +54,11 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
                 depth={depth + 1}
               />
             ) : (
-              // Fallback for other types (e.g., numbers, booleans, arrays - display as string)
-              <p className="p-2 rounded-lg text-gray-700 bg-gray-50 shadow-sm">
-                {String(value)}
-              </p>
+              <EditableParagraph
+                initialText={String(value)}
+                onSave={(newValue) => handleStringSave(key, newValue)}
+                isEditable={editable}
+              />
             )}
           </div>
         </div>
