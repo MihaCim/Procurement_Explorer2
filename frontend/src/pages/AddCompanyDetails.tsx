@@ -128,7 +128,9 @@ const AddCompanyDetails: React.FC = () => {
       } as CompanyDetails;
       await acceptCompany(companyProcessing);
       if (selectedAction === ActionType.AcceptAndStartDD) {
-        navigate(`/diligence/${selectedProcessingCompany.id}}`);
+        navigate(
+          `/diligence/${selectedProcessingCompany.id}}?url=${selectedProcessingCompany.website}`,
+        );
       }
     } else if (selectedAction === ActionType.Reject) {
       await rejectCompany(selectedProcessingCompany?.id ?? 0);

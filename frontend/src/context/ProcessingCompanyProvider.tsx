@@ -74,8 +74,12 @@ export const ProcessingCompanyProvider: React.FC = () => {
     mutationFn: (processingCompany: CompanyDetails): Promise<CompanyResult> =>
       updateProcessingCompany(processingCompany.id, {
         ...processingCompany,
-        status: 'accepted',
+        status: 'CONFIRMED',
       }),
+    onSuccess: () => {
+      refetch();
+      setSelectedProcessingCompany(undefined);
+    },
   });
 
   const acceptCompany = (
@@ -88,6 +92,10 @@ export const ProcessingCompanyProvider: React.FC = () => {
     mutationKey: ['rejectCompany'],
     mutationFn: (companyId: number): Promise<CompanyResult> =>
       deleteProcessingCompany(companyId),
+    onSuccess: () => {
+      refetch();
+      setSelectedProcessingCompany(undefined);
+    },
   });
 
   const rejectCompany = (companyId: number): Promise<CompanyResult> => {

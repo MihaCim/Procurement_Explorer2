@@ -38,7 +38,7 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
   return (
     <div style={{ paddingLeft: `${indentation}px` }} className="space-y-2">
       {Object.entries(editableData).map(([key, value]) => (
-        <div key={key} className="flex items-start">
+        <div key={key} className="flex items-center">
           <span className="font-semibold text-sm text-gray-700 w-32 flex-shrink-0">
             {key}
           </span>
