@@ -148,7 +148,7 @@ async def get_companies(
 async def get_all_added_companies():
     companies = await query_companies(verdict="NOT CONFIRMED", limit=100)
     companies_wrapped = [
-        map_company_to_wrapper(company) for company in companies
+        await map_company_to_wrapper(company) for company in companies
         #map_company_to_search_company(company) for company in companies
     ]
     return companies_wrapped
