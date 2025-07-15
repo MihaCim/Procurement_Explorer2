@@ -31,6 +31,7 @@ class CompanyWrapper(BaseModel):
     name: Optional[str] = None
     website: str
     status: Optional[str] = "Not Available"
+    dd_status: Optional[str] = "Not Available"
     industry: Optional[str] = None
     country: Optional[str] = None
     review_date: Optional[str] = None
@@ -120,6 +121,7 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
             website=company.Website,
             industry=company.Industry,
             country=company.Country,
+            status=company.Status
             review_date=(
                 company.Review_Date.isoformat() if company.Review_Date else None
             ),
@@ -139,7 +141,7 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
             company_profile=company.Company_Profile
         )
         if dd_profile and dd_profile.status is not None:
-            kwargs["status"] = dd_profile.status
+            kwargs["dd_status"] = dd_profile.status
             kwargs["risk_level"] = dd_profile.risk_level
         else:
             kwargs["status"] = "not available"
