@@ -479,7 +479,8 @@ async def update_due_diligence_profile(
     old_profile = await get_due_diligence_by_website_db(dd_profile.url)
     dd_profile.last_revision = datetime.now().isoformat() 
     dump = dd_profile.model_dump()
-    dump.pop("logs", None)    # not saving the logs field
+    if "logs" in dump:
+        del dump["logs"]    # not saving the logs field
 
     for field in dump:
         if isinstance(dump[field], dict):
