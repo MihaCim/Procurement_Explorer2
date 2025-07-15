@@ -30,8 +30,8 @@ class CompanyWrapper(BaseModel):
     id: int
     name: Optional[str] = None
     website: str
-    status: Optional[str] = "Not Available"
-    dd_status: Optional[str] = "Not Available"
+    status: Optional[str] = "not available"
+    dd_status: Optional[str] = "not available"
     industry: Optional[str] = None
     country: Optional[str] = None
     review_date: Optional[str] = None
@@ -72,7 +72,6 @@ class DueDiligenceProfileWrapper(BaseModel):
     # Timestamps and other fields
     due_diligence_timestamp: Optional[datetime] = None
     metadata: Optional[dict] = None
-    status: Optional[str] = None
     logs: Optional[List[dict]] = None
 
     model_config = ConfigDict(populate_by_name=True)
@@ -121,7 +120,7 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
             website=company.Website,
             industry=company.Industry,
             country=company.Country,
-            status=company.Status
+            status=company.Status,
             review_date=(
                 company.Review_Date.isoformat() if company.Review_Date else None
             ),
@@ -143,8 +142,6 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
         if dd_profile and dd_profile.status is not None:
             kwargs["dd_status"] = dd_profile.status
             kwargs["risk_level"] = dd_profile.risk_level
-        else:
-            kwargs["dd_status"] = "not available"
         return CompanyWrapper(**kwargs)
     
     except Exception as e:
@@ -163,6 +160,7 @@ async def map_companywrapper_to_company(wrapper: CompanyWrapper) -> Optional[Com
             "website": wrapper.website,
             **maybe("name", wrapper.name),
             **maybe("status", wrapper.status),
+            **maybe("due_diligence_status", wrapper.dd_status),
             **maybe("industry", wrapper.industry),
             **maybe("country", wrapper.country),
             **maybe("products_portfolio", wrapper.products),
