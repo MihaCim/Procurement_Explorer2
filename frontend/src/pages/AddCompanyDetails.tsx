@@ -92,7 +92,7 @@ const AddCompanyDetails: React.FC = () => {
   };
 
   const readOnly =
-    selectedProcessingCompany?.progress?.toLowerCase() !== 'waiting for review';
+    selectedProcessingCompany?.status?.toLowerCase() !== 'waiting for review';
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedAction, setSelectedAction] = useState<
@@ -107,38 +107,6 @@ const AddCompanyDetails: React.FC = () => {
       if (!selectedProcessingCompany) throw new Error('No company selected');
       const companyProcessing = {
         ...selectedProcessingCompany,
-        Company_name:
-          formState.company_name || selectedProcessingCompany?.Company_name,
-        details: {
-          ...selectedProcessingCompany?.details,
-          Subindustry: formState.sub_industry
-            ? formState.sub_industry.split(',').map((s) => s.trim())
-            : (selectedProcessingCompany?.details?.Subindustry ?? []),
-          Company_size:
-            formState.company_size ||
-            selectedProcessingCompany?.details?.Company_size ||
-            '',
-          Specializations: formState.specializations
-            ? formState.specializations.split(',').map((s) => s.trim())
-            : (selectedProcessingCompany?.details?.Specializations ?? []),
-          Products_portfolio: formState.product_portfolio
-            ? formState.product_portfolio.split(',').map((s) => s.trim())
-            : (selectedProcessingCompany?.details?.Products_portfolio ?? []),
-          Service_portfolio: formState.services_portfolio
-            ? formState.services_portfolio.split(',').map((s) => s.trim())
-            : (selectedProcessingCompany?.details?.Service_portfolio ?? []),
-          Specific_tools_and_technologies: formState.tools_technologies
-            ? formState.tools_technologies.split(',').map((s) => s.trim())
-            : (selectedProcessingCompany?.details
-                ?.Specific_tools_and_technologies ?? []),
-          Quality_standards: formState.quality_standards
-            ? formState.quality_standards.split(',').map((s) => s.trim())
-            : (selectedProcessingCompany?.details?.Quality_standards ?? []),
-          Company_profile:
-            formState.company_profile ||
-            selectedProcessingCompany?.details?.Company_profile ||
-            '',
-        },
       };
       await acceptCompany(companyProcessing);
       if (selectedAction === ActionType.AcceptAndStartDD) {
@@ -194,9 +162,9 @@ const AddCompanyDetails: React.FC = () => {
       <TitleWithBack label="Results" onClick={goBack} />
       <PageLayout>
         <Container>
-          <H2>Results for {selectedProcessingCompany?.Company_name}</H2>
+          <H2>Results for {selectedProcessingCompany?.name}</H2>
           <ProcessingStatus
-            status={selectedProcessingCompany?.progress ?? 'Unknown'}
+            status={selectedProcessingCompany?.status ?? 'Unknown'}
           />
           <div style={{ paddingBottom: '16px' }}>
             You can edit the information before accepting or refusing.
