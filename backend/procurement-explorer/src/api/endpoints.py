@@ -259,7 +259,7 @@ async def save_company_profile(companyWrapped: CompanyWrapper):
 
 
 @router.delete("/companies/{id}")
-async def update_company_verdict_status(id: str, verdict: str):
+async def delete_company(id: str):
     
     await delete_company(id)
     return {"id": id, "status": "COMPANY DELETED"}
