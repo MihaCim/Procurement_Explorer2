@@ -50,7 +50,6 @@ from .dummy import due_diligence_db
 from .wrappers import (
     CompanyWrapper,
     DueDiligenceProfileWrapper,
-    map_company_to_search_company,
     map_company_to_wrapper,
     map_due_diligence_to_wrapper,
     map_wrapper_to_due_diligence,
@@ -149,7 +148,6 @@ async def get_all_added_companies():
     companies = await query_companies(verdict="NOT CONFIRMED", limit=100)
     companies_wrapped = [
         await map_company_to_wrapper(company) for company in companies
-        #map_company_to_search_company(company) for company in companies
     ]
     return companies_wrapped
 
@@ -234,8 +232,13 @@ async def update_status(website: str, status: str):
     company: Optional[Company] = await get_company_by_website(website)
     if company is None:
         raise HTTPException(status_code=404, detail="Company not found")
-    company = await update_company_status(company.id, status)
-    return company.Status
+    
+    try:
+        company = await update_company_status(company.id, status)
+        return company.Status
+    except Exception as e:
+        logger.error(f"Failed to update company status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update company status")
 
 
 @router.put("/companies/{id}")

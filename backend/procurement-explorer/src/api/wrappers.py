@@ -107,14 +107,6 @@ class CompanyDetailsWrapper(BaseModel):
     Company_profile: str
 
 
-class searchCompaniesWrapper(BaseModel):
-    id: int
-    Company_name: Optional[str] = None
-    progress: str
-    added_timestamp: datetime
-    details: CompanyDetailsWrapper
-
-
 async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
     
     dd_profile = None
@@ -230,25 +222,6 @@ def map_document_profile_to_file_wrapper(document: DocumentProfile) -> FileWrapp
         products=document.Products,
         suitable_company=document.Suitable_Company,
         added_timestamp=document.Added_Timestamp,
-    )
-
-
-def map_company_to_search_company(company: Company) -> searchCompaniesWrapper:
-    return searchCompaniesWrapper(
-        id=company.id,
-        Company_name=company.Name,  # Mapping Name to Company_name
-        progress=company.Status,
-        added_timestamp=company.Added_Timestamp,  # Mapping Added_Timestamp
-        details=CompanyDetailsWrapper(
-            Subindustry=company.SubIndustries,
-            Products_portfolio=company.Products_Portfolio,
-            Service_portfolio=company.Service_Portfolio,
-            Specific_tools_and_technologies=company.Specific_Tools_and_Technologies,
-            Specializations=company.Specializations,
-            Quality_standards=company.Quality_Standards,
-            Company_size=company.Company_Size,
-            Company_profile=company.Company_Profile,
-        ),
     )
 
 
