@@ -457,7 +457,6 @@ async def get_due_diligence_by_website_db(
     dd_data = source.execute_query(query, (url,), fetchone=True)
     if not dd_data:
         return None 
-    
     try:
         profile = DueDiligenceProfile(**dd_data)
     except ValidationError as e:

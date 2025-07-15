@@ -108,7 +108,7 @@ async def add_company(
 @router.get("/companies")
 async def get_companies(
     query: Optional[str] = None,
-    status: Optional[Union[str, List[str]]] = None,
+    status: Optional[Union[str, List[str]]] = ["CONFIRMED"],
     industry: Optional[Union[str, List[str]]] = None,
     country: Optional[Union[str, List[str]]] = None,
     limit: int = 20,
@@ -325,14 +325,6 @@ async def get_due_diligence_profile(
             }
 
 
-@router.get("/due_diligence/{id}/risklevel") 
-# get status of risk level for the company: 1-5
-async def due_diligence_status(url: str) -> int | None:
-    if profile := await get_due_diligence_status(url):
-        return str(profile.risk_level)
-    return None
-
-
 @router.post("/due-diligence/start")
 async def create_dd_profile_(company_url: str):
     return await start_dd_process(company_url)
@@ -483,7 +475,7 @@ async def initial_dd_loading_dd_profiles(
         print("insert: ", num_inserts)
         profile = DueDiligenceProfileWrapper(**profile_data) 
         dd_profile = map_wrapper_to_due_diligence(profile)
-        dd_profile.status = "Approved"
+        dd_profile.status = "approved"
         result = await update_due_diligence_profile(dd_profile)
         if result["status"] == "ok":  
             num_inserts += 1
