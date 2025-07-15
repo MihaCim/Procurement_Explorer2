@@ -39,6 +39,7 @@ class CompanyWrapper(BaseModel):
     risk_level: Optional[int] = None
     added_timestamp: Optional[datetime] = None
     details: Optional[DetailsWrapper] = None
+    company_profile: Optional[str] = None
 
 
 class DueDiligenceProfileWrapper(BaseModel):
@@ -143,6 +144,7 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
                 qualityStandards=company.Quality_Standards,
                 specific_tools_and_technologies=company.Specific_Tools_and_Technologies
             ),
+            company_profile=company.Company_Profile
         )
         if dd_profile and dd_profile.status is not None:
             kwargs["status"] = dd_profile.status
@@ -173,6 +175,7 @@ async def map_companywrapper_to_company(wrapper: CompanyWrapper) -> Optional[Com
             **maybe("contact_information", wrapper.contact_information),
             **maybe("risk_level", wrapper.risk_level),
             **maybe("added_timestamp", wrapper.added_timestamp),
+            **maybe("company_profile", wrapper.company_profile),
         }
 
         if wrapper.review_date:
