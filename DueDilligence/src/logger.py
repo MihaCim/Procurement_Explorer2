@@ -80,3 +80,6 @@ class DDLogger:
         dd_result.errors.append(message)
         dd_result.profile["status"] = "running"
         self._set_cache(dd_result)
+
+    def info(self, message: str) -> None:
+        logger.info(message)

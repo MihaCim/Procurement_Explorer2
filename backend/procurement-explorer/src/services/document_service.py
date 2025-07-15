@@ -252,7 +252,7 @@ async def update_company_status(
 async def update_company(
     company_id: int, profile: Company, source: PostgresConnector = PostgresConnector()
 ) -> Company | None:
-    profile.Profile_Last_Updated = datetime.now()
+    profile.Review_Date = datetime.now()
     data = profile.model_dump()
     data["Contact_Information"] = json.dumps(data["Contact_Information"])
     source.update_document("companies", company_id, data)
