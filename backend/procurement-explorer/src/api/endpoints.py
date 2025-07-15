@@ -79,7 +79,7 @@ async def insert_company(id: int, url: str):
         url, response, status="Waiting for Review"
     )
 
-    company.Verdict = "NOT CONFIRMED"
+   #company.Verdict = "NOT CONFIRMED"
     company.id = id
     company.Status = "Waiting for Review"
     company = await update_company(id, company)
@@ -119,7 +119,7 @@ async def get_companies(
         status=status,
         industry=industry,
         country=country,
-        verdict="CONFIRMED",
+        #verdict="CONFIRMED",
         limit=limit,
         offset=offset,
     )
@@ -129,7 +129,7 @@ async def get_companies(
         status=status,
         industry=industry,
         country=country,
-        verdict="CONFIRMED"
+        #verdict="CONFIRMED"
     )
 
     companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
@@ -145,7 +145,7 @@ async def get_companies(
 
 @router.get("/get/allAddedCompanies")
 async def get_all_added_companies():
-    companies = await query_companies(verdict="NOT CONFIRMED", limit=100)
+    companies = await query_companies(exclude_status=["CONFIRMED"], limit=100)
     companies_wrapped = [
         await map_company_to_wrapper(company) for company in companies
     ]
@@ -241,7 +241,7 @@ async def update_status(website: str, status: str):
         raise HTTPException(status_code=500, detail="Failed to update company status")
 
 
-@router.put("/companies/{id}")
+@router.put("/companies")
 async def save_company_profile(companyWrapped: CompanyWrapper):
     
     if not companyWrapped.website:
@@ -249,18 +249,34 @@ async def save_company_profile(companyWrapped: CompanyWrapper):
     
     try:
         company = await map_companywrapper_to_company(companyWrapped)
-        company = await update_company(company.id, company)
+        if company is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Error: Could not process company data.",
+            )
+
+        existing_company = await get_company_by_website(company.Website)
+
+        if existing_company:
+            company.id = existing_company.id
+            company = await update_company(existing_company.id, company)
+        else:
+            company = await set_company(company)
+
+        if isinstance(company, str):
+             raise HTTPException(status_code=500, detail=f"Failed to save company: {company}")
+
         return {
             "status": "ok",
             "msg": f"Company {company.Website} updated on {company.Added_Timestamp}",
-            }
+        }
+    
     except Exception as e:
         logger.error(f"Error saving company: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail="Internal server error while saving the company",
+            detail="Error while saving the company",
         )
-
 
 @router.delete("/companies/{id}")
 async def delete_company_by_id(id: str):
@@ -427,6 +443,7 @@ async def initial_db_loading(
         company = build_company_model_from_company_profile(
             website, company_profile, status="Accepted"
         )
+        company.Status = "CONFIRMED"
         company.Verdict = "CONFIRMED"
         # Step 3: Store the company object in the database
         id = await set_company(company)

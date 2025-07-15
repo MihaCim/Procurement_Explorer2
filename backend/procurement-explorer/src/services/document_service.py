@@ -257,7 +257,8 @@ async def update_company(
     data["Contact_Information"] = json.dumps(data["Contact_Information"])
     source.update_document("companies", company_id, data)
     company = await get_company(str(company_id))
-    vs.update_document_in_vector_store(str(company_id), company)
+    if company:
+        vs.update_document_in_vector_store(str(company_id), company)
     return company
 
 #TODO: fix the function - ad get company
@@ -327,6 +328,7 @@ async def query_companies(
     source: PostgresConnector = PostgresConnector(),
     query: Optional[str] = None,
     status: Optional[Union[str, List[str]]] = None,
+    exclude_status: Optional[Union[str, List[str]]] = None,
     industry: Optional[Union[str, List[str]]] = None,
     country: Optional[Union[str, List[str]]] = None,
     verdict: Optional[Union[str, List[str]]] = None,
@@ -377,6 +379,16 @@ async def query_companies(
         else:
             sql_query += " AND LOWER(status) = %s"
             params.append(status.lower())
+
+    # Apply individual filters for excluding statuses
+    if exclude_status:
+        if isinstance(exclude_status, list) and exclude_status:
+            placeholders = ", ".join(["%s"] * len(exclude_status))
+            sql_query += f" AND status NOT IN ({placeholders})"
+            params.extend(exclude_status)
+        else:
+            sql_query += " AND LOWER(status) != %s"
+            params.append(exclude_status.lower())
 
     # Apply filters for industry
     if industry:
