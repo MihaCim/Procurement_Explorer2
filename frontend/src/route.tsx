@@ -38,7 +38,7 @@ const APP_ROUTES = [
         ],
       },
       {
-        path: '/scraping',
+        path: '/add',
         element: <ProcessingCompanyProvider />,
         children: [
           {

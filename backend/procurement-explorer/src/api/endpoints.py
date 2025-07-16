@@ -1,16 +1,14 @@
-import asyncio
 import os
 from datetime import datetime
 from typing import Annotated, Any, List, Optional, Union
 import logging
-import httpx
-from fastapi import APIRouter, BackgroundTasks, File, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from langchain_core.documents import Document
 from pydantic import BaseModel, ValidationError
 
-from ..models.models import Company, CompanyInput, DueDiligenceProfile
+from ..models.models import Company, CompanyInput, DueDiligenceProfile, DueDiligenceProfileInvalidError
 from ..services.database_initialization import (
     get_initialization_data,
     load_dd_profiles,
@@ -52,10 +50,10 @@ from .dummy import due_diligence_db
 from .wrappers import (
     CompanyWrapper,
     DueDiligenceProfileWrapper,
-    map_company_to_search_company,
     map_company_to_wrapper,
     map_due_diligence_to_wrapper,
     map_wrapper_to_due_diligence,
+    map_companywrapper_to_company
 )
 
 router = APIRouter()
@@ -80,15 +78,12 @@ async def insert_company(id: int, url: str):
     company = build_company_model_from_company_profile(
         url, response, status="Waiting for Review"
     )
-    # Step 3: Add source to the company object
-    company.Verdict = "NOT CONFIRMED"
+
+   #company.Verdict = "NOT CONFIRMED"
     company.id = id
     company.Status = "Waiting for Review"
-    # Step 4: Store the company object in the database
     company = await update_company(id, company)
-    # Step 5: Generate the embeddings for the company profile
-    # vs.add_document_to_vector_store(id, company)
-    # return company
+   
     return {"id": id, "status": company.Status}
 
 
@@ -110,76 +105,10 @@ async def add_company(
     return {"id": id, "status": initial_company.Status}
 
 
-@router.get("/companies/id/{id}", response_model=CompanyWrapper)
-async def get_company_info(
-    id: str,
-):
-    company: Optional[Company] = await get_company(id)
-    dd_profile: Optional[DueDiligenceProfile] = await get_company(id)
-    if company is None:
-        raise HTTPException(status_code=404, detail="Company not found")
-    # Map the company model to the CompanyWrapper
-    return await map_company_to_wrapper(company)
-
-
-@router.get("/companies/name/{name}")
-async def find_company_by_name(name: str):
-    companies: Optional[List[Company]] = await get_company_by_name(name)
-    if companies is None:
-        raise HTTPException(status_code=404, detail="Company not found")
-    # Map each company to the wrapper
-    companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
-
-    return companies_wrapped
-
-
-@router.get("/companies/{id}/status")
-async def get_company_status(id: int):
-    company: Optional[Company] = await get_company(id)
-    if company is None:
-        raise HTTPException(status_code=404, detail="Company not found")
-    return {"id": id, "status": company.Due_Diligence_Status}
-
-
-@router.put("/companies/{id}/status")
-async def update_status(website: str, status: str):
-    company: Optional[Company] = await get_company_by_website(website)
-    if company is None:
-        raise HTTPException(status_code=404, detail="Company not found")
-    company = await update_company_status(company.id, status)
-    return company.Status
-
-
-@router.get("/companies/count")
-async def get_company_count() -> JSONResponse:
-    count = await get_count_documents()
-    return {"count": count}
-
-
-@router.put("/companies/{id}/verdict")
-async def update_company_verdict_status(id: str, verdict: str):
-    if verdict == "true":
-        company = await update_company_verdict(id)
-        vs.add_document_to_vector_store(id, company)
-        return {"id": id, "status": company.Verdict}
-    else:
-        await delete_company(id)
-        return {"id": id, "status": "COMPANY DELETED"}
-
-
-# TODO cleanup after testing
-class CompanyQuery(BaseModel):
-    query: Optional[str] = None
-    status: Optional[Union[str, List[str]]] = None
-    industry: Optional[Union[str, List[str]]] = None
-    country: Optional[Union[str, List[str]]] = None
-    limit: Optional[int] = 10
-
-
 @router.get("/companies")
 async def get_companies(
     query: Optional[str] = None,
-    status: Optional[Union[str, List[str]]] = None,
+    status: Optional[Union[str, List[str]]] = ["CONFIRMED"],
     industry: Optional[Union[str, List[str]]] = None,
     country: Optional[Union[str, List[str]]] = None,
     limit: int = 20,
@@ -195,18 +124,43 @@ async def get_companies(
         offset=offset,
     )
 
-    companies_all_results = await query_companies(
+    companies_all = await query_companies(
         query=query,
         status=status,
         industry=industry,
         country=country,
+        #verdict="CONFIRMED"
     )
-    # Map each company to the wrapper
+
     companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
     companies_wrapped = jsonable_encoder(companies_wrapped)
 
     return {
-        "total": len(companies_all_results),
+        "total": len(companies_all),
+        "offset": offset,
+        "limit": limit,
+        "companies": companies_wrapped,
+    }
+
+
+@router.get("/get/allAddedCompanies")
+async def get_all_added_companies(
+    limit: int = 20,
+    offset: int = 0,
+) -> dict[str, list[Any] | int]:
+    companies = await query_companies(
+        exclude_status=["CONFIRMED"], 
+        limit=limit,
+        offset=offset,
+        )
+    companies_all = await query_companies(
+        exclude_status=["CONFIRMED"],
+        )
+    companies_wrapped = [
+        await map_company_to_wrapper(company) for company in companies
+    ]
+    return{
+        "total": len(companies_all),
         "offset": offset,
         "limit": limit,
         "companies": companies_wrapped,
@@ -228,6 +182,34 @@ async def find_similar_companies(text: str, k: int = 10):
     companies_wrapped = jsonable_encoder(companies_wrapped)
     return companies_wrapped
 
+@router.get("/companies/id/{id}", response_model=CompanyWrapper)
+async def get_company_info(
+    id: str,
+):
+    company: Optional[Company] = await get_company(id)
+    
+    if company is None:
+        raise HTTPException(status_code=404, detail="Company not found")
+   
+    return await map_company_to_wrapper(company)
+
+
+@router.get("/companies/name/{name}")
+async def find_company_by_name(name: str):
+    companies: Optional[List[Company]] = await get_company_by_name(name)
+    if companies is None:
+        raise HTTPException(status_code=404, detail="Company not found")
+    # Map each company to the wrapper
+    companies_wrapped = [await map_company_to_wrapper(company) for company in companies]
+
+    return companies_wrapped
+
+
+@router.get("/companies/count")
+async def get_company_count() -> JSONResponse:
+    count = await get_count_documents()
+    return {"count": count}
+
 
 @router.post("/companies/by-document")
 async def find_companies_by_document(
@@ -238,32 +220,81 @@ async def find_companies_by_document(
     document_text = get_text(file, content_type)
     # create document profile for similarity search
     doc_profile = generate_document_profile(document_text)
-    # Based on the document profile search vector store for suitable companies
+
     response = vs.query_vector_collection(
-        doc_profile, collection_name="company_profile_nomic", k=k
+         doc_profile, collection_name="company_profile_nomic", k=k
     )
     companies = await get_companies_similarity_profiles(response)
-
+    companies.append(None)
+    
     companies_wrapped = [
-        await map_company_to_wrapper(company) for company in companies if company is not None
-    ]
+         await map_company_to_wrapper(company) for company in companies if company is not None
+     ]
     companies_wrapped = jsonable_encoder(companies_wrapped)
     return {"companies_list": companies_wrapped, "document_profile": doc_profile}
+    
+
+@router.put("/companies/{id}/status")
+async def update_status(website: str, status: str):
+    company: Optional[Company] = await get_company_by_website(website)
+    if company is None:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    try:
+        company = await update_company_status(company.id, status)
+        return company.Status
+    except Exception as e:
+        logger.error(f"Failed to update company status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update company status")
 
 
-@router.get("/get/allAddedCompanies")
-async def get_all_added_companies():
-    companies = await query_companies(verdict="NOT CONFIRMED", limit=100)
-    companies_wrapped = [
-        map_company_to_search_company(company) for company in companies
-    ]
-    return companies_wrapped
+@router.put("/companies")
+async def save_company_profile(companyWrapped: CompanyWrapper):
+    
+    if not companyWrapped.website:
+        raise HTTPException(status_code=404, detail="No valid url on Company profile")
+    
+    try:
+        company = await map_companywrapper_to_company(companyWrapped)
+        if company is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Error: Could not process company data.",
+            )
 
+        existing_company = await get_company_by_website(company.Website)
+        saved_company = None
 
-@router.post("/due-diligence/start")
-async def create_dd_profile_(company_url: str):
-    return await start_dd_process(company_url)
+        if existing_company:
+            company.id = existing_company.id
+            saved_company = await update_company(existing_company.id, company)
+        else:
+            new_company_id = await set_company(company)
+            if new_company_id:
+                saved_company = await get_company(new_company_id)
 
+        if not isinstance(saved_company, Company):
+             raise HTTPException(status_code=500, detail=f"Failed to save company to database.")
+
+        return {
+            "status": "ok",
+            "msg": f"Company {saved_company.Website} updated on {saved_company.Added_Timestamp}",
+        }
+    
+    except Exception as e:
+        logger.error(f"Error saving company: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Error while saving the company",
+        )
+
+@router.delete("/companies/{id}")
+async def delete_company_by_id(id: str):
+    
+    await delete_company(id)
+    return {"id": id, "status": "COMPANY DELETED"}
+
+#****************DD_ENDPOINTS******************
 
 @router.get("/due-diligence/profile")
 async def get_due_diligence_profile(
@@ -294,6 +325,11 @@ async def get_due_diligence_profile(
             }
 
 
+@router.post("/due-diligence/start")
+async def create_dd_profile_(company_url: str):
+    return await start_dd_process(company_url)
+
+
 @router.put("/due-diligence/profile")
 async def save_due_diligence_profile_(
     updated_profile: DueDiligenceProfileWrapper,
@@ -302,10 +338,19 @@ async def save_due_diligence_profile_(
     if not updated_profile.url or updated_profile.url.strip() == "":
         raise HTTPException(status_code=400, detail="Error: Profile url is not defined")
     
-    dd_profile = map_wrapper_to_due_diligence(updated_profile)
-    dd_profile.status = "approved"
+    try:
+        dd_profile = map_wrapper_to_due_diligence(updated_profile)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Validation error on profile schema: {e.errors()}"
+        )
 
-    result = await update_due_diligence_profile(dd_profile)
+    try:
+        result = await update_due_diligence_profile(dd_profile)
+    except DueDiligenceProfileInvalidError as e:
+        raise HTTPException(status_code=422, detail={"validation_error": e.errors})
+    
     if result["status"] == "failed":
         raise HTTPException(status_code=400, detail=result["msg"])
     
@@ -326,13 +371,6 @@ async def delete_due_diligence_profile_(
     if saved:    
         await delete_due_diligence_profile_db(company_url)         
 
-
-@router.get("/due_diligence/{id}/risklevel") 
-# get status of risk level for the company: 1-5
-async def due_diligence_status(url: str) -> int | None:
-    if profile := await get_due_diligence_status(url):
-        return str(profile.risk_level)
-    return None
 
 
 
@@ -405,8 +443,9 @@ async def initial_db_loading(
 
         # Step 3: Build company object out of the company profile
         company = build_company_model_from_company_profile(
-            website, company_profile, status="Accepted"
+            website, company_profile, status="CONFIRMED"
         )
+        #company.Status = "CONFIRMED"
         company.Verdict = "CONFIRMED"
         # Step 3: Store the company object in the database
         id = await set_company(company)
@@ -436,7 +475,7 @@ async def initial_dd_loading_dd_profiles(
         print("insert: ", num_inserts)
         profile = DueDiligenceProfileWrapper(**profile_data) 
         dd_profile = map_wrapper_to_due_diligence(profile)
-        dd_profile.status = "Approved"
+        dd_profile.status = "approved"
         result = await update_due_diligence_profile(dd_profile)
         if result["status"] == "ok":  
             num_inserts += 1

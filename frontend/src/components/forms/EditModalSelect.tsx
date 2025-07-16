@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import Modal, { ModalActions } from '../modals/BaseModal';
 import PrimaryButton from '../PrimaryButton';
 import { H2 } from '../Typography';
-import Label from './Label';
+import LabeledValue from './editableLabeledValue/LabeledValue';
 import Select from './Select';
 
 interface IEditModalProps {
@@ -82,7 +82,10 @@ const EditModalSelect: React.FC<IEditModalProps> = ({
         <StyledContainer>
           <>
             <H2>Edit {valueName}</H2>
-            <Label textTitle="Current value" textContent={currentValue} />
+            <LabeledValue
+              textTitle="Current value"
+              textContent={currentValue}
+            />
           </>
           <InputContainer>
             <InputTitle>New {valueName}</InputTitle>

@@ -16,21 +16,22 @@ from ..models.models import (
 logger = logging.getLogger(__name__)
 
 
-# for testing proposes added by Marcio  #
-class DetailsWrapper(BaseModel):  # TODO: needs to be mapped to mockupAPI model
+class DetailsWrapper(BaseModel):  
     subindustry: str
     productPortfolio: List[str]
     servicePortfolio: List[str]
     specializations: List[str]
     companySize: str
     qualityStandards: List[str]
+    specific_tools_and_technologies: List[str]
 
 
 class CompanyWrapper(BaseModel):
     id: int
     name: Optional[str] = None
     website: str
-    status: Optional[str] = "Not Available"
+    status: Optional[str] = "not available"
+    dd_status: Optional[str] = "not available"
     industry: Optional[str] = None
     country: Optional[str] = None
     review_date: Optional[str] = None
@@ -38,9 +39,8 @@ class CompanyWrapper(BaseModel):
     contact_information: Optional[Dict[str, str]] = None
     risk_level: Optional[int] = None
     added_timestamp: Optional[datetime] = None
-    # for testing proposes added by Marcio  #
     details: Optional[DetailsWrapper] = None
-    # end added by Marcio  #
+    company_profile: Optional[str] = None
 
 
 class DueDiligenceProfileWrapper(BaseModel):
@@ -58,11 +58,7 @@ class DueDiligenceProfileWrapper(BaseModel):
     Last_revision: Optional[str] = None  # Add last revision field
     risk_level: Optional[int] = None
     status: Optional[str] = None  # Add URL field
-
-    # Upper card
     description: Optional[str] = None
-
-    # Lower card
     key_individuals: Optional[Dict] = None  # Dictionary for key individuals
     security_risk: Optional[Dict] = None  # Dictionary for security risk
     financial_risk: Optional[Dict] = None  # Dictionary for financial risk
@@ -72,7 +68,6 @@ class DueDiligenceProfileWrapper(BaseModel):
     # Timestamps and other fields
     due_diligence_timestamp: Optional[datetime] = None
     metadata: Optional[dict] = None
-    status: Optional[str] = None
     logs: Optional[List[dict]] = None
 
     model_config = ConfigDict(populate_by_name=True)
@@ -108,14 +103,6 @@ class CompanyDetailsWrapper(BaseModel):
     Company_profile: str
 
 
-class searchCompaniesWrapper(BaseModel):
-    id: int
-    Company_name: Optional[str] = None
-    progress: str
-    added_timestamp: datetime
-    details: CompanyDetailsWrapper
-
-
 async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
     
     dd_profile = None
@@ -129,6 +116,7 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
             website=company.Website,
             industry=company.Industry,
             country=company.Country,
+            status=company.Status,
             review_date=(
                 company.Review_Date.isoformat() if company.Review_Date else None
             ),
@@ -143,20 +131,69 @@ async def map_company_to_wrapper(company: Company) -> CompanyWrapper | None:
                 specializations=company.Specializations,
                 companySize=company.Company_Size,
                 qualityStandards=company.Quality_Standards,
+                specific_tools_and_technologies=company.Specific_Tools_and_Technologies
             ),
+            company_profile=company.Company_Profile
         )
-        # only set status if we actually have one
         if dd_profile and dd_profile.status is not None:
-            kwargs["status"] = dd_profile.status
-        else:
-            kwargs["status"] = "not available"
+            kwargs["dd_status"] = dd_profile.status
+            kwargs["risk_level"] = dd_profile.risk_level
         return CompanyWrapper(**kwargs)
     
     except Exception as e:
         logger.info(f"company status: {company.Status}")
         logger.error(f"Error mapping company to wrapper: {e}", exc_info=True)
         return None
+    
 
+async def map_companywrapper_to_company(wrapper: CompanyWrapper) -> Optional[Company]:
+    try:
+        def maybe(key, value):
+            return {key: value} if value is not None else {}
+
+        kwargs = {
+            "id": wrapper.id,
+            "website": wrapper.website,
+            **maybe("name", wrapper.name),
+            **maybe("status", wrapper.status),
+            **maybe("due_diligence_status", wrapper.dd_status),
+            **maybe("industry", wrapper.industry),
+            **maybe("country", wrapper.country),
+            **maybe("products_portfolio", wrapper.products),
+            **maybe("contact_information", wrapper.contact_information),
+            **maybe("risk_level", wrapper.risk_level),
+            **maybe("added_timestamp", wrapper.added_timestamp),
+            **maybe("company_profile", wrapper.company_profile),
+        }
+
+        if wrapper.review_date:
+            kwargs["review_date"] = datetime.fromisoformat(wrapper.review_date)
+
+        details = wrapper.details
+        if details:
+            kwargs.update(
+                maybe("service_portfolio", details.servicePortfolio)
+            )
+            kwargs.update(
+                maybe("specializations", details.specializations)
+            )
+            kwargs.update(
+                maybe("company_size", details.companySize)
+            )
+            kwargs.update(
+                maybe("quality_standards", details.qualityStandards)
+            )
+            kwargs.update(
+                maybe("specific_tools_and_technologies", details.specific_tools_and_technologies)
+            )
+            if details.subindustry:
+                kwargs["subindustries"] = [s.strip() for s in details.subindustry.split(",")]
+
+        return Company(**kwargs)
+
+    except Exception as e:
+        logger.error(f"Error mapping CompanyWrapper to Company: {e}", exc_info=True)
+        return None
 
 def map_company_profile_to_details(
     company_profile: CompanyProfile,
@@ -181,25 +218,6 @@ def map_document_profile_to_file_wrapper(document: DocumentProfile) -> FileWrapp
         products=document.Products,
         suitable_company=document.Suitable_Company,
         added_timestamp=document.Added_Timestamp,
-    )
-
-
-def map_company_to_search_company(company: Company) -> searchCompaniesWrapper:
-    return searchCompaniesWrapper(
-        id=company.id,
-        Company_name=company.Name,  # Mapping Name to Company_name
-        progress=company.Status,
-        added_timestamp=company.Added_Timestamp,  # Mapping Added_Timestamp
-        details=CompanyDetailsWrapper(
-            Subindustry=company.SubIndustries,
-            Products_portfolio=company.Products_Portfolio,
-            Service_portfolio=company.Service_Portfolio,
-            Specific_tools_and_technologies=company.Specific_Tools_and_Technologies,
-            Specializations=company.Specializations,
-            Quality_standards=company.Quality_Standards,
-            Company_size=company.Company_Size,
-            Company_profile=company.Company_Profile,
-        ),
     )
 
 
@@ -268,5 +286,6 @@ def map_wrapper_to_due_diligence(
         key_relationships=wrapper.key_relationships,
         due_diligence_timestamp=wrapper.due_diligence_timestamp,
         metadata=wrapper.metadata,
-        logs=wrapper.logs or []
+        logs=wrapper.logs or [],
+        status=wrapper.status
     )

@@ -3,22 +3,23 @@ import { Outlet, useParams } from 'react-router-dom';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { CompanyProcessing } from '../models/CompanyProcessing';
-import useCompanyService from '../services/companyService';
 import Toaster from '../components/Toaster';
+import { CompanyDetails } from '../models/Company';
 import { CompanyResult } from '../models/CompanyResult';
+import useCompanyService from '../services/companyService';
 
 interface ProcessingCompanyContextProps {
   state: IProcessingCompanyState;
-  setProcessingCompanies: (companies: CompanyProcessing[]) => void;
+  setProcessingCompanies: (companies: CompanyDetails[]) => void;
   addNewCompany: (website: string) => void;
-  acceptCompany: (companyId: number) => Promise<CompanyResult>;
+  acceptCompany: (processingCompany: CompanyDetails) => Promise<CompanyResult>;
   rejectCompany: (companyId: number) => Promise<CompanyResult>;
 }
 export interface IProcessingCompanyState {
-  processingCompanies: CompanyProcessing[];
-  selectedProcessingCompany?: CompanyProcessing;
+  processingCompanies: CompanyDetails[];
+  selectedProcessingCompany?: CompanyDetails;
   loading: boolean;
+  updating: boolean;
 }
 const ProcessingCompanyContext = createContext(
   {} as ProcessingCompanyContextProps,
@@ -26,28 +27,25 @@ const ProcessingCompanyContext = createContext(
 
 export const ProcessingCompanyProvider: React.FC = () => {
   const [selectedProcessingCompany, setSelectedProcessingCompany] = useState<
-    CompanyProcessing | undefined
+    CompanyDetails | undefined
   >();
-  const {
-    addCompany,
-    acceptCompany: acceptCompanyService,
-    rejectCompany: rejectCompanyService,
-  } = useCompanyService();
+  const { addCompany, updateProcessingCompany, deleteProcessingCompany } =
+    useCompanyService();
   const { id } = useParams();
 
   const [processingCompanies, setProcessingCompanies] = useState<
-    CompanyProcessing[]
+    CompanyDetails[]
   >([]);
   const { getProcessingCompanies } = useCompanyService();
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['processingCompanies'],
     queryFn: async () => await getProcessingCompanies(),
-    refetchInterval: 5000,
+    refetchInterval: 3000,
     enabled: !!getProcessingCompanies,
   });
 
   useEffect(() => {
-    if (data) setProcessingCompanies(data);
+    if (data) setProcessingCompanies(data?.companies ?? []);
   }, [data]);
 
   useEffect(() => {
@@ -61,6 +59,10 @@ export const ProcessingCompanyProvider: React.FC = () => {
   const addCompanyMutation = useMutation({
     mutationKey: ['addCompany'],
     mutationFn: (website: string) => addCompany(website),
+    onSuccess: () => {
+      refetch();
+      setSelectedProcessingCompany(undefined);
+    },
   });
 
   const addNewCompany = (website: string) => {
@@ -69,18 +71,31 @@ export const ProcessingCompanyProvider: React.FC = () => {
 
   const acceptCompanyMutation = useMutation({
     mutationKey: ['acceptCompany'],
-    mutationFn: (companyId: number): Promise<CompanyResult> =>
-      acceptCompanyService(companyId),
+    mutationFn: (processingCompany: CompanyDetails): Promise<CompanyResult> =>
+      updateProcessingCompany(processingCompany.id, {
+        ...processingCompany,
+        status: 'CONFIRMED',
+      }),
+    onSuccess: () => {
+      refetch();
+      setSelectedProcessingCompany(undefined);
+    },
   });
 
-  const acceptCompany = (companyId: number): Promise<CompanyResult> => {
-    return acceptCompanyMutation.mutateAsync(companyId);
+  const acceptCompany = (
+    processingCompany: CompanyDetails,
+  ): Promise<CompanyResult> => {
+    return acceptCompanyMutation.mutateAsync(processingCompany);
   };
 
   const rejectCompanyMutation = useMutation({
     mutationKey: ['rejectCompany'],
     mutationFn: (companyId: number): Promise<CompanyResult> =>
-      rejectCompanyService(companyId),
+      deleteProcessingCompany(companyId),
+    onSuccess: () => {
+      refetch();
+      setSelectedProcessingCompany(undefined);
+    },
   });
 
   const rejectCompany = (companyId: number): Promise<CompanyResult> => {
@@ -100,6 +115,9 @@ export const ProcessingCompanyProvider: React.FC = () => {
             processingCompanies: processingCompanies ?? [],
             selectedProcessingCompany: selectedProcessingCompany,
             loading: isLoading ?? false,
+            updating:
+              acceptCompanyMutation.isPending ||
+              rejectCompanyMutation.isPending,
           },
           setProcessingCompanies,
           addNewCompany,

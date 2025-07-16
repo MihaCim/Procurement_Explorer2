@@ -1,8 +1,8 @@
 export interface Company {
   id: number;
   name: string;
-  progress: string;
   status: string;
+  dd_status: string;
   review_date: Date;
   country: string;
   industry: string;
@@ -12,33 +12,29 @@ export interface PaginatedCompanies {
   total: number;
   offset: number;
   limit: number;
-  companies: Company[];
+  companies: CompanyDetails[];
 }
 
 export interface SearchByDocResponse {
-  companies_list: Company[];
+  companies_list: CompanyDetails[];
   document_profile: unknown;
 }
 
-export interface DetailedCompany {
+export interface CompanyDetails {
   id: number;
   name: string;
   website: string;
   status: string;
+  dd_status: string;
   industry: string;
   country: string;
   review_date: string;
   products: string[];
-  contact_information: ContactInformation;
+  contact_information: Record<string, string>;
   risk_level: number;
   added_timestamp: string;
   details: Details;
-}
-
-export interface ContactInformation {
-  additionalProp1: string;
-  additionalProp2: string;
-  additionalProp3: string;
+  company_profile: string;
 }
 
 export interface Details {
@@ -48,4 +44,5 @@ export interface Details {
   specializations: string[];
   companySize: string;
   qualityStandards: string[];
+  specific_tools_and_technologies: string[];
 }

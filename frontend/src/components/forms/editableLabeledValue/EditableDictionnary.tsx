@@ -48,7 +48,6 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
             !Array.isArray(value) ? (
               <EditableDictionary
                 data={value as Record<string, unknown>}
-                editable={editable}
                 onSave={(newNestedData) =>
                   handleNestedDictionarySave(key, newNestedData)
                 }

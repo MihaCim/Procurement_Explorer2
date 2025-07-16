@@ -12,7 +12,7 @@ interface EditableParagraphProps {
 const EditableParagraph: React.FC<EditableParagraphProps> = ({
   initialText,
   onSave,
-  isEditable = false,
+  isEditable = true,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentText, setCurrentText] = useState(initialText);

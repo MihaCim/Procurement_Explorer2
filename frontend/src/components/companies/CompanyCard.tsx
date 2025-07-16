@@ -5,16 +5,12 @@ import moment from 'moment';
 import React from 'react';
 import styled from 'styled-components';
 
-import { Company } from '../../models/Company';
+import { CompanyDetails } from '../../models/Company';
 import TruncatedParagraph from '../commons/TuncatedParagraph';
 import StatusChip from '../dueDiligence/StatusChip';
 import { H2 } from '../Typography';
 
 countries.registerLocale(enLocale);
-
-export interface ICompanyCardProps extends Company {
-  risk_level?: number;
-}
 
 const Card = styled.a<{ $disabled: boolean }>`
   display: flex;
@@ -61,10 +57,10 @@ const InfoLight = styled.p`
   line-height: normal;
 `;
 
-const CompanyCard: React.FC<ICompanyCardProps> = ({
+const CompanyCard: React.FC<CompanyDetails> = ({
   id,
   name,
-  status,
+  dd_status,
   country,
   industry,
   review_date,
@@ -74,7 +70,7 @@ const CompanyCard: React.FC<ICompanyCardProps> = ({
       <div className="flex flex-1 flex-col gap-1 self-stretch">
         <div className="flex justify-between gap-1">
           <H2>{name}</H2>
-          <StatusChip status={status} />
+          <StatusChip status={dd_status} />
         </div>
 
         <Info>{countries.getName(country, 'en') ?? '-'}</Info>

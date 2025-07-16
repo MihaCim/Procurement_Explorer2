@@ -54,7 +54,7 @@ const DueDiligencePage: React.FC = () => {
               onClick={() => navigate('/')}
             />
             <StatusChip
-              status={profile?.status ?? company?.status ?? 'not available'}
+              status={profile?.status ?? company?.dd_status ?? 'not available'}
             />
           </div>
 

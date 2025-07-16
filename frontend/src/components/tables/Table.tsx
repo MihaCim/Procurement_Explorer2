@@ -1,16 +1,23 @@
-import React, { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
+import React, { useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
 
 import {
-    flexRender, getCoreRowModel, getExpandedRowModel, getFacetedMinMaxValues, getFacetedRowModel,
-    getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, getSortedRowModel,
-    useReactTable
-} from "@tanstack/react-table";
+  flexRender,
+  getCoreRowModel,
+  getExpandedRowModel,
+  getFacetedMinMaxValues,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 
-import FilterIcon from "../../assets/icons/filter.svg?react";
-import Skeleton from "../Skeleton";
-import DefaultColumnFilter from "./DefaultColumnFilter";
-import { fuzzyFilter } from "./Filters";
+import FilterIcon from '../../assets/icons/filter.svg?react';
+import Skeleton from '../Skeleton';
+import DefaultColumnFilter from './DefaultColumnFilter';
+import { fuzzyFilter } from './Filters';
 
 import type {
   ColumnDef,
@@ -95,6 +102,7 @@ const TableContainer = styled('div')<{ height?: number; minHeight?: number }>`
   min-height: ${(p) => p.minHeight ?? 'auto'}px;
   position: relative;
   width: 100%;
+  background: rgba(255, 255, 255, 0.6);
 `;
 
 const FloatingCard = styled.div`

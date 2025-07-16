@@ -29,8 +29,6 @@ const CompaniesGrid: React.FC = () => {
 
   const navigate = useNavigate();
 
-  console.log('CompaniesGrid rendered with companies:', companies, loading);
-
   return (
     <>
       <div className="w-full flex flex-col gap-4">
@@ -43,15 +41,15 @@ const CompaniesGrid: React.FC = () => {
                   <NoResultIcon />
                   <MediumText>Nothing matched your search.</MediumText>
                   <MediumText>Adjust your input, or</MediumText>
-                  <BtnLink onClick={() => navigate('/due-diligence')}>
-                    Start gathering information
+                  <BtnLink onClick={() => navigate('/add')}>
+                    Add a new company
                   </BtnLink>
                 </div>
               ) : (
                 <p>
                   Didn't find the company that you are looking for ? You can{' '}
-                  <BtnLink onClick={() => navigate('/due-diligence')}>
-                    start gathering information.
+                  <BtnLink onClick={() => navigate('/add')}>
+                    add a new company.
                   </BtnLink>
                 </p>
               )}

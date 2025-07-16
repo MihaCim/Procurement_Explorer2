@@ -4,12 +4,13 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { DetailedCompany } from '../models/Company';
+import { CompanyDetails } from '../models/Company';
 import {
   DueDiligenceLog,
   DueDiligenceProfile,
@@ -30,7 +31,7 @@ export interface IDueDiligenceState {
   loadingProfile: boolean;
   profile: DueDiligenceProfile | null;
   logs: DueDiligenceLog[];
-  company: DetailedCompany | null;
+  company: CompanyDetails | null;
   profile_generated: boolean;
   profile_started: boolean;
   profile_initiating: boolean;
@@ -49,13 +50,16 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   const { getCompanyById } = useCompanyService();
   const { id } = useParams();
   const navigate = useNavigate();
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const searchParamUrl = searchParams.get('url');
 
   const [profile_generated, set_profile_generated] = React.useState(false);
   const [profile_started, set_profile_started] = React.useState(false);
   const [profile_initiating, set_profile_initiating] = React.useState(false);
 
   const [profile_url, set_profile_url] = React.useState<string | null>(null);
+  const startInitiatedRef = useRef<string | null>(null);
 
   const { data: company, isLoading: loadingCompany } = useQuery({
     queryKey: ['company', id],
@@ -118,6 +122,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
       set_profile_generated(false);
       set_profile_started(false);
       set_profile_url(null);
+      startInitiatedRef.current = null;
     },
   });
 
@@ -174,8 +179,24 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
         set_profile_initiating(false);
       }
     },
-    [startDueDiligenceProfile],
+    [
+      setSearchParams,
+      startDueDiligenceProfile,
+      profile_initiating,
+      profile_started,
+      profile_url,
+    ],
   );
+
+  useEffect(() => {
+    if (
+      searchParamUrl &&
+      !profile_started &&
+      startInitiatedRef.current !== searchParamUrl
+    ) {
+      startDueDiligence(searchParamUrl);
+    }
+  }, [searchParamUrl, profile_started, startDueDiligence]);
 
   //Export to PDF
 
