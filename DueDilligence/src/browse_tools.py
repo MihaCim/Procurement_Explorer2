@@ -198,7 +198,7 @@ async def extract_text_from_url(url: str) -> str:
     - Call this function only with a valid url input.
 
     Parameters:
-        url (str): A valid URL from which to extract text content.
+        url (str): A valid URL from which to extract text content. Make sure the url is in fully qualified format, like: https://www.google.com/
     Returns:
         str: The extracted text content in markdown format.
     Raises:
