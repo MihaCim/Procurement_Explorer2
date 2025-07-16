@@ -50,9 +50,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   const { getCompanyById } = useCompanyService();
   const { id } = useParams();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const searchParamUrl = searchParams.get('url');
+  const [, setSearchParams] = useSearchParams();
 
   const [profile_generated, set_profile_generated] = React.useState(false);
   const [profile_started, set_profile_started] = React.useState(false);
@@ -86,15 +84,6 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     enabled: refreshEnabled,
     refetchInterval: 2000,
   });
-
-  console.log(
-    'DueDiligenceProvider profile HERE',
-    profile,
-    refreshEnabled,
-    profile_url,
-    profile_generated,
-    profile_started,
-  );
 
   // const updateQuery = useMutation({
   //   mutationKey: ['updateProfile'],
@@ -187,16 +176,6 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
       profile_url,
     ],
   );
-
-  useEffect(() => {
-    if (
-      searchParamUrl &&
-      !profile_started &&
-      startInitiatedRef.current !== searchParamUrl
-    ) {
-      startDueDiligence(searchParamUrl);
-    }
-  }, [searchParamUrl, profile_started, startDueDiligence]);
 
   //Export to PDF
 
