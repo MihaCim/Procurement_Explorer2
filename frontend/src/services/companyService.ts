@@ -1,5 +1,4 @@
 import {
-  Company,
   CompanyDetails,
   PaginatedCompanies,
   SearchByDocResponse,
@@ -34,7 +33,7 @@ class CompanyService {
   }
   public async getCompaniesByDescription(
     description: string,
-  ): Promise<Company[]> {
+  ): Promise<CompanyDetails[]> {
     return new APIService().get(
       `/companies/similar?text=${encodeURI(description)}&n=10`,
     );
@@ -47,7 +46,7 @@ class CompanyService {
       formData,
     );
   }
-  public async getProcessingCompanies(): Promise<CompanyDetails[]> {
+  public async getProcessingCompanies(): Promise<PaginatedCompanies> {
     return new APIService().get('/get/allAddedCompanies');
   }
   public async addCompany(
@@ -60,7 +59,7 @@ class CompanyService {
     companyId: number,
     company: CompanyDetails,
   ): Promise<CompanyResult> {
-    return new APIService().put(`/companies/${companyId}`, company);
+    return new APIService().put(`/companies`, company);
   }
   public async deleteProcessingCompany(
     companyId: number,

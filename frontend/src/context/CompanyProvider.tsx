@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useState } from 'react';
 
-import { Company } from '../models/Company';
+import { CompanyDetails } from '../models/Company';
 import useCompanyService from '../services/companyService';
 
 interface CompanyContextProps {
@@ -16,7 +16,7 @@ export type SearchType = 'text' | 'description' | 'file' | null;
 
 interface CompanySearch {
   hasMore: boolean;
-  companies: Company[];
+  companies: CompanyDetails[];
   currentOffset: number;
   lastSearchText: string | null;
   lastSearchType: SearchType;
@@ -25,8 +25,8 @@ interface CompanySearch {
 }
 
 export interface ICompanyState {
-  companies: Company[];
-  selectedCompany?: Company;
+  companies: CompanyDetails[];
+  selectedCompany?: CompanyDetails;
   loading: boolean;
   firstLoaded: boolean;
   loaded: boolean;
@@ -60,7 +60,7 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({
   const [loaded, setLoaded] = useState(false);
   const [firstLoaded, setFirstLoaded] = useState(false);
 
-  const setCompanies = useCallback((companies: Company[]) => {
+  const setCompanies = useCallback((companies: CompanyDetails[]) => {
     setCompanySearch((prev) => ({ ...prev, companies }));
   }, []);
 
