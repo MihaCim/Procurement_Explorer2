@@ -11,6 +11,7 @@ export interface IButtonProps {
     | 'outlined'
     | 'reject'
     | 'neutral'
+    | 'outlinedreject'
     | 'neutralWithoutBorder';
   startEndorment?: React.ReactNode;
   endEndorment?: React.ReactNode;
@@ -69,6 +70,24 @@ const PrimaryOutlinedButton = styled(PrimaryContainedButton)`
   }
   & > svg > path {
     fill: var(--color-primary, #014289);
+  }
+  cursor: pointer;
+`;
+
+const PrimaryOutlinedRejectButton = styled(PrimaryRejectButton)`
+  border: 1px solid #890101;
+  background: var(--color-white, #ffffff);
+  color: #890101;
+  box-shadow: none;
+  &:hover {
+    background: #890101;
+    color: var(--color-white, #ffffff);
+    & > svg > path {
+      fill: var(--color-white, #ffffff);
+    }
+  }
+  & > svg > path {
+    fill: #890101;
   }
   cursor: pointer;
 `;
@@ -170,6 +189,15 @@ const PrimaryButton = ({
     <PrimaryRejectButton onClick={props.onClick} type="button" {...btnProps}>
       <ButtonContent {...props} />
     </PrimaryRejectButton>
+  ) : variant === 'outlinedreject' ? (
+    <PrimaryOutlinedRejectButton
+      onClick={props.onClick}
+      type="button"
+      {...btnProps}
+      disabled={!!props.loading || btnProps?.disabled}
+    >
+      <ButtonContent {...props} />
+    </PrimaryOutlinedRejectButton>
   ) : variant === 'neutral' ? (
     <NeutralButton
       onClick={props.onClick}

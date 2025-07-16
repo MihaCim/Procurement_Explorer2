@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
+from enum import Enum
 
 
 class CompanyProfile(BaseModel):
@@ -63,7 +64,7 @@ class CompanyProfile(BaseModel):
 class Company(CompanyProfile):
     id: Optional[int] = Field(default=None, alias="id")
     Website: str = Field(alias="website")
-    Status: Optional[str] = Field(default="Pending", alias="status")
+    Status: Optional[str] = Field(default="not available", alias="status")
     Review_Date: Optional[datetime] = Field(default=None, alias="review_date")
     Due_Diligence_Status: Optional[str] = Field(
         default="Not Available", alias="due_diligence_status"
@@ -80,6 +81,13 @@ class Company(CompanyProfile):
     Verdict: Optional[str] = Field(default=None, alias="verdict")
     
     model_config = ConfigDict(populate_by_name=True)
+
+
+class DD_StatusEnum(str, Enum):
+    NOT_AVAILABLE = "not available"
+    RUNNING = "running"
+    GENERATED = "generated"
+    APPROVED = "approved"
 
 
 class DueDiligenceProfile(BaseModel):
@@ -104,11 +112,16 @@ class DueDiligenceProfile(BaseModel):
     financial_risk: Optional[dict] = Field(default=None, alias="financial_risk")
     operational_risk: Optional[dict] = Field(default=None, alias="operational_risk")
     key_relationships: Optional[dict] = Field(default=None, alias="key_relationships")
-    status: Optional[str] = Field(default=None, alias="status")
+    status: Optional[DD_StatusEnum] = Field(default=None, alias="status")
     metadata: Optional[dict] = Field(default=None, alias="metadata")
-    logs: List[dict] = Field(default=None, alias="logs")
+    logs: List[dict] = Field(default_factory=list, alias="logs")
 
     model_config = ConfigDict(populate_by_name=True)
+
+
+class DueDiligenceProfileInvalidError(Exception):
+    def __init__(self, errors: list[dict]):
+        self.errors = errors
 
 
 class DocumentProfile(BaseModel):

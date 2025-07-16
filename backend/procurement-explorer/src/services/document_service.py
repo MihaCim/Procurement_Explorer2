@@ -3,11 +3,10 @@ import io
 import json
 import logging
 import os
-import sys
 from datetime import datetime
 from typing import List, Optional, Union
 from urllib.parse import urlparse
-from psycopg2.extras import Json
+from pydantic import ValidationError
 import aiohttp
 import docx2txt
 from fastapi import HTTPException
@@ -16,7 +15,7 @@ from langchain_community.document_transformers.html2text import Html2TextTransfo
 from langchain_core.documents import Document
 from pypdf import PdfReader
 from src.connectors.postgres_conector import PostgresConnector
-from src.models.models import Company, CompanyProfile, DueDiligenceProfile
+from src.models.models import Company, CompanyProfile, DueDiligenceProfile, DueDiligenceProfileInvalidError
 from ..services.vector_store_service import VectorStoreService
 from ..services.dd_service import get_dd_profile_from_cache
 
@@ -251,14 +250,15 @@ async def update_company_status(
 
 
 async def update_company(
-    company_id: int, response: Company, source: PostgresConnector = PostgresConnector()
+    company_id: int, profile: Company, source: PostgresConnector = PostgresConnector()
 ) -> Company | None:
-    response.Profile_Last_Updated = datetime.now()
-    dump = response.model_dump()
-    dump["Contact_Information"] = json.dumps(dump["Contact_Information"])
-    source.update_document("companies", company_id, dump)
+    profile.Review_Date = datetime.now()
+    data = profile.model_dump()
+    data["Contact_Information"] = json.dumps(data["Contact_Information"])
+    source.update_document("companies", company_id, data)
     company = await get_company(str(company_id))
-    vs.update_document_in_vector_store(str(company_id), company)
+    if company:
+        vs.update_document_in_vector_store(str(company_id), company)
     return company
 
 #TODO: fix the function - ad get company
@@ -328,6 +328,7 @@ async def query_companies(
     source: PostgresConnector = PostgresConnector(),
     query: Optional[str] = None,
     status: Optional[Union[str, List[str]]] = None,
+    exclude_status: Optional[Union[str, List[str]]] = None,
     industry: Optional[Union[str, List[str]]] = None,
     country: Optional[Union[str, List[str]]] = None,
     verdict: Optional[Union[str, List[str]]] = None,
@@ -378,6 +379,16 @@ async def query_companies(
         else:
             sql_query += " AND LOWER(status) = %s"
             params.append(status.lower())
+
+    # Apply individual filters for excluding statuses
+    if exclude_status:
+        if isinstance(exclude_status, list) and exclude_status:
+            placeholders = ", ".join(["%s"] * len(exclude_status))
+            sql_query += f" AND status NOT IN ({placeholders})"
+            params.extend(exclude_status)
+        else:
+            sql_query += " AND LOWER(status) != %s"
+            params.append(exclude_status.lower())
 
     # Apply filters for industry
     if industry:
@@ -446,7 +457,12 @@ async def get_due_diligence_by_website_db(
     dd_data = source.execute_query(query, (url,), fetchone=True)
     if not dd_data:
         return None 
-    return DueDiligenceProfile(**dd_data)
+    try:
+        profile = DueDiligenceProfile(**dd_data)
+    except ValidationError as e:
+        raise DueDiligenceProfileInvalidError(e.errors())
+
+    return profile
 
 
 async def get_due_diligence_status(
@@ -474,7 +490,8 @@ async def update_due_diligence_profile(
     old_profile = await get_due_diligence_by_website_db(dd_profile.url)
     dd_profile.last_revision = datetime.now().isoformat() 
     dump = dd_profile.model_dump()
-    dump.pop("logs", None)    # not saving the logs field
+    if "logs" in dump:
+        del dump["logs"]    # not saving the logs field
 
     for field in dump:
         if isinstance(dump[field], dict):
