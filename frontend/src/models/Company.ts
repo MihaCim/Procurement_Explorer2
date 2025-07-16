@@ -1,7 +1,6 @@
 export interface Company {
   id: number;
   name: string;
-  progress: string;
   status: string;
   dd_status: string;
   review_date: Date;
@@ -13,11 +12,11 @@ export interface PaginatedCompanies {
   total: number;
   offset: number;
   limit: number;
-  companies: Company[];
+  companies: CompanyDetails[];
 }
 
 export interface SearchByDocResponse {
-  companies_list: Company[];
+  companies_list: CompanyDetails[];
   document_profile: unknown;
 }
 

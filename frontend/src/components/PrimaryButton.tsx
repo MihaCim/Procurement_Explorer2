@@ -75,15 +75,19 @@ const PrimaryOutlinedButton = styled(PrimaryContainedButton)`
 `;
 
 const PrimaryOutlinedRejectButton = styled(PrimaryRejectButton)`
-  border: 1px solid var(--color-text-secondary, #890101);
+  border: 1px solid #890101;
   background: var(--color-white, #ffffff);
-  color: var(--color-text-secondary, #890101);
+  color: #890101;
   box-shadow: none;
   &:hover {
-    background: var(--color-hover-secondary, #f3f3f8);
+    background: #890101;
+    color: var(--color-white, #ffffff);
+    & > svg > path {
+      fill: var(--color-white, #ffffff);
+    }
   }
   & > svg > path {
-    fill: var(--color-text-secondary, #890101);
+    fill: #890101;
   }
   cursor: pointer;
 `;

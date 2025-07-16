@@ -40,12 +40,12 @@ export const ProcessingCompanyProvider: React.FC = () => {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['processingCompanies'],
     queryFn: async () => await getProcessingCompanies(),
-    refetchInterval: 5000,
+    refetchInterval: 3000,
     enabled: !!getProcessingCompanies,
   });
 
   useEffect(() => {
-    if (data) setProcessingCompanies(data);
+    if (data) setProcessingCompanies(data?.companies ?? []);
   }, [data]);
 
   useEffect(() => {

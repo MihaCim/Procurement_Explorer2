@@ -5,16 +5,12 @@ import moment from 'moment';
 import React from 'react';
 import styled from 'styled-components';
 
-import { Company } from '../../models/Company';
+import { CompanyDetails } from '../../models/Company';
 import TruncatedParagraph from '../commons/TuncatedParagraph';
 import StatusChip from '../dueDiligence/StatusChip';
 import { H2 } from '../Typography';
 
 countries.registerLocale(enLocale);
-
-export interface ICompanyCardProps extends Company {
-  risk_level?: number;
-}
 
 const Card = styled.a<{ $disabled: boolean }>`
   display: flex;
@@ -61,7 +57,7 @@ const InfoLight = styled.p`
   line-height: normal;
 `;
 
-const CompanyCard: React.FC<ICompanyCardProps> = ({
+const CompanyCard: React.FC<CompanyDetails> = ({
   id,
   name,
   dd_status,
