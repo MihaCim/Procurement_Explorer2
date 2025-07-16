@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { ActionButtonsBar } from '../components/dueDiligence/ActionButtonsBar';
@@ -31,26 +31,10 @@ const PageLayout = styled.div`
 const DueDiligencePage: React.FC = () => {
   const {
     state: { loadingCompany, profile, company },
-    startDueDiligence,
   } = useDueDiligenceContext();
+  const navigate = useNavigate();
 
-  console.log('DueDiligencePage profile', profile);
-
-  useEffect(() => {
-    if (company && company.status && company.status !== NOT_AVAILABLE_STATUS) {
-      startDueDiligence(company.website);
-    }
-  }, [company, company?.status, startDueDiligence]);
-
-  const [searchParams] = useSearchParams();
-
-  const profileUrl = searchParams.get('url');
-
-  useEffect(() => {
-    if (profileUrl) {
-      startDueDiligence(profileUrl);
-    }
-  }, [profileUrl, startDueDiligence]);
+  console.log('DueDiligencePage rendered with profile:', profile);
 
   return (
     <PageContainer id="due-diligence-page" className="h-full">
@@ -61,7 +45,14 @@ const DueDiligencePage: React.FC = () => {
       ) : (
         <div className="flex flex-col gap-4 h-full w-full">
           <div className="flex gap-2">
-            <TitleWithBack label={profile?.name ?? 'Risk Profile'} />
+            <TitleWithBack
+              label={
+                profile?.name && profile?.name.trim().length > 0
+                  ? profile.name
+                  : 'Risk Profile'
+              }
+              onClick={() => navigate('/')}
+            />
             <StatusChip
               status={profile?.status ?? company?.status ?? 'not available'}
             />

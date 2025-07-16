@@ -14,6 +14,7 @@ import {
   DueDiligenceLog,
   DueDiligenceProfile,
   isStatusGenerated,
+  NOT_AVAILABLE_STATUS,
 } from '../models/DueDiligenceProfile';
 import useCompanyService from '../services/companyService';
 import useDueDiligenceService from '../services/dueDiligenceService';
@@ -48,6 +49,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   const { getCompanyById } = useCompanyService();
   const { id } = useParams();
   const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
 
   const [profile_generated, set_profile_generated] = React.useState(false);
   const [profile_started, set_profile_started] = React.useState(false);
@@ -61,34 +63,14 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     enabled: !!getCompanyById && id !== undefined && !isNaN(Number(id)),
   });
 
-  const pathId = useMemo(() => {
-    return id && !isNaN(Number(id)) ? Number(id) : null;
-  }, [id]);
-
   const refreshEnabled = useMemo(() => {
-    if (pathId)
-      return (
-        !!getDueDiligenceProfile &&
-        !!company &&
-        !profile_generated &&
-        !!profile_url &&
-        profile_started
-      );
-    else
-      return (
-        !!getDueDiligenceProfile &&
-        !profile_generated &&
-        !!profile_url &&
-        profile_started
-      );
-  }, [
-    company,
-    getDueDiligenceProfile,
-    pathId,
-    profile_generated,
-    profile_url,
-    profile_started,
-  ]);
+    return (
+      !!getDueDiligenceProfile &&
+      !profile_generated &&
+      !!profile_url &&
+      profile_started
+    );
+  }, [getDueDiligenceProfile, profile_generated, profile_url, profile_started]);
 
   const {
     data: profile,
@@ -100,6 +82,15 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     enabled: refreshEnabled,
     refetchInterval: 2000,
   });
+
+  console.log(
+    'DueDiligenceProvider profile HERE',
+    profile,
+    refreshEnabled,
+    profile_url,
+    profile_generated,
+    profile_started,
+  );
 
   // const updateQuery = useMutation({
   //   mutationKey: ['updateProfile'],
@@ -146,19 +137,41 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
       set_profile_generated(true);
   }, [profile?.status, profile_generated]);
 
+  useEffect(() => {
+    if (company?.dd_status !== NOT_AVAILABLE_STATUS) {
+      const url = company?.website ?? '';
+      startInitiatedRef.current = url;
+      set_profile_started(true);
+      setSearchParams({ url });
+      set_profile_url(url);
+    }
+  }, [company?.dd_status, company?.website, setSearchParams]);
+
   const startDueDiligence = useCallback(
     async (url: string) => {
-      if (url) {
-        try {
-          set_profile_initiating(true);
-          await startDueDiligenceProfile(url);
-          set_profile_url(url);
-          set_profile_started(true);
-        } catch (error) {
-          console.log(error); //TODO
-        } finally {
-          set_profile_initiating(false);
-        }
+      if (!url) return;
+
+      if (profile_initiating || (profile_started && profile_url === url)) {
+        return;
+      }
+      if (startInitiatedRef.current === url) {
+        return;
+      }
+
+      try {
+        set_profile_initiating(true);
+        startInitiatedRef.current = url;
+        await startDueDiligenceProfile(url);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        set_profile_started(true);
+        set_profile_url(url);
+        setSearchParams({ url });
+        console.log('Due diligence started for URL:', url);
+      } catch (error) {
+        console.error('Error starting due diligence:', error);
+        startInitiatedRef.current = null;
+      } finally {
+        set_profile_initiating(false);
       }
     },
     [startDueDiligenceProfile],

@@ -77,12 +77,14 @@ export interface KeyRelationships {
 }
 
 export const NOT_AVAILABLE_STATUS = 'not available';
+export const QUEUED_STATUS = 'queued';
 export const RUNNING_STATUS = 'running';
 export const GENERATED_STATUS = 'generated';
 export const APPROVED_STATUS = 'approved';
 
 export const STATUS_LIST = [
   NOT_AVAILABLE_STATUS,
+  QUEUED_STATUS,
   RUNNING_STATUS,
   GENERATED_STATUS,
   APPROVED_STATUS,

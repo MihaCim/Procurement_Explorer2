@@ -142,7 +142,7 @@ const AgentFeedback: React.FC<{
         </div>
       ) : isCurrent ? (
         <div className="flex items-center gap-2">
-          <CircularProgress size={24} borderWidth={2} />
+          <CircularProgress size={24} $borderWidth={2} />
           <FeebackTypo>{log['agent name']}</FeebackTypo>
         </div>
       ) : (
@@ -175,7 +175,7 @@ const AgenticFeedback: React.FC = () => {
           {isStatusGenerated(profile?.status) ? (
             <AcceptIcon height={24} />
           ) : (
-            <CircularProgress size={16} borderWidth={2} />
+            <CircularProgress size={16} $borderWidth={2} />
           )}
           <div className="flex flex-1">
             {currentLog ? (
