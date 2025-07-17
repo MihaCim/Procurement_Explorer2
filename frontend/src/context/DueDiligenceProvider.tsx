@@ -23,6 +23,7 @@ import useDueDiligenceService from '../services/dueDiligenceService';
 interface DueDiligenceContext {
   state: IDueDiligenceState;
   startDueDiligence: (url: string) => Promise<void>;
+  updateProfile: (data: DueDiligenceProfile) => Promise<void>;
   deleteProfile: () => Promise<void>;
 }
 export interface IDueDiligenceState {
@@ -46,6 +47,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     getDueDiligenceProfile,
     startDueDiligenceProfile,
     deleteDueDiligenceProfile,
+    updateDueDiligenceProfile,
   } = useDueDiligenceService();
   const { getCompanyById } = useCompanyService();
   const { id } = useParams();
@@ -77,7 +79,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   const {
     data: profile,
     isLoading: loadingProfile,
-    // refetch,
+    refetch,
   } = useQuery({
     queryKey: ['profile', profile_url],
     queryFn: ({ queryKey }) => getDueDiligenceProfile(queryKey[1]!, true, true),
@@ -85,18 +87,19 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     refetchInterval: 2000,
   });
 
-  // const updateQuery = useMutation({
-  //   mutationKey: ['updateProfile'],
-  //   mutationFn: async (data: any) => {
-  //     console.log(data);
-  //     const res = await updateDueDiligenceProfile(Number(id), data);
-  //     if (res) await refetch();
-  //     return data;
-  //   },
-  // });
-  // const updateProfile = async (data: any) => {
-  //   updateQuery.mutate(data);
-  // };
+  const updateQuery = useMutation({
+    mutationKey: ['updateProfile'],
+    mutationFn: async (data: DueDiligenceProfile) => {
+      console.log(data);
+      const res = await updateDueDiligenceProfile(data);
+      if (res) await refetch();
+      return data;
+    },
+  });
+
+  const updateProfile = async (data: DueDiligenceProfile) => {
+    updateQuery.mutate(data);
+  };
 
   const deleteMutation = useMutation({
     mutationKey: ['deleteProfile'],
@@ -237,6 +240,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
         },
         startDueDiligence,
         deleteProfile,
+        updateProfile,
       }}
     >
       {children}

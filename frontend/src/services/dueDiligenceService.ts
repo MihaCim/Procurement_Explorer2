@@ -47,7 +47,7 @@ class DueDiligenceService {
   public async updateDueDiligenceProfile(
     profile: DueDiligenceProfile,
   ): Promise<DueDiligenceCreationResult> {
-    return new APIService().put(`/due-diligence`, profile);
+    return new APIService().put(`/due-diligence/profile`, profile);
   }
 }
 
@@ -85,9 +85,9 @@ class FakeDDService {
   }
 
   public async updateDueDiligenceProfile(
-    company_url: string,
+    profile: DueDiligenceProfile,
   ): Promise<DueDiligenceCreationResult> {
-    console.log('FAKE updateDueDiligenceProfile CALLED', company_url);
+    console.log('FAKE updateDueDiligenceProfile CALLED', profile);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     return Promise.resolve({ msg: 'done', status: 'ok' });
   }

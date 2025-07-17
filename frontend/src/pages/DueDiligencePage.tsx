@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
+import BtnLink from '../components/BtnLink';
 import { ActionButtonsBar } from '../components/dueDiligence/ActionButtonsBar';
 import AgenticFeedback from '../components/dueDiligence/AgenticFeedback';
 import RiskProfile from '../components/dueDiligence/RiskProfile';
@@ -30,7 +31,8 @@ const PageLayout = styled.div`
 
 const DueDiligencePage: React.FC = () => {
   const {
-    state: { loadingCompany, profile, company },
+    state: { loadingCompany, profile, company, profile_initiating },
+    startDueDiligence,
   } = useDueDiligenceContext();
   const navigate = useNavigate();
 
@@ -56,10 +58,17 @@ const DueDiligencePage: React.FC = () => {
             <StatusChip
               status={profile?.status ?? company?.dd_status ?? 'not available'}
             />
+            {isStatusGenerated(profile?.status) && profile?.url && (
+              <BtnLink onClick={() => startDueDiligence(profile?.url)}>
+                restart
+              </BtnLink>
+            )}
           </div>
 
           <PageLayout>
-            {profile?.status && profile?.status !== NOT_AVAILABLE_STATUS ? (
+            {profile?.status &&
+            profile?.status !== NOT_AVAILABLE_STATUS &&
+            !profile_initiating ? (
               <div className="flex flex-col w-full">
                 <AgenticFeedback />
                 <RiskProfile />

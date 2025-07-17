@@ -52,6 +52,7 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
                   handleNestedDictionarySave(key, newNestedData)
                 }
                 depth={depth + 1}
+                editable={editable}
               />
             ) : (
               <EditableParagraph

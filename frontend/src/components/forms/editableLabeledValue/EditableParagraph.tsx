@@ -73,7 +73,10 @@ const EditableParagraph: React.FC<EditableParagraphProps> = ({
           onKeyDown={handleKeyDown}
         />
       ) : (
-        <StyledContent onClick={handleParagraphClick} $isHovered={isHovered}>
+        <StyledContent
+          onClick={handleParagraphClick}
+          $isHovered={isHovered && isEditable}
+        >
           {linkifyText(currentText)}
         </StyledContent>
       )}
