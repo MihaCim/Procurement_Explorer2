@@ -19,7 +19,7 @@ load_dotenv()
 LLM_TYPE = os.getenv("LLM_TYPE")
 CONTEXT_LIMIT = int(os.getenv("CONTEXT_LIMIT", 1000))
 MAXIMUM_CALLS_AGENT = int(os.getenv("MAXIMUM_CALLS_AGENT", 8))
-MAXIMUM_CALLS_THREAD = int(os.getenv("MAXIMUM_CALLS_THREAD", 15))
+MAXIMUM_CALLS_THREAD = int(os.getenv("MAX_CONCURRENT_THREAD", 15))
 
 app = FastAPI()
 llm_client = LLMClient()
