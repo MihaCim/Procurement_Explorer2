@@ -257,8 +257,6 @@ async def update_company(
     data["Contact_Information"] = json.dumps(data["Contact_Information"])
     source.update_document("companies", company_id, data)
     company = await get_company(str(company_id))
-    if company:
-        vs.update_document_in_vector_store(str(company_id), company)
     return company
 
 #TODO: fix the function - ad get company

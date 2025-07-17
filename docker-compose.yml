@@ -66,6 +66,8 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - ollama-models:/root/.ollama 
+    environment:
+      - OLLAMA_LOG_LEVEL=WARN # Or ERROR
 
   crawler:
     build:
