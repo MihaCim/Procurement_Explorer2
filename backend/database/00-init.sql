@@ -76,7 +76,8 @@ CREATE TABLE due_diligence_profiles (
     key_relationships JSONB,                -- Optional: Key relationships as a JSON object
     metadata JSONB,                         -- Optional: Metadata for due diligence
     status VARCHAR,                         -- Optional: Status for due diligence
-    due_diligence_timestamp TIMESTAMP       -- Optional: Timestamp for due diligence    
+    due_diligence_timestamp TIMESTAMP,       -- Optional: Timestamp for due diligence    
+    logs JSONB    
 );
 
 
