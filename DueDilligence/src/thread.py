@@ -193,7 +193,6 @@ class FunctionalAgent:
         return f"Output should have a valid JSON object without any wrappers in the following format:\n{str}"
 
     async def reduce_buffer(self) -> str:
-        print("LEN OF BUFFER CONTEXT: ", num_tokens_from_string("\n".join(self.buffer)))
         if len(self.buffer) > 0:
             for _ in range(6): # hard stop on summarization
                 if num_tokens_from_string("\n".join(self.buffer)) <= CONTEXT_LIMIT:
@@ -581,7 +580,6 @@ class TaskThread:
 
     async def get_buffer_str(self):
         for _ in range(6): # Hard stop on summarization
-            print("LEN OF BUFFER CONTEXT: ", len(self.get_buffer_str_raw()))
             if len(self.get_buffer_str_raw()) <= CONTEXT_LIMIT:
                 break
             summary = await summarize_with_intent(
