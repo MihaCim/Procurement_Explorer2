@@ -3,7 +3,7 @@ import { linkifyText } from '../../utils/linkyfy';
 import EditableDictionary from '../forms/editableLabeledValue/EditableDictionnary';
 import EditableParagraph from '../forms/editableLabeledValue/EditableParagraph';
 import Skeleton from '../Skeleton';
-import { H4 } from '../Typography';
+import { H3, H4 } from '../Typography';
 
 interface IDictionaryContentProps {
   title: string;
@@ -13,6 +13,7 @@ interface IDictionaryContentProps {
   editable?: boolean;
   onSave?: (newData: any) => void;
   maxDepth?: number;
+  titleStyle?: 'default' | 'small';
 }
 
 const EmptyState: React.FC = () => <span>None</span>;
@@ -83,6 +84,7 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
   pending,
   editable = false,
   renderingStyle = 'tab',
+  titleStyle = 'default',
   maxDepth = MAX_DEPTH_DEFAULT,
   onSave,
 }) => {
@@ -93,7 +95,13 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
 
     if (typeof value === 'string') {
       return value ? (
-        <EditableParagraph initialText={value} isEditable={editable} />
+        <EditableParagraph
+          initialText={
+            String(value).trim() === '' ? 'No content' : String(value)
+          }
+          isEditable={editable}
+          pending={pending}
+        />
       ) : (
         <EmptyState />
       );
@@ -101,7 +109,13 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
 
     if (typeof value === 'number' && !isNaN(value)) {
       return (
-        <EditableParagraph initialText={String(value)} isEditable={editable} />
+        <EditableParagraph
+          initialText={
+            String(value).trim() === '' ? 'No content' : String(value)
+          }
+          isEditable={editable}
+          pending={pending}
+        />
       );
     }
 
@@ -128,6 +142,7 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
             data={value}
             onSave={onSave}
             editable={editable}
+            pending={pending}
           />
         )
       ) : (
@@ -139,8 +154,8 @@ const DictionaryContent: React.FC<IDictionaryContentProps> = ({
   };
 
   return (
-    <div className="flex flex-1 flex-col">
-      <H4>{title}:</H4>
+    <div className="flex flex-1 flex-col gap-2">
+      {titleStyle === 'small' ? <H4>{title}</H4> : <H3>{title}</H3>}
       {renderContent()}
     </div>
   );

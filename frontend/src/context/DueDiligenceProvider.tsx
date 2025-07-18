@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   createContext,
   ReactNode,
@@ -25,6 +26,8 @@ interface DueDiligenceContext {
   startDueDiligence: (url: string) => Promise<void>;
   updateProfile: (data: DueDiligenceProfile) => Promise<void>;
   deleteProfile: () => Promise<void>;
+  updateProfileKey: (key: keyof DueDiligenceProfile, value: unknown) => void;
+  updateCompanyKey: (key: string, value: unknown) => void;
 }
 export interface IDueDiligenceState {
   updating: boolean;
@@ -49,7 +52,7 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     deleteDueDiligenceProfile,
     updateDueDiligenceProfile,
   } = useDueDiligenceService();
-  const { getCompanyById } = useCompanyService();
+  const { getCompanyById, updateProcessingCompany } = useCompanyService();
   const { id } = useParams();
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
@@ -61,7 +64,11 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
   const [profile_url, set_profile_url] = React.useState<string | null>(null);
   const startInitiatedRef = useRef<string | null>(null);
 
-  const { data: company, isLoading: loadingCompany } = useQuery({
+  const {
+    data: company,
+    isLoading: loadingCompany,
+    refetch: refetchCompany,
+  } = useQuery({
     queryKey: ['company', id],
     queryFn: () => getCompanyById(Number(id)),
     enabled: !!getCompanyById && id !== undefined && !isNaN(Number(id)),
@@ -97,9 +104,63 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     },
   });
 
-  const updateProfile = async (data: DueDiligenceProfile) => {
-    updateQuery.mutate(data);
-  };
+  const updateCompany = useMutation({
+    mutationKey: ['updateCompany'],
+    mutationFn: async (data: CompanyDetails) => {
+      const res = await updateProcessingCompany(data.id, data);
+      if (res) {
+        await refetchCompany();
+        return res;
+      }
+      throw new Error('Failed to update company');
+    },
+  });
+
+  const updateProfile = useCallback(
+    async (data: DueDiligenceProfile) => {
+      updateQuery.mutate(data);
+    },
+    [updateQuery],
+  );
+
+  const updateProfileKey = useCallback(
+    (key: keyof DueDiligenceProfile, value: unknown) => {
+      console.log('Updating profile key:', key, value);
+      if (profile) {
+        const updatedProfile = {
+          ...profile,
+          [key]: value,
+        };
+        updateProfile(updatedProfile);
+      }
+    },
+    [profile, updateProfile],
+  );
+
+  const updateCompanyKey = useCallback(
+    (key: string, value: unknown) => {
+      console.log('Updating company key:', key, value);
+      if (!company) {
+        return;
+      }
+
+      const updatedCompany = { ...company };
+      if (key.includes('.')) {
+        const [parentKey, subKey] = key.split('.');
+        if (
+          typeof (updatedCompany as any)[parentKey] !== 'object' ||
+          (updatedCompany as any)[parentKey] === null
+        ) {
+          (updatedCompany as any)[parentKey] = {};
+        }
+        (updatedCompany as any)[parentKey][subKey] = value;
+      } else {
+        (updatedCompany as any)[key] = value;
+      }
+      updateCompany.mutate(updatedCompany);
+    },
+    [company, updateCompany],
+  );
 
   const deleteMutation = useMutation({
     mutationKey: ['deleteProfile'],
@@ -148,13 +209,12 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
     async (url: string) => {
       if (!url) return;
 
-      if (profile_initiating || (profile_started && profile_url === url)) {
+      if (
+        profile_initiating ||
+        (profile_started && profile_url === url && !profile_generated)
+      ) {
         return;
       }
-      if (startInitiatedRef.current === url) {
-        return;
-      }
-
       try {
         set_profile_initiating(true);
         startInitiatedRef.current = url;
@@ -172,11 +232,12 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
       }
     },
     [
-      setSearchParams,
-      startDueDiligenceProfile,
       profile_initiating,
       profile_started,
       profile_url,
+      profile_generated,
+      startDueDiligenceProfile,
+      setSearchParams,
     ],
   );
 
@@ -241,6 +302,8 @@ export const DueDiligenceProvider: React.FC<{ children: ReactNode }> = ({
         startDueDiligence,
         deleteProfile,
         updateProfile,
+        updateProfileKey,
+        updateCompanyKey,
       }}
     >
       {children}

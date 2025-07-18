@@ -17,8 +17,6 @@ const Bar = styled.div`
   justify-content: space-between;
   align-items: center;
   align-self: stretch;
-  gap: 8px;
-  min-height: 48px;
 
   border-radius: var(--radius-radius-small, 4px) var(--radius-radius-small, 4px)
     0px 0px;
@@ -182,6 +180,8 @@ const AgenticFeedback: React.FC = () => {
               <FeebackTypo>
                 {`${currentLog['agent name']}: ${currentLog['agent response']}`}
               </FeebackTypo>
+            ) : isStatusGenerated(profile?.status) ? (
+              <FeebackTypo>Profile Generated</FeebackTypo>
             ) : (
               <FeebackTypo>Initialisation...</FeebackTypo>
             )}
@@ -200,7 +200,7 @@ const AgenticFeedback: React.FC = () => {
       </div>
 
       <AnimatedContent $expanded={isExpanded}>
-        <div className="flex flex-col self-stretch gap-4">
+        <div className="flex flex-col self-stretch gap-4 pt-2">
           <div className="flex flex-col self-stretch gap-3">
             <AgentWorkflowTitle>Metadata</AgentWorkflowTitle>
             {profile?.metadata && Object.keys(profile.metadata).length > 0 ? (

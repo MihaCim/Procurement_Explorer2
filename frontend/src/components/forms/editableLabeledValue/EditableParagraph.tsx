@@ -1,18 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { linkifyText } from '../../../utils/linkyfy';
+import Skeleton from '../../Skeleton';
 import { StyledContent, StyledTextArea } from './StyledComponents';
 
 interface EditableParagraphProps {
   initialText: string;
   isEditable?: boolean;
   onSave?: (newText: string) => void;
+  pending?: boolean;
 }
 
 const EditableParagraph: React.FC<EditableParagraphProps> = ({
   initialText,
   onSave,
   isEditable = true,
+  pending = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentText, setCurrentText] = useState(initialText);
@@ -58,7 +61,9 @@ const EditableParagraph: React.FC<EditableParagraphProps> = ({
     }
   };
 
-  return (
+  return pending ? (
+    <Skeleton />
+  ) : (
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

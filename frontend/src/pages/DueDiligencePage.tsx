@@ -2,9 +2,9 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
-import BtnLink from '../components/BtnLink';
 import { ActionButtonsBar } from '../components/dueDiligence/ActionButtonsBar';
 import AgenticFeedback from '../components/dueDiligence/AgenticFeedback';
+import RestartLink from '../components/dueDiligence/RestartLink';
 import RiskProfile from '../components/dueDiligence/RiskProfile';
 import StartNewAnalysisCard from '../components/dueDiligence/StartNewAnalysisCard';
 import StatusChip from '../components/dueDiligence/StatusChip';
@@ -59,9 +59,14 @@ const DueDiligencePage: React.FC = () => {
               status={profile?.status ?? company?.dd_status ?? 'not available'}
             />
             {isStatusGenerated(profile?.status) && profile?.url && (
-              <BtnLink onClick={() => startDueDiligence(profile?.url)}>
-                restart
-              </BtnLink>
+              <RestartLink
+                onConfirm={() => {
+                  console.log('Restarting due diligence');
+                  startDueDiligence(profile.url);
+                }}
+              >
+                Restart process
+              </RestartLink>
             )}
           </div>
 

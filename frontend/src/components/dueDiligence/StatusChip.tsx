@@ -42,7 +42,7 @@ const colorMap: Record<string, string> = {
 };
 
 const iconMap: Record<string, React.ReactElement> = {
-  Generated: <ConfirmedIcon />,
+  Confirmed: <ConfirmedIcon />,
   Running: <LoadingIcon />,
 };
 

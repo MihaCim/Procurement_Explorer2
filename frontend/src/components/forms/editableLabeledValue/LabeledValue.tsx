@@ -23,7 +23,14 @@ const LabeledValue = ({
       {loading ? (
         <Skeleton />
       ) : editable ? (
-        <EditableParagraph initialText={textContent} onSave={onSave} />
+        <EditableParagraph
+          initialText={
+            String(textContent).trim() === ''
+              ? 'No content'
+              : String(textContent)
+          }
+          onSave={onSave}
+        />
       ) : (
         <StyledContent> {textContent}</StyledContent>
       )}

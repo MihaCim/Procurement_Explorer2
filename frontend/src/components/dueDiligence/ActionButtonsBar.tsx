@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import ConfirmedIcon from '../../assets/icons/check.svg?react';
 import DeleteIcon from '../../assets/icons/delete.svg?react';
 import { useDueDiligenceContext } from '../../context/DueDiligenceProvider';
+import { CONFIRMED_STATUS } from '../../models/DueDiligenceProfile';
 import DeleteModal from '../modals/DeleteModal';
 import PrimaryButton from '../PrimaryButton';
 
@@ -33,7 +34,11 @@ const ActionBarContainer = styled.div`
 
 export const ActionButtonsBar: React.FC = () => {
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const { deleteProfile } = useDueDiligenceContext();
+  const {
+    deleteProfile,
+    updateProfileKey,
+    state: { profile },
+  } = useDueDiligenceContext();
   const handleDelete = () => {
     deleteProfile()
       .then(() => {
@@ -45,7 +50,7 @@ export const ActionButtonsBar: React.FC = () => {
   };
 
   const handleConfirm = () => {
-    alert('Mark as Confirmed action!');
+    updateProfileKey('status', CONFIRMED_STATUS);
   };
 
   return (
@@ -61,9 +66,12 @@ export const ActionButtonsBar: React.FC = () => {
               Delete
             </PrimaryButton>
           </div>
-          <div className="flex gap-2">
+
+          <div
+            className={`flex gap-2 ${profile?.status !== CONFIRMED_STATUS ? 'visible' : 'invisible'}`}
+          >
             <PrimaryButton
-              btnProps={{ type: 'button', disabled: true }}
+              btnProps={{ type: 'button' }}
               startEndorment={<ConfirmedIcon />}
               onClick={handleConfirm}
             >

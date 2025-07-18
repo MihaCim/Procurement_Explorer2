@@ -52,6 +52,8 @@ const Title = styled.p`
 const RiskProfile: React.FC = () => {
   const {
     state: { company, loadingCompany, profile },
+    updateProfileKey,
+    updateCompanyKey,
   } = useDueDiligenceContext();
 
   return (
@@ -76,32 +78,29 @@ const RiskProfile: React.FC = () => {
             textContent={profile?.name ?? '-'}
             loading={!profile?.name && profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('name', value)}
           />
           <LabeledValue
             textTitle="Founder"
             textContent={profile?.founder ?? '-'}
             loading={!profile?.founder && profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('founder', value)}
           />
           <LabeledValue
             textTitle="Founded"
             textContent={profile?.founded ?? '-'}
             loading={!profile?.founded && profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('founded', value)}
           />
-          <LabeledValue
-            textTitle="Address"
-            textContent={
-              profile?.address
-                ? typeof profile.address === 'string'
-                  ? profile.address
-                  : Object.values(profile.address).join(' ').trim() !== ''
-                    ? Object.values(profile.address).join(' ')
-                    : '-'
-                : '-'
-            }
-            loading={!profile?.address && profile?.status === 'running'}
+          <DictionaryContent
+            title={'Address'}
+            titleStyle="small"
+            value={profile?.address}
+            pending={!profile?.address && profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('address', value)}
           />
           {company && (
             <>
@@ -110,18 +109,25 @@ const RiskProfile: React.FC = () => {
                 textContent={company?.industry ?? '-'}
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) => updateCompanyKey('industry', value)}
               />
               <LabeledValue
                 textTitle="SubIndustry"
                 textContent={company?.details?.subindustry ?? '-'}
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) =>
+                  updateCompanyKey('details.subindustry', value)
+                }
               />
               <LabeledValue
                 textTitle="Company size"
                 textContent={company?.details?.companySize ?? '-'}
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) =>
+                  updateCompanyKey('details.companySize', value)
+                }
               />
               <LabeledValue
                 textTitle="Specializations"
@@ -130,6 +136,12 @@ const RiskProfile: React.FC = () => {
                 }
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) =>
+                  updateCompanyKey(
+                    'details.specializations',
+                    value?.split(',') ?? [],
+                  )
+                }
               />
 
               <LabeledValue
@@ -139,6 +151,12 @@ const RiskProfile: React.FC = () => {
                 }
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) =>
+                  updateCompanyKey(
+                    'details.productPortfolio',
+                    value?.split(',') ?? [],
+                  )
+                }
               />
               <LabeledValue
                 textTitle="Services portfolio"
@@ -147,14 +165,28 @@ const RiskProfile: React.FC = () => {
                 }
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) =>
+                  updateCompanyKey(
+                    'details.servicePortfolio',
+                    value?.split(',') ?? [],
+                  )
+                }
               />
               <LabeledValue
                 textTitle="Specific tools and technologies"
                 textContent={
-                  company?.details?.specializations?.join(', ') ?? '-'
+                  company?.details?.specific_tools_and_technologies?.join(
+                    ', ',
+                  ) ?? '-'
                 }
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) =>
+                  updateCompanyKey(
+                    'details.specific_tools_and_technologies',
+                    value?.split(',') ?? [],
+                  )
+                }
               />
               <LabeledValue
                 textTitle="Quality standards"
@@ -163,6 +195,12 @@ const RiskProfile: React.FC = () => {
                 }
                 loading={loadingCompany}
                 editable={isStatusGenerated(profile?.status)}
+                onSave={(value) =>
+                  updateCompanyKey(
+                    'details.qualityStandards',
+                    value?.split(',') ?? [],
+                  )
+                }
               />
             </>
           )}
@@ -173,7 +211,14 @@ const RiskProfile: React.FC = () => {
         {!profile?.description && profile?.status === 'running' ? (
           <Skeleton height={150} />
         ) : isStatusGenerated(profile?.status) ? (
-          <EditableParagraph initialText={profile?.description ?? '-'} />
+          <EditableParagraph
+            initialText={
+              profile?.description && String(profile?.description).trim() === ''
+                ? 'No content'
+                : String(profile?.description)
+            }
+            onSave={(value) => updateProfileKey('description', value)}
+          />
         ) : (
           <p className="w-full">{profile?.description ?? '-'}</p>
         )}
@@ -181,12 +226,13 @@ const RiskProfile: React.FC = () => {
 
       <SubContent>
         <H2>Risks and critical connections</H2>
-        <div className="flex flex-1 flex-col gap-2 self-stretch">
+        <div className="flex flex-1 flex-col gap-10 self-stretch">
           <DictionaryContent
             title={'Security risks'}
             value={profile?.security_risk}
             pending={profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('security_risk', value)}
           />
 
           <DictionaryContent
@@ -194,6 +240,7 @@ const RiskProfile: React.FC = () => {
             value={profile?.operational_risk}
             pending={profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('operational_risk', value)}
           />
 
           <DictionaryContent
@@ -201,6 +248,7 @@ const RiskProfile: React.FC = () => {
             value={profile?.financial_risk}
             pending={profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('financial_risk', value)}
           />
 
           <DictionaryContent
@@ -208,6 +256,7 @@ const RiskProfile: React.FC = () => {
             value={profile?.key_individuals}
             pending={profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('key_individuals', value)}
           />
 
           <DictionaryContent
@@ -215,6 +264,7 @@ const RiskProfile: React.FC = () => {
             value={profile?.key_relationships}
             pending={profile?.status === 'running'}
             editable={isStatusGenerated(profile?.status)}
+            onSave={(value) => updateProfileKey('key_relationships', value)}
           />
         </div>
       </SubContent>

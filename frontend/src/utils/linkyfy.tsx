@@ -3,7 +3,7 @@ const URL_REGEX = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
 export const linkifyText = (text: string): React.ReactNode[] => {
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  if (!text) return parts;
+  if (!text || typeof text !== 'string') return parts;
 
   text.replace(URL_REGEX, (match, p1, p2, offset) => {
     // Add the text before the URL

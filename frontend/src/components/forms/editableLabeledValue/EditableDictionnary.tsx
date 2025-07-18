@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
+import styled from 'styled-components';
 
 import EditableParagraph from './EditableParagraph';
 
@@ -8,12 +9,30 @@ interface EditableDictionaryProps {
   onSave?: (newData: any) => void;
   editable?: boolean;
   depth?: number;
+  pending?: boolean;
 }
+
+const DictionaryContainer = styled.div<{ $depth?: number }>`
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  border-bottom: ${(props) =>
+    props.$depth === 0 ? '1px solid #c6c7c9' : 'none'};
+  padding-bottom: ${(props) => (props.$depth === 0 ? '4px' : '2px')};
+`;
+
+const DictionaryKey = styled.span`
+  font-weight: 400;
+  font-size: 0.875rem;
+  width: 13rem;
+  flex-shrink: 0;
+`;
 
 const EditableDictionary: React.FC<EditableDictionaryProps> = ({
   data,
   onSave,
   editable = false,
+  pending = false,
   depth = 0,
 }) => {
   const [editableData, setEditableData] = useState<any>(data);
@@ -38,10 +57,8 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
   return (
     <div style={{ paddingLeft: `${indentation}px` }} className="space-y-2">
       {Object.entries(editableData).map(([key, value]) => (
-        <div key={key} className="flex items-center">
-          <span className="font-semibold text-sm text-gray-700 w-32 flex-shrink-0">
-            {key}
-          </span>
+        <DictionaryContainer key={key} $depth={depth}>
+          <DictionaryKey>{key}</DictionaryKey>
           <div className="flex-grow">
             {typeof value === 'object' &&
             value !== null &&
@@ -53,16 +70,20 @@ const EditableDictionary: React.FC<EditableDictionaryProps> = ({
                 }
                 depth={depth + 1}
                 editable={editable}
+                pending={pending}
               />
             ) : (
               <EditableParagraph
-                initialText={String(value)}
+                initialText={
+                  String(value).trim() === '' ? 'No content' : String(value)
+                }
                 onSave={(newValue) => handleStringSave(key, newValue)}
                 isEditable={editable}
+                pending={pending}
               />
             )}
           </div>
-        </div>
+        </DictionaryContainer>
       ))}
     </div>
   );

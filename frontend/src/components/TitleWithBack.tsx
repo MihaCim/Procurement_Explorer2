@@ -24,7 +24,9 @@ const TitleWithBack: React.FC<ITitleWithBackProps> = ({ label, onClick }) => {
     <TitleContainer>
       <Button type="button" onClick={onClick ?? goBack}>
         <BackIcon />
-        <H1>{label}</H1>
+        <div className="max-w-[300px] overflow-hidden">
+          <H1>{label}</H1>
+        </div>
       </Button>
     </TitleContainer>
   );
