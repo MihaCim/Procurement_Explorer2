@@ -195,7 +195,7 @@ cache = AsyncInFlightCache()
 async def extract_text_from_url(url: str) -> str:
     """
     - Extract text content from a given URL using a content crawler and return it in text format.
-    - Call this function only with a valid url input.
+    - Call this function only with a valid url input. make sure the url is in fully qualified domain format, such as: https://www.google.com/ 
 
     Parameters:
         url (str): A valid URL from which to extract text content. Make sure the url is in fully qualified format, like: https://www.google.com/

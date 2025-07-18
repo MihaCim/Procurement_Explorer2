@@ -78,9 +78,10 @@ async def create_final_report(data: dict[str, str]) -> str:
 async def summarize_with_intent(texts: list[str], intent: str) -> str:
     return await call_llm(
         f"""
-        Summarize the following texts with the intent of '{intent}', 
+        Summarize the following texts on half with the intent of '{intent}', 
         ensuring to keep important information such as URLs, numbers, decisions, 
-        and other critical details: \n{" ".join(set(texts))}
+        and other critical details: \n{" ".join(set(texts))}. 
+        Make the summary half size than original text.
     """.strip()
     )
 
@@ -192,8 +193,11 @@ class FunctionalAgent:
         return f"Output should have a valid JSON object without any wrappers in the following format:\n{str}"
 
     async def reduce_buffer(self) -> str:
+        print("LEN OF BUFFER CONTEXT: ", num_tokens_from_string("\n".join(self.buffer)))
         if len(self.buffer) > 0:
-            while num_tokens_from_string("\n".join(self.buffer)) > CONTEXT_LIMIT:
+            for _ in range(6): # hard stop on summarization
+                if num_tokens_from_string("\n".join(self.buffer)) <= CONTEXT_LIMIT:
+                    break
                 summary = await summarize_with_intent(self.buffer, "shorten")
                 self.buffer = [summary]
         return "\n".join(self.buffer)
@@ -240,7 +244,7 @@ class FunctionalAgent:
                 prompt = re.sub(r"^\s+", "", prompt, flags=re.MULTILINE).strip()
                 prompt = dedent(prompt).strip()
                 # print(f"\n\n\n\n\n{prompt}\n\n\n\n\n")
-                ai_output_raw = await self.call_llm(prompt)
+                ai_output_raw = await call_llm(prompt)
 
                 ai_output = maybe_remove_json_code_block_markers(
                     await self.map_function_call(ai_output_raw, functions_definitions)
@@ -336,20 +340,20 @@ class FunctionalAgent:
                 """
             prompt = re.sub(r"^\s+", "", prompt, flags=re.MULTILINE).strip()
             prompt = dedent(prompt).strip()
-            output = await self.call_llm(prompt)
+            output = await call_llm(prompt)
         except Exception as e:
             logger.error(f"{e}")
             self.buffer.append(f"Error occurred: {e}.")
         return output
 
-    async def call_llm(self, prompt: str) -> str:
-        try:
-            response = await call_llm(prompt)
-            return response
-        except Exception as e:
-            logger.error(f"Error while calling LLM. {e}")
-            logger.error("input string: ", prompt)
-            return ""
+    # async def call_llm(self, prompt: str) -> str:
+    #     try:
+    #         response = await call_llm(prompt)
+    #         return response
+    #     except Exception as e:
+    #         logger.error(f"Error while calling LLM. {e}")
+    #         logger.error("input string: ", prompt)
+    #         return ""
 
     async def response(self, message: str) -> str:
         """Response function to end the process and speak. message will be shown to the user. The message parameter should be detailed response to the given input or task."""
@@ -576,7 +580,10 @@ class TaskThread:
         return "\n".join(self.buffer)
 
     async def get_buffer_str(self):
-        while len(self.get_buffer_str_raw()) > CONTEXT_LIMIT:
+        for _ in range(6): # Hard stop on summarization
+            print("LEN OF BUFFER CONTEXT: ", len(self.get_buffer_str_raw()))
+            if len(self.get_buffer_str_raw()) <= CONTEXT_LIMIT:
+                break
             summary = await summarize_with_intent(
                 self.buffer,
                 f"shorten keeping information about task: {self.task}",
