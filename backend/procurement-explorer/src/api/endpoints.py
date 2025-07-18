@@ -36,9 +36,7 @@ from ..services.document_service import (
     set_company,
     update_company,
     update_company_status,
-    update_company_verdict,
     update_due_diligence_profile,
-    get_due_diligence_status,
 )
 from ..services.llm.llm_service import (
     generate_document_profile,
@@ -268,6 +266,7 @@ async def save_company_profile(companyWrapped: CompanyWrapper):
         if existing_company:
             company.id = existing_company.id
             saved_company = await update_company(existing_company.id, company)
+            vs.update_document_in_vector_store(str(company.id), company)
         else:
             new_company_id = await set_company(company)
             if new_company_id:
