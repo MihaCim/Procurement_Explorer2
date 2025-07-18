@@ -489,7 +489,7 @@ async def update_due_diligence_profile(
     dd_profile.last_revision = datetime.now().isoformat() 
     dump = dd_profile.model_dump()
     if "logs" in dump:
-        del dump["logs"]    # not saving the logs field
+        dump["logs"] = json.dumps(dump["logs"])
 
     for field in dump:
         if isinstance(dump[field], dict):
@@ -502,7 +502,7 @@ async def update_due_diligence_profile(
             logger.error(f"Error: Profile URL and ID do not match in database")
             raise HTTPException(status_code=400, detail="Error: Profile URL and ID do not match in database")
         #update the profile
-        dump["id"] = old_profile.id
+        dump["id"] = old_profile.id #can be removed? 
         source.update_document("due_diligence_profiles", dump["id"], dump)
         return {"status": "ok", "msg": dump["id"]}
 
